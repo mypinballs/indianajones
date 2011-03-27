@@ -1,0 +1,27 @@
+Display: {Left side score justify: right}
+Gameplay (Feature): {A2.01 Timed Plunger: 0, Adventure Continue Timer: 15, Attract Mode Music: 'Yes',
+  Attract Mode Sounds: 'Yes', Ball Saver Timer: 12, Buy Extra Ball - Buy-In Feature: 'No',
+  Buy-In Ball Saver Timer: 15, Captive Multiball Start: 5, Captive Multiball Start Timer: 30,
+  Castle Grunwald Timer: 30, Chain feature difficulty: medium, Choose Wisely Level Start: 1,
+  Coin Door Ball Save: 'Yes', Crimescene levels for finale: 16, Crimescene shot difficulty: medium,
+  Flipper Plunger: 'No', Game Ballsaves: 3, Game ballsaves: 3, Get The Idol Timer: 30,
+  Gun Trigger During Buy-In: Extra Ball, Hand Of Fate Lit Difficulty: Easy, Hand Of Fate Timer: 0,
+  Hold Idol Locks At Game Over: 'No', Jackport Multiplier Timer: 30, Loop Lit Timer: 30,
+  Lower Playfield Extra Ball Lit Hold: 'On', Max extra balls lit: 99, Max extra balls per game: 99,
+  Monkey Brains Timer: 30, Multiball Ballsaves: 2, Multiball Saver Timer: 5, Multiball ballsave time: 20,
+  Multiball ballsaves: 2, New ball ballsave time: 10, New ball repeating ballsave: false,
+  Outlane Ball Save: 'No', Path Of Adventure Start Level: 1, Path of Adventure Extra Ball/Pit Lit Difficulty: Easy,
+  Quick Multiball Saver Timer: 5, Ramp Lit Timer: 30, Raven Bar Level Started: 1,
+  Rope Bridge Timer: 30, Steel The Stones Timer: 30, Streets Of Cairo Timer: 30, Super Jets Start: 100,
+  Tank Chase Timer: 30, The 3 Challenges Timer: 30, Time per chain feature: 30, Timed Plunger: 0}
+Highscore: {Grand Champion: 350000000}
+Machine (Standard): {Allow Dim Illumination: 'No', Balls Per Game: 3, Clock Style: AM/PM,
+  Custom Message: false, Date Style: Euro, Euro. Score Format: 'No', Game Restart: true,
+  General Illumination Power Saver: 0, Maximum Extra Balls: 4, Maximum Extra Balls/Ball In Play: 0,
+  No Bonus Flips: 'Yes', Power Saver Level: 4, Show Date and Time: 'Yes', Tilt Warnings: 3,
+  Tournament Play: 'No', Tournament Type: Local}
+Network: {Gateway: 0, IP Address: 0, Subnet: 0, Tournament Server: 0}
+Replay: {Replay Award: Audit, Replay Boost: 100000, Replay Level 1: 100000, Replay Level 2: 200000,
+  Replay Level 3: 300000, Replay Level 4: 400000, Replay Levels: 1, Replay Percentage: 10,
+  Replay Type: auto, Special: Audit}
+Sound: {Initial volume: 0.5, Music volume offset: 0}

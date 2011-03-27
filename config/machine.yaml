@@ -1,0 +1,466 @@
+# P-ROC Game Description file for Williams Indiana Jones
+PRGame:
+    machineType: wpc
+    numBalls: 6
+PRFlippers:
+    - flipperLwR
+    - flipperLwL
+PRBumpers:
+    - leftSlingshot
+    - rightSlingshot
+    - leftJet
+    - rightJet
+    - bottomJet
+PRSwitches:
+     # **** Format ****
+    # name:
+    #   number: <number>
+    #   type: <type>
+    #
+    #   <number> can be: SFx (Flipper switch, labeled Fx in WPC manual
+    #                    SDx (Dedicated switch, labeled SDx in WPC manual
+    #                    Sx  (Matrix switch, labeled x in WPC manual
+    #   <type> can be: 'NO' (normally open.  This is the default; so no need to use this)
+    #    'NC' (normally closed.  Common for optos)
+
+    #Flipper Grounded Swithes
+    flipperLwR:
+        number: SF2
+    flipperLwL:
+        number: SF4
+    dropTargetLeft:
+        number: SF5
+        type: 'NC'
+    dropTargetMiddle:
+        number: SF6
+        type: 'NC'
+    dropTargetRight:
+        number: SF7
+        type: 'NC'
+    leftRampMade:
+        number: SF8
+
+    #Dedicated Grounded Swtches
+    exit: 
+        number: SD5
+    down: 
+        number: SD6
+    up: 
+        number: SD7
+    enter: 
+        number: SD8
+
+    #Regular Switches
+    singleDropTop:
+        number: S11
+    buyInButton:
+        number: S12
+    startButton:
+        number: S13
+    plumbBobTilt:
+        number: S14
+    leftOutlane:
+        number: S15
+    leftInlane:
+        number: S16
+    rightInlane:
+        number: S17
+    rightOutlaneTop:
+        number: S18
+    tilt:
+        number: S21
+    coinDoorClosed:
+        number: S22
+    ticketOpto:
+        number: S23
+    alwaysClosed:
+        number: S24
+    indyI:
+        number: S25
+    indyN:
+        number: S26
+    indyD:
+        number: S27
+    indyY:
+        number: S28
+    leftEject:
+        number: S31
+    exitIdol:
+        number: S32
+    leftSlingshot:
+        number: S33
+    gunTrigger:
+        number: S34
+    leftJet:
+        number: S35
+    rightJet:
+        number: S36
+    bottomJet:
+        number: S37
+    centerStandup:
+        number: S38
+    leftRampEnter:
+        number: S41
+        type: 'NC'
+    rightRampEnter:
+        number: S42
+        type: 'NC'
+    topIdolEnter:
+        number: S43
+        type: 'NC'
+    rightPopper:
+        number: S44
+        type: 'NC'
+    centerEnter:
+        number: S45
+        type: 'NC'
+    topPost:
+        number: S46
+    subwayLockup:
+        number: S47
+        type: 'NC'
+    rightSlingshot:
+        number: S48
+    adventureU:
+        number: S51
+    adventureR:
+        number: S52
+    adventureE2:
+        number: S53
+    leftLoopTop:
+        number: S54
+    leftLoopBottom:
+        number: S55
+    rightLoopTop:
+        number: S56
+    rightLoopBottom:
+        number: S57
+    rightOutlaneBottom:
+        number: S58
+    adventureA:
+        number: S61
+    adventureD:
+        number: S62
+    adventureV:
+        number: S63
+    captiveBallback:
+        number: S64
+    miniTopLeft:
+        number: S65
+    miniMiddleTopLeft:
+        number: S66
+    miniMiddleBottomLeft:
+        number: S67
+    miniBottomLeft:
+        number: S68
+    captiveBallFront:
+        number: S71
+        type: 'NC'
+    miniTopHole:
+        number: S72
+        type: 'NC'
+    miniBottomHole:
+        number: S73
+        type: 'NC'
+    rightRampMade:
+        number: S74
+    miniTopRight:
+        number: S75
+    miniMiddleTopRight:
+        number: S76
+    miniMiddleBottomRight:
+        number: S77
+    miniBottomRight:
+        number: S78
+    trough1:
+        number: S81
+        type: 'NC'
+    trough2:
+        number: S82
+        type: 'NC'
+    trough3:
+        number: S83
+        type: 'NC'
+    trough4:
+        number: S84
+        type: 'NC'
+    trough5:
+        number: S85
+        type: 'NC'
+    trough6:
+        number: S86
+        type: 'NC'
+    troughTop:
+        number: S87
+        type: 'NC'
+    shooterLane:
+        number: S88
+    wheelPosition1:
+        number: S91
+        type: 'NC'
+    wheelPosition2:
+        number: S92
+        type: 'NC'
+    wheelPosition3:
+        number: S93
+        type: 'NC'
+    miniLeftLimit:
+        number: S94
+    miniRightLimit:
+        number: S95
+    
+PRCoils:
+    flipperLwRMain:
+        number: FLRM
+    flipperLwRHold:
+        number: FLRH
+    flipperLwLMain:
+        number: FLLM
+    flipperLwLHold:
+        number: FLLH
+    divertorMain:
+        number: FULM
+    divertorHold:
+        number: FULH
+    topLockupMain:
+        number: FURM
+    topLockupHold:
+        number: FURH
+    ballPopper:
+        number: C01
+    ballLaunch:
+        number: C02
+    totemDropUp:
+        number: C03
+    trough:
+        number: C04
+    centerDropBank:
+        number: C05
+    idolRelease:
+        number: C06
+    knocker:
+        number: C07
+    leftEject:
+        number: C08
+    leftJet:
+        number: C09
+    rightJet:
+        number: C10
+    bottomJet:
+        number: C11
+    leftSlingshot:
+        number: C12
+    rightSlingshot:
+        number: C13
+    leftControlGate:
+        number: C14
+    rightControlGate:
+        number: C15
+    totemDropDown:
+        number: C16
+    flasherEternalLife:
+        number: C17
+    flasherLiteJackpot:
+        number: C18
+    flasherSuperJackpot:
+        number: C19
+    flasherJackpot:
+        number: C20
+    flasherPOA:
+        number: C21
+    miniMotorLeft:
+        number: C22
+    miniMotorRight:
+        number: C23
+    flasherPlaneGuns:
+        number: C24
+    flasherDogFight:
+        number: C25
+    flasherRightRamp:
+        number: C26
+    flasherLeftRamp:
+        number: C27
+    subwayRelease:
+        number: C28
+    flasherLeftSide:
+        number: C37
+    flasherRightSide:
+        number: C38
+    flasherSpecial:
+        number: C39
+    flasherTotem:
+        number: C40
+    flasherJackpotMultiplier:
+        number: C41
+    wheelMotor:
+        number: C42
+PRLamps:
+    modeStart:
+        number: L11
+    handOfFate:
+        number: L12
+    extraBall:
+        number: L13
+    adventureV:
+        number: L14
+    adventureD:
+        number: L15
+    adventureA:
+        number: L16
+    shootAgain:
+        number: L17
+    getTheIdol:
+        number: L18
+    tankChase:
+        number: L21
+    adventureT:
+        number: L22
+    adventureE1:
+        number: L23
+    adventureN:
+        number: L24
+    stealTheStones:
+        number: L25
+    grailJackpot:
+        number: L26
+    streetsOfCairo:
+        number: L27
+    stonesJackpot:
+        number: L28
+    leftRampArrow:
+        number: L31
+    castleGrunwald:
+        number: L32
+    leftPlaneTop:
+        number: L33
+    monkeyBrains:
+        number: L34
+    leftPlaneMiddle:
+        number: L35
+    sallah:
+        number: L36
+    bonus4X:
+        number: L37
+    leftPlaneBottom:
+        number: L38
+    #temp fix for lamp show typo
+    leftPlanebottom:
+        number: L38
+    mineCart:
+        number: L41
+    arkJackpot:
+        number: L42
+    ravenBar:
+        number: L43
+    rightPlaneMiddle:
+        number: L44
+    bonus6X:
+        number: L45
+    rightPlaneBottom:
+        number: L46
+    wellOfSouls:
+        number: L47
+    leftLoop:
+        number: L48
+    chooseWisely:
+        number: L51
+    rightPlaneTop:
+        number: L52
+    ropeBridge:
+        number: L53
+    adventureU:
+        number: L54
+    adventureR:
+        number: L55
+    adventureE2:
+        number: L56
+    theThreeChallenges:
+        number: L57
+    rightLoop:
+        number: L58
+    indyI:
+        number: L61
+    indyN:
+        number: L62
+    indyD:
+        number: L63
+    indyY:
+        number: L64
+    willie:
+        number: L65
+    bonus2X:
+        number: L66
+    shorty:
+        number: L67
+    rightRampArrow:
+        number: L68
+    miniTopLeft:
+        number: L71
+    miniTopRight:
+        number: L72
+    miniMiddleTopLeft:
+        number: L73
+    miniMiddleTopRight:
+        number: L74
+    miniTopArrow:
+        number: L75
+    marrion:
+        number: L76
+    bonus8X:
+        number: L77
+    drJones:
+        number: L78
+    miniMiddleBottomLeft:
+        number: L81
+    miniMiddleBottomRight:
+        number: L82
+    miniBottomLeft:
+        number: L83
+    miniBottomRight:
+        number: L84
+    miniBottomArrow:
+        number: L85
+    totemTopArrow:
+        number: L86
+    centerLock:
+        number: L87
+    startButton:
+        number: L88
+    gi01:
+        number: G01
+    gi02:
+        number: G02
+    gi03:
+        number: G03
+    gi04:
+        number: G04
+    gi05:
+        number: G05
+
+PRBallSave:
+    pulseCoils: [leftSlingshot, rightSlingshot, leftJet, rightJet, bottomJet, totemDropUp, centerDropBank]
+    resetSwitches:
+        leftSlingshot: open
+        rightSlingshot: open
+        leftJet: open
+        rightJet: open
+        bottomJet: open
+        leftOutlane: open
+        leftInlane: open
+        rightOutlaneTop: open
+        rightOutlaneBottom: open
+        rightInlane: open
+        leftEject: open
+        indyI: open
+        indyN: open
+        indyD: open
+        indyY: open
+
+    stopSwitches:
+        shooterLane: closed
+        rightPopper: active
+        miniTopHole: active
+        miniBottomHole: active
+        # don't ball search if a flipper button is pressed
+        flipperLwL: closed
+        flipperLwR: closed
