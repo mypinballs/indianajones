@@ -183,7 +183,7 @@ class POA(game.Mode):
         def update_lamps(self):
             flags=[self.adventureA_lit,self.adventureD_lit,self.adventureV_lit,self.adventureE1_lit,self.adventureN_lit,self.adventureT_lit,self.adventureU_lit,self.adventureR_lit,self.adventureE2_lit]
             for i in range(len(flags)):
-                if self.flags[i]:
+                if flags[i]:
                     self.game.effects.drive_lamp(self.lamps[i],'on')
                 else:
                     self.game.effects.drive_lamp(self.lamps[i],'medium')
