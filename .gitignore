@@ -1,0 +1,8 @@
+/dmd/*
+/sound/*
+/music/*
+/speech/*
+/config/*
+/xtra/*
+*.pyc
+*.yaml
