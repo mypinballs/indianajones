@@ -47,7 +47,10 @@ class Match(game.Mode):
 
 
         def mode_stopped(self):
+            #set the status
             self.game.system_status='game_over'
+            
+            #add the attact mode and play the see you tommorow sample
             self.game.modes.add(self.game.attract_mode)
             self.game.sound.play_voice('see_you')
 
