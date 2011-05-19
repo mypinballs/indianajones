@@ -846,6 +846,8 @@ class mpcPlayer(game.Player):
                 self.player_stats['loop_value']=0
                 self.player_stats['ramps_made']=0
                 self.player_stats['adventure_letters_collected']=0
+                self.player_stats['current_mode_num']=0
+
                 
 
 

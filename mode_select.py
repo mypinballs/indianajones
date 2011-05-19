@@ -19,7 +19,8 @@ class Mode_Select(game.Mode):
            
             self.lamp_list = ['getTheIdol','streetsOfCairo','wellOfSouls','ravenBar','monkeyBrains','stealTheStones','mineCart','ropeBridge','castleGrunwald','tankChase','theThreeChallenges','chooseWisely']
             self.select_list = [0,0,0,0,0,0,0,0,0,0,0,0]
-            self.current_mode_num = 0
+            self.current_mode_num = self.game.get_player_stats('current_mode_num')
+            self.choice_id =0
             self.reset()
 
 
@@ -30,7 +31,7 @@ class Mode_Select(game.Mode):
         def reset_lamps(self):
             #loop round and turn off all lamps
             for i in range(len(self.lamp_list)):
-                self.game.drive_lamp(self.lamp_list[i],'off')
+                self.game.effects.drive_lamp(self.lamp_list[i],'off')
 
 
         def mode_started(self):
@@ -39,68 +40,61 @@ class Mode_Select(game.Mode):
         def mode_tick(self):
             pass
 
+        def update_lamps(self):
+            print("Updating Selected Mode Lamp")
+            self.game.effects.drive_lamp(self.lamp_list[self.current_mode_num],'medium')
 
-        def unplayed_scenes(self):
-            #create list of unplayed scenes (0)
+
+        def unplayed_scenes(self,dirn=None):
+
+            #turn off current mode lamp
+            self.game.drive_lamp(self.lamp_list[self.current_mode_num],'off')
+
+            #create list of unplayed scene numbers
             choice_list=[]
             for i in range(len(self.select_list)):
                 if self.select_list[i]==0:
                     choice_list.append(i)
+           
+            #adjust choice number
+            if dirn=='left':
+                self.choice_id -=1
+            elif dirn=='right':
+                self.choice_id +=1
+            else:
+                self.choice_id = random.randint(0, len(choice_list)-1)
 
-            #set current mode var
-            num = random.randint(0, len(choice_list)-1)
-            self.current_mode_num = num
+            #create wrap around
+            if self.choice_id>len(choice_list)-1:
+                self.choice_id=0
+            elif self.choice_id<0:
+                self.choice_id=len(choice_list)-1
+
+            #set new mode number
+            self.current_mode_num = choice_list[self.choice_id]
 
             #turn on relevent lamp
-            self.game.drive_lamp(self.lamp_list[self.current_mode_num],'medium')
+            self.game.effects.drive_lamp(self.lamp_list[self.current_mode_num],'medium')
+            print("mode now active:"+str(self.lamp_list[self.current_mode_num]))
 
-            #update select list
-            self.select_list[self.current_mode_num] =1
+            #update player stats
+            self.game.set_player_stats('current_mode_num',self.current_mode_num)
+
+            #use this when a mode is completed, not here
+            #self.select_list[self.current_mode_num] =1
 
 
         def move_left(self):
-            #turn off current mode lamp
-            self.game.drive_lamp(self.lamp_list[self.current_mode_num],'off')
-
-            #find next non attempted mode
-            modes_available =self.select_list[0:self.current_mode_num]
-            next_mode_num = modes_available[::-1].index(0)
-
-            #flash new mode lamp
-            self.game.drive_lamp(self.lamp_list[next_mode_num],'medium')
-
-            #update tracking vars
-            self.select_list[self.current_mode_num] =0
-            self.select_list[next_mode_num] =1
-            self.current_mode_num = next_mode_num
-
-            #dmd stuff here
-            #self.info_layer.set_text("duh duh duh duh!!!")
-            #self.layer = dmd.GroupedLayer(128, 32, [self.text_layer, self.info_layer])
+            
+            self.unplayed_scenes('left')
 
             self.game.coils.flasherLeftRamp.schedule(schedule=0x30003000 , cycle_seconds=0, now=True)
             self.delay(name='disable_flasher', event_type=None, delay=2, handler=self.game.coils.flasherLeftRamp.disable)
 
 
         def move_right(self):
-            #turn off current mode lamp
-            self.game.drive_lamp(self.lamp_list[self.current_mode_num],'off')
-
-            #find next non attempted mode
-            modes_available =self.select_list[self.current_mode_num:len(self.select_list)]
-            next_mode_num = modes_available.index(0)
-
-            #flash new mode lamp
-            self.game.drive_lamp(self.lamp_list[next_mode_num],'medium')
-
-            #update tracking vars
-            self.select_list[self.current_mode_num] =0
-            self.select_list[next_mode_num] =1
-            self.current_mode_num = next_mode_num
-
-            #dmd stuff here
-            #self.info_layer.set_text("rah rah rah rah!!!")
-            #self.layer = dmd.GroupedLayer(128, 32, [self.text_layer, self.info_layer])
+            
+            self.unplayed_scenes('right')
 
             self.game.coils.flasherRightRamp.schedule(schedule=0x30003000 , cycle_seconds=0, now=True)
             self.delay(name='disable_flasher', event_type=None, delay=2, handler=self.game.coils.flasherRightRamp.disable)
