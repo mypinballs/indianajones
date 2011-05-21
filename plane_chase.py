@@ -45,36 +45,39 @@ class Plane_Chase(game.Mode):
             self.reset_lamps()
 
             self.left_ramp_enabled = True
-            self.game.drive_lamp('leftRampArrow','superfast')
-            self.game.drive_lamp(self.plane_lamps[0],'fast')
+            self.game.effects.drive_lamp('leftRampArrow','superfast')
+            self.game.effects.drive_lamp(self.plane_lamps[0],'fast')
 
         def reset_lamps(self):
             for i in range(len(self.plane_lamps)):
-                self.game.drive_lamp(self.plane_lamps[i],'off')
+                self.game.effects.drive_lamp(self.plane_lamps[i],'off')
 
         def update_lamps(self):
             for i in range(len(self.plane_lamps)):
-                if i>0:
-                    self.game.drive_lamp(self.plane_lamps[i-1],'on')
-                self.game.drive_lamp(self.plane_lamps[i],'fast')
+                if i<=self.ramps_made:
+                    self.game.effects.drive_lamp(self.plane_lamps[i],'on')
+                elif i==(self.ramps_made+1):
+                    self.game.effects.drive_lamp(self.plane_lamps[i],'fast')
+                else:
+                    self.game.effects.drive_lamp(self.plane_lamps[i],'off')
 
         def sequence(self,number):
             print("sequence: "+str(number))
             if number>0 and number<6:
-                self.game.drive_lamp(self.plane_lamps[number-1],'on')
-                self.game.drive_lamp(self.plane_lamps[number],'fast')
+                self.game.effects.drive_lamp(self.plane_lamps[number-1],'on')
+                self.game.effects.drive_lamp(self.plane_lamps[number],'fast')
 
                 if self.left_ramp_enabled:
                     self.right_ramp_enabled = True
                     self.left_ramp_enabled = False
-                    self.game.drive_lamp('leftRampArrow','off')
-                    self.game.drive_lamp('rightRampArrow','superfast')
+                    self.game.effects.drive_lamp('leftRampArrow','off')
+                    self.game.effects.drive_lamp('rightRampArrow','superfast')
 
                 elif self.right_ramp_enabled:
                     self.right_ramp_enabled = False
                     self.left_ramp_enabled = True
-                    self.game.drive_lamp('rightRampArrow','off')
-                    self.game.drive_lamp('leftRampArrow','superfast')
+                    self.game.effects.drive_lamp('rightRampArrow','off')
+                    self.game.effects.drive_lamp('leftRampArrow','superfast')
 
                 #self.game.lampctrl.save_state('game')
 

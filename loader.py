@@ -27,7 +27,7 @@ class Loader(game.Mode):
 
             self.selection=0
             self.choices=['Williams L7','myPinballs V1.0']#improve to pul versions from config files
-            self.dates=['22/11/1993','16/02/2011']
+            self.dates=['22/11/1993','20/05/2011']
 
             self.reset()
 

@@ -11,6 +11,9 @@ import random
 
 base_path = "/Users/jim/Documents/Pinball/p-roc/p-roc system/src/"
 game_path = base_path+"games/indyjones/"
+speech_path = game_path +"speech/"
+sound_path = game_path +"sound/"
+music_path = game_path +"music/"
 
 
 class Pops(game.Mode):
@@ -18,6 +21,15 @@ class Pops(game.Mode):
 	def __init__(self, game, priority):
             super(Pops, self).__init__(game, priority)
             self.text_layer = dmd.TextLayer(95, 0, self.game.fonts['num_14x10'], "left", opaque=False)
+
+            self.game.sound.register_sound('punch1', sound_path+"punch_1.aiff")
+            self.game.sound.register_sound('punch2', sound_path+"punch_2.aiff")
+            self.game.sound.register_sound('punch3', sound_path+"punch_3.aiff")
+            self.game.sound.register_sound('super1', sound_path+"super_jets_1.aiff")
+            self.game.sound.register_sound('super2', sound_path+"super_jets_2.aiff")
+            self.game.sound.register_sound('super3', sound_path+"super_jets_3.aiff")
+            self.game.sound.register_sound('super4', sound_path+"super_jets_4.aiff")
+            self.game.sound.register_sound('super5', sound_path+"super_jets_5.aiff")
 
             self.super_pops_count = 0
             self.super_pops_default = 50
@@ -37,7 +49,16 @@ class Pops(game.Mode):
             pass
 
         def play_sound(self):
-            pass
+
+            list=["punch1","punch2","punch3"]
+            super_list =["super1","super2","super3","super4","super5"]
+
+            if self.super_pops_count==0:
+                i= random.randint(0, len(super_list)-1)
+            else:
+                i= random.randint(0, len(list)-1)
+
+            self.game.sound.play(list[i])
 
 
         def play_animation(self,opaque=False, repeat=False, hold=False, frame_time=3):
@@ -65,7 +86,7 @@ class Pops(game.Mode):
             self.super_pops_count -=1
             self.text_layer.set_text(str(self.super_pops_count))
     
-        def score(self):
+        def pops_score(self):
             if self.super_pops_count==0:
                 self.game.score(self.super_score)
             else:
@@ -74,18 +95,21 @@ class Pops(game.Mode):
         def sw_leftJet_active(self, sw):
             self.update_count()
 
+            self.pops_score()
             self.play_sound()
             self.play_animation()
 
         def sw_rightJet_active(self, sw):
             self.update_count()
 
+            self.pops_score()
             self.play_sound()
             self.play_animation()
 
         def sw_bottomJet_active(self, sw):
             self.update_count()
 
+            self.pops_score()
             self.play_sound()
             self.play_animation()
 
