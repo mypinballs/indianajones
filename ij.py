@@ -19,6 +19,7 @@ from indy_lanes import *
 from plane_chase import *
 from mode_select import *
 from skillshot import *
+from multiball import *
 from procgame import *
 from threading import Thread
 from random import *
@@ -96,11 +97,12 @@ class Attract(game.Mode):
                 # run feature lamp patterns
                 self.change_lampshow()
 
+                #debug subway release issues
                 self.game.coils.subwayRelease.pulse(100)
 
                 #check for stuck balls
                 #self.release_stuck_balls()
-                self.delay(name='stuck_balls', event_type=None, delay=1.5, handler=self.release_stuck_balls)
+                self.delay(name='stuck_balls', event_type=None, delay=2, handler=self.release_stuck_balls)
 
                 #empty idol if trough not full
                 if not self.game.trough.is_full():
@@ -171,11 +173,11 @@ class Attract(game.Mode):
 
             #subway
             if self.game.switches.subwayLockup.is_active():
-                self.game.coils.subwayRelease.pulse(100)
+                self.game.coils.subwayRelease.pulse(30)
 
             #reset drops
             if self.game.switches.dropTargetLeft.is_active() or self.game.switches.dropTargetMiddle.is_active() or self.game.switches.dropTargetRight.is_active():
-                self.game.coils.centerDropBank.pulse()
+                self.game.coils.centerDropBank.pulse(100)
 
             if self.game.switches.singleDropTop.is_active():
                 self.game.coils.totemDropUp.pulse()
@@ -363,6 +365,9 @@ class BaseGameMode(game.Mode):
                 #ball save callback - exp
                 self.game.ball_save.callback = self.ball_save_callback
 
+                #reset drop targets
+                self.game.coils.centerDropBank.pulse(100)
+
         def add_basic_modes(self,ball_in_play):
 
             #lower priority basic modes
@@ -377,6 +382,7 @@ class BaseGameMode(game.Mode):
                 self.plane_chase = Plane_Chase(self.game, 52)
                 self.mode_select = Mode_Select(self.game, 53)
                 self.skillshot = Skillshot(self.game, 54)
+                self.multiball = Multiball(self.game, 60)
 
                 #start modes
                 self.game.modes.add(self.pops)
@@ -386,6 +392,7 @@ class BaseGameMode(game.Mode):
                 self.game.modes.add(self.totem)
                 self.game.modes.add(self.plane_chase)
                 self.game.modes.add(self.mode_select)
+                self.game.modes.add(self.multiball)
 
                 #set idol - should be here already?
                 self.game.idol.home()
@@ -555,6 +562,8 @@ class BaseGameMode(game.Mode):
 			self.tilt_status = 1
 			#play sound
 			#play video
+
+       
                         
         def sw_leftSlingshot_active(self,sw):
             self.sling()
@@ -586,6 +595,7 @@ class BaseGameMode(game.Mode):
             self.game.score(200000)
             self.game.sound.play("outlane_sound")
             self.game.sound.play("outlane_speech")
+
 
 
 
@@ -696,6 +706,7 @@ class Game(game.BasicGame):
 
                 #register game play lamp show
                 self.lampctrl.register_show('success', game_path +"lamps/game/success.lampshow")
+                self.lampctrl.register_show('ball_lock', game_path +"lamps/game/ball_lock.lampshow")
                 self.lampctrl.register_show('hit', game_path +"lamps/game/success.lampshow")
 
                 # Setup High Scores
@@ -847,6 +858,11 @@ class mpcPlayer(game.Player):
                 self.player_stats['ramps_made']=0
                 self.player_stats['adventure_letters_collected']=0
                 self.player_stats['current_mode_num']=0
+                self.player_stats['lock_lit'] = False
+                self.player_stats['mode_running'] = False
+                self.player_stats['multiball_running'] = False
+                self.player_stats['balls_locked'] = 0
+
 
                 
 

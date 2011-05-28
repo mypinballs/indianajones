@@ -15,11 +15,15 @@ class Idol(game.Mode):
 
             self.position = 0
             self.balls_in_idol = 0
+            self.balls_in_play = 0
+            self.ball_max = 3 #make this a game setting
             self.idol_state="initialise"
             self.idol_moving = False
             self.balls_waiting = False
             self.release= False
             self.lock_lit = False
+            self.next_posn_set=False
+            self.next_posn=0
 
         def reset(self):
             pass
@@ -43,6 +47,9 @@ class Idol(game.Mode):
                 self.idol_moving =False
                 self.game.set_status("Position: "+str(self.position))
                 self.release=False
+                self.idol_state='idle'
+                self.next_posn=self.position
+                self.next_posn_set=False
 
                 print("Reached Idol Destination - Posn: "+str(self.position))
 
@@ -51,6 +58,11 @@ class Idol(game.Mode):
                 self.idol_moving=True
                 
                 print("First Reported Idol Position was: "+str(self.position))
+
+
+#            if self.idol_moving:
+#                self.delay(name='mtp_repeat', event_type=None, delay=0, handler=self.move_to_posn, param=posn_num)
+
                 
             
         def idol_control(self):
@@ -79,7 +91,7 @@ class Idol(game.Mode):
                     self.release = True
                     self.delay(name='move_posn', event_type=None, delay=3, handler=self.set_state, param='initialise')
 
-#               
+              
             elif self.idol_state=='no_lock':
                 self.move_to_posn(4)
                 if self.position==4 and self.idol_moving==False and self.release==False:
@@ -88,59 +100,71 @@ class Idol(game.Mode):
                     self.delay(name='move_posn', event_type=None, delay=3, handler=self.set_state, param='initialise')
 
 
-
             elif self.idol_state=='lock':
-                    if self.position==2 or self.position==4 or self.position==6:
-                        self.next_posn()
-                    elif self.balls_in_idol >0:
-                        self.next_lock_posn()
+                self.next_lock_posn()
                         
-            elif self.idol_state=='release_single':
-                    self.next_release_posn()
+            elif self.idol_state=='release':
+                self.next_posn()
+                if self.idol_moving==False and self.release==False:
+                    self.game.coils.idolRelease.pulse(150)
+                    self.release = True
                         
+
+        def set_state(self,value):
+            self.idol_state=value
 
 
 
         def empty(self):
             self.set_state('empty')
 
+        def lock(self):
+            self.set_state('lock')
+
+        def lock_release(self):
+            self.set_state('release')
+
         def home(self):
             print("Moving To Home Position")
             self.set_state('initialise')
 
-        def set_state(self,value):
-            self.idol_state=value
-
 
         def next_lock_posn(self):
-            if self.position==1:
-                self.move_to_posn(3)
-            elif self.position==3:
-                self.move_to_posn(5)
-            elif self.position==5:
-                self.move_to_posn(1)
+#            if self.position==1 or self.position==2:
+#                self.move_to_posn(3)
+#            elif self.position==3 or self.position==4:
+#                self.move_to_posn(5)
+#            elif self.position==5 or self.position==6:
+#                self.move_to_posn(1)
+
+            if self.balls_in_idol==1:
+                self.delay(name='move_posn', event_type=None, delay=1.5, handler=self.move_to_posn, param=3)
+            elif self.balls_in_idol==2:
+                self.delay(name='move_posn', event_type=None, delay=1.5, handler=self.move_to_posn, param=5)
+            elif self.balls_in_idol==3:
+                pass
                 
-        def next_release_posn(self):
-            if self.position==2:
-                self.move_to_posn(4)
-            elif self.position==4:
-                self.move_to_posn(6)
-            elif self.position==6:
-                self.move_to_posn(2)
+#        def next_release_posn(self):
+#            if self.position==1 or self.position==2:
+#                self.move_to_posn(4)
+#            elif self.position==3 or self.position==4:
+#                self.move_to_posn(6)
+#            elif self.position==5 or self.position==6:
+#                self.move_to_posn(2)
 
         def next_posn(self):
-            if self.position==1:
-                self.move_to_posn(2)
-            elif self.position==2:
-                self.move_to_posn(3)
-            elif self.position==3:
-                self.move_to_posn(4)
-            elif self.position==4:
-                self.move_to_posn(5)
-            elif self.position==5:
-                self.move_to_posn(6)
-            elif self.position==6:
-                self.move_to_posn(1)
+            if self.next_posn_set==False:
+
+                if self.position<6:
+                    self.next_posn+=1
+                else:
+                    self.next_posn=1
+
+                self.next_posn_set=True
+
+
+            self.move_to_posn(self.next_posn)
+           
 
         def sw_wheelPosition2_active(self, sw):
             if self.game.switches.wheelPosition1.is_inactive() and self.game.switches.wheelPosition3.is_active():
@@ -173,14 +197,20 @@ class Idol(game.Mode):
             print "Position: "+str(self.position)
 
 
+        def check_popper(self):
+            if self.balls_in_idol<3 and self.game.switches.rightPopper.is_active():
+                self.game.coils.ballPopper.pulse(50)
+            else:
+                self.lock_release()
+
+
         #idol upkicker
-        def sw_rightPopper_active_for_1s(self, sw):
-           # if self.game.switches.topIdolEnter.is_inactive():
-            self.game.coils.ballPopper.pulse(50)
+        def sw_rightPopper_active_for_500ms(self, sw):
+            self.check_popper()
         
 #        def sw_rightPopper_inactive(self, sw):
 #            if self.game.switches.subwayLockup.is_active():
-#                self.game.coils.subwayRelease.pulse(20)
+#                self.game.coils.subwayRelease.pulse(30)
 
 
         #subway
@@ -190,22 +220,30 @@ class Idol(game.Mode):
         def sw_subwayLockup_active(self, sw):
             #self.idol_state='lock'
             if self.game.switches.rightPopper.is_inactive():
-                self.game.coils.subwayRelease.pulse(20)
+                self.game.coils.subwayRelease.pulse(100)
         
 #        def sw_subwayLockup_inactive(self, sw):
 #            pass
 
+        def update_trough(self):
+            self.game.trough.num_balls_locked = self.balls_in_idol
+           
 
         #idol entrance
-        def sw_topIdolEnter_time_since_change_500ms(self, sw):
-            self.balls_in_idol+=1
-            if self.idol_state !='empty':
-                if self.balls_in_idol>3:
-                   self.set_state('release_single')
-                elif self.lock_lit==False:
-                    self.set_state('no_lock')
-                else:
-                    self.set_state('lock')
+        def sw_topIdolEnter_active(self, sw):
+             self.balls_in_idol+=1
+             self.update_trough()
+
+
+#        def sw_topIdolEnter_time_since_change_500ms(self, sw):
+#            self.balls_in_idol+=1
+#            if self.idol_state !='empty':
+#                if self.balls_in_idol>3:
+#                   self.set_state('release_single')
+#                elif self.lock_lit==False:
+#                    self.set_state('no_lock')
+#                else:
+#                    self.set_state('lock')
 
 #        def sw_topIdolEnter_inactive(self, sw):
 #            if self.game.switches.subwayLockup.is_active():
@@ -213,7 +251,11 @@ class Idol(game.Mode):
 
 
         def sw_exitIdol_active(self, sw):
-            self.balls_in_idol-=1
+            if self.idol_state !='initialise':
+                self.balls_in_idol-=1
+                self.update_trough()
+                self.game.trough.num_balls_in_play +=1
+                self.check_popper()
 
         def sw_buyInButton_active_for_500ms(self, sw):
             self.idol_state='empty'

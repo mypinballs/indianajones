@@ -22,7 +22,6 @@ class Hand_Of_Fate(game.Mode):
             self.text_layer4 = dmd.TextLayer(128/2, 27, self.game.fonts['tiny7'], "center", opaque=False)
 
             self.list =['Lite Extra Ball','Dog Fight Hurry Up','Eternal Life','Bonus X','10 Million','20 Million','Super Jets','Lock Ball','Lite POA','Loop Person','Quick Multi-Ball']
-            self.award = None
             
             self.reset()
 

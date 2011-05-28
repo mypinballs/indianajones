@@ -143,7 +143,7 @@ PRSwitches:
         number: S62
     adventureV:
         number: S63
-    captiveBallback:
+    captiveBallBack:
         number: S64
     miniTopLeft:
         number: S65

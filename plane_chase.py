@@ -9,6 +9,8 @@ from procgame import *
 
 base_path = "/Users/jim/Documents/Pinball/p-roc/p-roc system/src/"
 game_path = base_path+"games/indyjones/"
+speech_path = game_path +"speech/"
+sound_path = game_path +"sound/"
 
 
 class Plane_Chase(game.Mode):
@@ -42,11 +44,13 @@ class Plane_Chase(game.Mode):
             self.reset()
 
         def reset(self):
-            self.reset_lamps()
+            #self.reset_lamps()
 
             self.left_ramp_enabled = True
-            self.game.effects.drive_lamp('leftRampArrow','superfast')
-            self.game.effects.drive_lamp(self.plane_lamps[0],'fast')
+            #self.game.effects.drive_lamp('leftRampArrow','superfast')
+            #self.game.effects.drive_lamp(self.plane_lamps[0],'fast')
+
+            self.update_lamps()
 
         def reset_lamps(self):
             for i in range(len(self.plane_lamps)):
@@ -60,6 +64,14 @@ class Plane_Chase(game.Mode):
                     self.game.effects.drive_lamp(self.plane_lamps[i],'fast')
                 else:
                     self.game.effects.drive_lamp(self.plane_lamps[i],'off')
+
+            if self.left_ramp_enabled:
+                self.game.effects.drive_lamp('rightRampArrow','off')
+                self.game.effects.drive_lamp('leftRampArrow','superfast')
+
+            elif self.right_ramp_enabled:
+                self.game.effects.drive_lamp('leftRampArrow','off')
+                self.game.effects.drive_lamp('rightRampArrow','superfast')
 
         def sequence(self,number):
             print("sequence: "+str(number))

@@ -23,7 +23,7 @@ class Totem(game.Mode):
 
             self.text_layer = dmd.TextLayer(14, 18, self.game.fonts['num_09Bx7'], "left", opaque=False)
             self.totem_ani = "dmd/totem.dmd"
-            self.quick_multi_ani = "dmd/quick_multiball.dmd"
+            self.quick_multi_ani = "dmd/qm_bgnd.dmd"
 
             self.game.sound.register_sound('rubble', sound_path+"rubble.aiff")
 
