@@ -3,13 +3,11 @@ import locale
 from procgame import *
 from mini_playfield import *
 
-
 base_path = "/Users/jim/Documents/Pinball/p-roc/p-roc system/src/"
-
 game_path = base_path+"games/indyjones/"
-voice_path = base_path+"games/jd/sound/Voice/"
-music_path = base_path+"games/jd/sound/"
-fx_path = base_path+"games/jd/sound/FX/"
+speech_path = game_path +"speech/"
+sound_path = game_path +"sound/"
+music_path = game_path +"music/"
 
 class POA(game.Mode):
 	"""docstring for AttractMode"""
@@ -27,15 +25,15 @@ class POA(game.Mode):
                 self.full_sets_completed = 0
                 self.pit_value = 20000000
 
-		self.game.sound.register_sound('good shot', voice_path+'take_the_poa.wav')
-#		self.game.sound.register_sound('good shot', voice_path+'incredible shot.wav')
-#		self.game.sound.register_sound('good shot', voice_path+'wow thats awesome.wav')
-#		self.game.sound.register_sound('good shot', voice_path+'jd - do it again.wav')
-#		self.game.sound.register_sound('good shot', voice_path+'jd - excellent.wav')
+                #setup sound calls
+		self.game.sound.register_sound('good shot', speech_path+'take_the_poa.aiff')
+		self.game.sound.register_sound('target', sound_path+'adv_target_1.aiff')
+                self.game.sound.register_sound('target', sound_path+'adv_target_2.aiff')
+                self.game.sound.register_sound('target', sound_path+'adv_target_3.aiff')
+                self.game.sound.register_sound('target', sound_path+'adv_target_4.aiff')
 
                 #setup mode links
                 self.mini_playfield = Mini_Playfield(game, priority+1)
-
 
 
                 #reset variables
@@ -60,7 +58,6 @@ class POA(game.Mode):
 	def mode_started(self):
                 print("POA Mode Started")
                 pass
-
 
         def spell_adventure(self):
                 bgnd = dmd.FrameLayer(opaque=False,frame=dmd.Animation().load(game_path+'dmd/adventure_bgnd.dmd').frames[0])     
@@ -217,6 +214,7 @@ class POA(game.Mode):
             else:
                 self.game.score(100000)
 
+            self.game.sound.play("target")
             self.spell_adventure()
 
         def light_next_in_sequence(self):
@@ -255,6 +253,7 @@ class POA(game.Mode):
                 if self.set1==True:
                     self.light_next_in_sequence()
 
+            self.game.sound.play("target")
             self.spell_adventure()
         
         def sw_adventureD_active(self, sw):
@@ -269,6 +268,7 @@ class POA(game.Mode):
             else:
                 self.game.score(100000)
 
+            self.game.sound.play("target")
             self.spell_adventure()
                 
         def sw_adventureV_active(self, sw):
@@ -282,6 +282,7 @@ class POA(game.Mode):
             else:
                 self.game.score(100000)
 
+            self.game.sound.play("target")
             self.spell_adventure()
                 
         def sw_dropTargetLeft_active(self, sw):
@@ -295,6 +296,7 @@ class POA(game.Mode):
             else:
                 self.game.score(100000)
 
+            self.game.sound.play("target")
             self.spell_adventure()
         
         def sw_dropTargetMiddle_active(self, sw):
@@ -308,6 +310,7 @@ class POA(game.Mode):
             else:
                 self.game.score(100000)
 
+            self.game.sound.play("target")
             self.spell_adventure()
                 
         def sw_dropTargetRight_active(self, sw):
@@ -321,6 +324,7 @@ class POA(game.Mode):
             else:
                 self.game.score(100000)
 
+            self.game.sound.play("target")
             self.spell_adventure()
                 
         def sw_adventureU_active(self, sw):
@@ -334,6 +338,7 @@ class POA(game.Mode):
             else:
                 self.game.score(100000)
 
+            self.game.sound.play("target")
             self.spell_adventure()
                 
         def sw_adventureR_active(self, sw):
@@ -347,6 +352,7 @@ class POA(game.Mode):
             else:
                 self.game.score(100000)
 
+            self.game.sound.play("target")
             self.spell_adventure()
                 
         def sw_adventureE2_active(self, sw):
@@ -360,6 +366,7 @@ class POA(game.Mode):
             else:
                 self.game.score(100000)
 
+            self.game.sound.play("target")
             self.spell_adventure()
 
         def sw_topPost_active_for_500ms(self, sw):

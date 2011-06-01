@@ -296,29 +296,28 @@ class BaseGameMode(game.Mode):
                 #register speech call files
                 self.game.sound.register_sound('dont_touch_anything', speech_path+"dont_touch_anything.aiff")
 
-               # self.game.sound.register_sound_group('slingshot', [speech_path+"gun_shot_1.aiff",speech_path+"gun_shot_2.aiff",speech_path+"gun_shot_3.aiff",speech_path+"gun_shot_4.aiff"])
-                self.game.sound.register_sound('slingshot', sound_path+"gun_shot_1.aiff")
-                self.game.sound.register_sound('slingshot', sound_path+"gun_shot_2.aiff")
-                self.game.sound.register_sound('slingshot', sound_path+"gun_shot_3.aiff")
-                self.game.sound.register_sound('slingshot', sound_path+"gun_shot_4.aiff")
+                self.game.sound.register_sound('slingshot', sound_path+"sling_1.aiff")
+                self.game.sound.register_sound('slingshot', sound_path+"sling_2.aiff")
+                self.game.sound.register_sound('slingshot', sound_path+"sling_3.aiff")
+                self.game.sound.register_sound('slingshot', sound_path+"sling_4.aiff")
 
-                self.game.sound.register_sound('inlane', speech_path+"inlane.aiff")
+                self.game.sound.register_sound('inlane', sound_path+"inlane.aiff")
+                self.game.sound.register_sound('gun_shot', sound_path+"gun_shot.aiff")
+                self.game.sound.register_sound('outlane_sound', sound_path+"outlane.aiff")
+                self.game.sound.register_sound('electricity', sound_path+"electricity.aiff")
 
                 self.game.sound.register_sound('outlane_speech', speech_path+"goodbye.aiff")
                 self.game.sound.register_sound('outlane_speech', speech_path+"argh.aiff")
                 self.game.sound.register_sound('outlane_speech', speech_path+"blank.aiff")
                 self.game.sound.register_sound('outlane_speech', speech_path+"blank.aiff")
 
-
-
-                #register sound fx files
-                self.game.sound.register_sound('gun_shot', sound_path+"gun_shot.aiff")
-                self.game.sound.register_sound('outlane_sound', sound_path+"outlane.aiff")
-                self.game.sound.register_sound('electricity', sound_path+"electricity.aiff")
+                
 
 
 	def mode_started(self):
 
+                #debug
+                print("Basic Game Mode Started, Ball "+str(self.game.ball))
                 #set player status
                 self.game.set_player_stats('status','general')
                 
@@ -346,6 +345,9 @@ class BaseGameMode(game.Mode):
 		# Put the ball into play and start tracking it.
 		# self.game.coils.trough.pulse(40)
 		self.game.trough.launch_balls(1, self.ball_launch_callback)
+
+                #temp
+                self.game.sound.play_music('general_play', loops=-1)
 
 
 		# Enable ball search in case a ball gets stuck during gameplay.
@@ -429,11 +431,12 @@ class BaseGameMode(game.Mode):
                     self.game.modes.remove(self.totem)
                     self.game.modes.remove(self.plane_chase)
                     self.game.modes.remove(self.mode_select)
+                    self.game.modes.remove(self.multiball)
 
 	def ball_drained_callback(self):
 		if self.game.trough.num_balls_in_play == 0:
-			# End the ball
-			self.finish_ball()
+                    # End the ball
+                    self.finish_ball()
 
 	def finish_ball(self):
 
@@ -589,7 +592,7 @@ class BaseGameMode(game.Mode):
 
         def inlane(self):
             self.game.score(100000)
-            self.game.sound.play("inlane_sound")
+            self.game.sound.play("inlane")
 
         def outlane(self):
             self.game.score(200000)

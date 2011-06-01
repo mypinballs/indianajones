@@ -31,6 +31,7 @@ class Multiball(game.Mode):
             self.lock_animation_3 = "dmd/xxx.dmd"
 
             self.game.sound.register_sound('xxx', sound_path+"xxx.aiff")
+            self.game.sound.register_music('multiball_play', music_path+"multiball.aiff")
             
             self.balls_needed = self.game.idol.ball_max
             self.balls_in_play = 1
@@ -49,12 +50,13 @@ class Multiball(game.Mode):
             self.jackpot_lamps = ['arkJackpot','stonesJackpot','grailJackpot']
             self.super_jackpot_enabled = False
             self.super_jackpot_value = 100000000
+            self.next_ball_ready = False
             
             self.reset()
 
 
         def reset(self):
-           pass
+            self.update_lamps()
 
 
         def mode_started(self):
@@ -76,37 +78,36 @@ class Multiball(game.Mode):
             #debug
             self.game.set_status("Lock "+str(self.balls_locked)) #debug
 
+          
+            #update idol state
+            self.game.idol.lock()
 
-            
+            #animations
+            anim = dmd.Animation().load(game_path+"dmd/lock_"+str(self.balls_locked)+".dmd")
+            self.animation_layer = dmd.AnimatedLayer(frames=anim.frames,hold=True,frame_time=3)
+            self.animation_layer.add_frame_listener(-1,self.clear)
+            self.layer = dmd.GroupedLayer(128, 32, [self.animation_layer,self.text_layer])
+
+            self.game.lampctrl.play_show('ball_lock', repeat=False,callback=self.game.update_lamps)#self.restore_lamps
+            self.game.score(self.lock_ball_score)
+                
+            #reset drops after delay
+            self.delay(name='reset_drops', event_type=None, delay=1, handler=self.reset_drops)
+
             if self.balls_locked==self.balls_needed:
                 self.multiball_running = True;
                 self.game.set_player_stats('multiball_running',self.multiball_running)
-                self.multiball_start()
-            else:
-                #update idol state
-                self.game.idol.lock()
-
-                #animations
-#               anim = dmd.Animation().load(game_path+"dmd/lock_animation_"+self.balls_locked+".dmd")
-#               self.animation_layer = dmd.AnimatedLayer(frames=anim.frames,hold=False,frame_time=2)
-#               self.animation_layer.add_frame_listener(-1,self.clear)
-#               self.animation_layer.add_frame_listener(-1,self.launch_next_ball)
-#               self.layer = dmd.GroupedLayer(128, 32, [self.animation_layer,self.text_layer])
-
-                #set clear time
-#               self.delay(name='clear', event_type=None, delay=1.5, handler=self.clear)
-
-                self.game.lampctrl.play_show('ball_lock', repeat=False,callback=self.game.update_lamps)#self.restore_lamps
-                self.game.score(self.lock_ball_score)
-                
-                #reset drops after delay
-                self.delay(name='reset_drops', event_type=None, delay=1, handler=self.reset_drops)
-
                 #temp whilst no animation
-                self.launch_next_ball()
+                #self.multiball_start()
+                self.animation_layer.add_frame_listener(-30, self.multiball_start)
+            else:
+                #temp whilst no animation
+                #self.launch_next_ball()
+                self.animation_layer.add_frame_listener(-30,self.launch_next_ball)
 
         def launch_next_ball(self):
                 self.game.trough.launch_balls(1)
+                self.next_ball_ready = True
                 self.game.ball_save.start(time=5)
 
 
@@ -117,16 +118,24 @@ class Multiball(game.Mode):
             #animations
             self.game.set_status("MULTIBALL!") #debug
 
-#            anim = dmd.Animation().load(game_path+"dmd/multiball_start.dmd")
-#            self.animation_layer = dmd.AnimatedLayer(frames=anim.frames,hold=False,frame_time=2)
-#            self.animation_layer.add_frame_listener(-1,self.clear)
-#            self.layer = dmd.GroupedLayer(128, 32, [self.animation_layer,self.text_layer])
+            anim = dmd.Animation().load(game_path+"dmd/multiball_start.dmd")
+            self.animation_layer = dmd.AnimatedLayer(frames=anim.frames,hold=True,frame_time=3)
+            self.animation_layer.add_frame_listener(-1,self.delayed_clear)
+            self.animation_layer.add_frame_listener(-1,self.game.idol.empty)
+            self.layer = dmd.GroupedLayer(128, 32, [self.animation_layer,self.text_layer])
 
             self.game.lampctrl.play_show('ball_lock', repeat=False,callback=self.game.update_lamps)#self.restore_lamps
             self.game.score(self.lock_ball_score)
 
+            #start multiball music
+            self.game.sound.play_music('multiball_play', loops=-1)
+
+            self.balls_locked=0  
+
             #empty idol
-            self.game.idol.empty()
+            #temp whilst no animation
+            #self.delay(name='mt_loop', event_type=None, delay=3, handler=self.game.idol.empty)
+
             
             #turn on ball save
             self.game.ball_save.start(num_balls_to_save=3,allow_multiple_saves=True,time=10)
@@ -139,16 +148,32 @@ class Multiball(game.Mode):
         def multiball_tracking(self):
             self.balls_in_play = self.game.trough.num_balls_in_play
 
+            #debug
+            self.game.set_status(self.balls_in_play)
+
             #track end
             if self.balls_in_play==1:
-                self.multiball_running=false
+                self.multiball_running=False
                 self.game.set_player_stats('multiball_running',self.multiball_running)
+                
+                self.game.sound.stop_music()
+                self.game.sound.play_music('general_play', loops=-1)
+
+                #light jackpot if not collected during multiball otherwise cancel
+                if self.jackpot_collected==0:
+                    self.jackpot('lit')
+                    self.delay(name='jackpot_timeout', event_type=None, delay=0, handler=self.jackpot, param='cancelled')
+                else:
+                    self.jackpot('cancelled')
+
+                self.cancel_delayed('mt_loop')
+
             else:
                 self.delay(name='mt_loop', event_type=None, delay=0, handler=self.multiball_tracking)
 
         def jackpot(self,status=None):
 
-            if self.multiball_running:
+            #if self.multiball_running:
                 if status=='lit':
                     self.game.coils.flasherLiteJackpot.disable()
                     self.game.coils.flasherJackpot.schedule(schedule=0x30003000 , cycle_seconds=0, now=True)
@@ -179,6 +204,12 @@ class Multiball(game.Mode):
                     else:
                         self.delay(name='reset_jackpot', event_type=None, delay=1, handler=self.jackpot, param='unlit')
 
+                elif status=='cancelled':
+                    self.game.coils.flasherLiteJackpot.disable()
+                    self.game.coils.flasherJackpot.disable()
+                    self.game.coils.divertorHold.disable()
+                    self.game.coils.topLockupHold.disable()
+
         def super_jackpot(self):
             self.game.coils.flasherSuperJackpot.schedule(schedule=0x30003000 , cycle_seconds=0, now=True)
             self.super_jackpot_enabled = True
@@ -192,18 +223,25 @@ class Multiball(game.Mode):
             self.game.idol.lock_lit=  self.lock_lit
             self.game.set_player_stats('lock_lit',self.lock_lit)
 
-            if self.lock_lit:
-                self.game.effects.drive_lamp('centerLock','medium')
+            self.update_lamps()
+          
 
+        
         def reset_drops(self):
             if self.game.switches.dropTargetLeft.is_active() or self.game.switches.dropTargetMiddle.is_active() or  self.game.switches.dropTargetRight.is_active():
                 self.game.coils.centerDropBank.pulse(100)
 
 
         def update_lamps(self):
-            #print("Update Lamps")
-            pass
+            if self.lock_lit:
+                self.game.effects.drive_lamp('centerLock','medium')
+            else:
+                self.game.effects.drive_lamp('centerLock','off')
 
+
+        def delayed_clear(self,timer=2):
+            self.delay(name='clear_delay', event_type=None, delay=timer, handler=self.clear)
+            
         def clear(self):
             self.layer = None
 
@@ -225,14 +263,16 @@ class Multiball(game.Mode):
                 self.game.idol.hold()
                 self.jackpot_x+=1
             else:
-                self.game.idol.release()
+                self.game.idol.lock_release()
 
         def sw_leftRampMade_active(self, sw):
-            self.jackpot('lit')
-            self.game.score(500000)
+            if self.multiball_running:
+                self.jackpot('lit')
+                self.game.score(500000)
 
         def sw_topPost_active(self, sw):
-            self.jackpot('made')
+            if self.multiball_running:
+                self.jackpot('made')
 
         def sw_leftRampEnter_active(self, sw):
             pass
@@ -252,5 +292,12 @@ class Multiball(game.Mode):
 
         def sw_centerStandup_active(self, sw):
             self.jackpot_value+=1000000
+
+        #start ball save for next ball after lock
+        def sw_shooterLane_open_for_1s(self,sw):
+            if self.next_ball_ready:
+
+            	ball_save_time = 5
+                self.game.ball_save.start(num_balls_to_save=1, time=ball_save_time, now=True, allow_multiple_saves=False)
 
 

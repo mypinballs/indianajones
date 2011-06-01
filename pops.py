@@ -25,6 +25,8 @@ class Pops(game.Mode):
             self.game.sound.register_sound('punch1', sound_path+"punch_1.aiff")
             self.game.sound.register_sound('punch2', sound_path+"punch_2.aiff")
             self.game.sound.register_sound('punch3', sound_path+"punch_3.aiff")
+            self.game.sound.register_sound('punch4', sound_path+"punch_4.aiff")
+            self.game.sound.register_sound('punch5', sound_path+"punch_5.aiff")
             self.game.sound.register_sound('super1', sound_path+"super_jets_1.aiff")
             self.game.sound.register_sound('super2', sound_path+"super_jets_2.aiff")
             self.game.sound.register_sound('super3', sound_path+"super_jets_3.aiff")
@@ -50,7 +52,7 @@ class Pops(game.Mode):
 
         def play_sound(self):
 
-            list=["punch1","punch2","punch3"]
+            list=["punch1","punch2","punch3","punch4","punch5"]
             super_list =["super1","super2","super3","super4","super5"]
 
             if self.super_pops_count==0:

@@ -23,7 +23,7 @@ class Idol(game.Mode):
             self.release= False
             self.lock_lit = False
             self.next_posn_set=False
-            self.next_posn=0
+            self.next_posn_num=0
 
         def reset(self):
             pass
@@ -48,7 +48,7 @@ class Idol(game.Mode):
                 self.game.set_status("Position: "+str(self.position))
                 self.release=False
                 self.idol_state='idle'
-                self.next_posn=self.position
+                self.next_posn_num=self.position
                 self.next_posn_set=False
 
                 print("Reached Idol Destination - Posn: "+str(self.position))
@@ -124,6 +124,9 @@ class Idol(game.Mode):
         def lock_release(self):
             self.set_state('release')
 
+        def hold(self):
+            self.set_state('lock')
+
         def home(self):
             print("Moving To Home Position")
             self.set_state('initialise')
@@ -156,14 +159,14 @@ class Idol(game.Mode):
             if self.next_posn_set==False:
 
                 if self.position<6:
-                    self.next_posn+=1
+                    self.next_posn_num+=1
                 else:
-                    self.next_posn=1
+                    self.next_posn_num=1
 
                 self.next_posn_set=True
 
 
-            self.move_to_posn(self.next_posn)
+            self.move_to_posn(self.next_posn_num)
            
 
         def sw_wheelPosition2_active(self, sw):
@@ -200,7 +203,7 @@ class Idol(game.Mode):
         def check_popper(self):
             if self.balls_in_idol<3 and self.game.switches.rightPopper.is_active():
                 self.game.coils.ballPopper.pulse(50)
-            else:
+            elif self.balls_in_idol==3 and self.game.switches.rightPopper.is_active():
                 self.lock_release()
 
 
@@ -227,6 +230,7 @@ class Idol(game.Mode):
 
         def update_trough(self):
             self.game.trough.num_balls_locked = self.balls_in_idol
+            print("Balls in Idol: "+str(self.balls_in_idol))
            
 
         #idol entrance
@@ -251,7 +255,7 @@ class Idol(game.Mode):
 
 
         def sw_exitIdol_active(self, sw):
-            if self.idol_state !='initialise':
+            if self.game.ball>0:
                 self.balls_in_idol-=1
                 self.update_trough()
                 self.game.trough.num_balls_in_play +=1
