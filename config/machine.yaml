@@ -206,8 +206,10 @@ PRSwitches:
         type: 'NC'
     miniLeftLimit:
         number: S94
+        type: 'NC'
     miniRightLimit:
         number: S95
+        type: 'NC'
     
 PRCoils:
     flipperLwRMain:
@@ -219,13 +221,13 @@ PRCoils:
     flipperLwLHold:
         number: FLLH
     divertorMain:
-        number: FULM
-    divertorHold:
-        number: FULH
-    topLockupMain:
         number: FURM
-    topLockupHold:
+    divertorHold:
         number: FURH
+    topLockupMain:
+        number: FULM
+    topLockupHold:
+        number: FULH
     ballPopper:
         number: C01
     ballLaunch:
