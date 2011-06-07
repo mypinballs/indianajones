@@ -72,7 +72,7 @@ class Narrow_Escape(game.Mode):
 
         
         def sw_rightOutlaneTop_active(self, sw):
-            self.delay(name='escape', event_type=None, delay=0.6, handler=self.escaped)
+            self.delay(name='escape', event_type=None, delay=0.8, handler=self.escaped)
 
 
         def sw_rightOutlaneBottom_active(self, sw):

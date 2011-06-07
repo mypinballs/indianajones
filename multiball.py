@@ -149,7 +149,7 @@ class Multiball(game.Mode):
             self.balls_in_play = self.game.trough.num_balls_in_play
 
             #debug
-            self.game.set_status(self.balls_in_play)
+            self.game.set_status(str(self.balls_in_play))
 
             #track end
             if self.balls_in_play==1:
@@ -162,7 +162,7 @@ class Multiball(game.Mode):
                 #light jackpot if not collected during multiball otherwise cancel
                 if self.jackpot_collected==0:
                     self.jackpot('lit')
-                    self.delay(name='jackpot_timeout', event_type=None, delay=0, handler=self.jackpot, param='cancelled')
+                    self.delay(name='jackpot_timeout', event_type=None, delay=10, handler=self.jackpot, param='cancelled')
                 else:
                     self.jackpot('cancelled')
 

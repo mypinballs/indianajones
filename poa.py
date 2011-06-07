@@ -1,7 +1,6 @@
 import procgame
 import locale
 from procgame import *
-from mini_playfield import *
 
 base_path = "/Users/jim/Documents/Pinball/p-roc/p-roc system/src/"
 game_path = base_path+"games/indyjones/"
@@ -23,7 +22,9 @@ class POA(game.Mode):
                 self.lamps=['adventureA','adventureD','adventureV','adventureE1','adventureN','adventureT','adventureU','adventureR','adventureE2']
 
                 self.full_sets_completed = 0
-                self.pit_value = 20000000
+
+                self.pit_value_base = 20000000
+                self.pit_value = 0
 
                 #setup sound calls
 		self.game.sound.register_sound('good shot', speech_path+'take_the_poa.aiff')
@@ -31,11 +32,9 @@ class POA(game.Mode):
                 self.game.sound.register_sound('target', sound_path+'adv_target_2.aiff')
                 self.game.sound.register_sound('target', sound_path+'adv_target_3.aiff')
                 self.game.sound.register_sound('target', sound_path+'adv_target_4.aiff')
+                self.game.sound.register_sound('adventure_start', sound_path+'poa_start.aiff')
 
-                #setup mode links
-                self.mini_playfield = Mini_Playfield(game, priority+1)
-
-
+              
                 #reset variables
                 self.reset()
 
@@ -53,11 +52,22 @@ class POA(game.Mode):
                 self.set1 = False
                 self.set2 = False
                 self.set3 = False
+                self.adventure_started  = False
+                
                 self.reset_lamps()
+                self.reset_pit_value()
+
 	
 	def mode_started(self):
                 print("POA Mode Started")
-                pass
+                #debug
+                self.poa_ready()
+                self.adventure_start()
+
+        
+
+        def mode_ended(self):
+                self.adventure_expired()
 
         def spell_adventure(self):
                 bgnd = dmd.FrameLayer(opaque=False,frame=dmd.Animation().load(game_path+'dmd/adventure_bgnd.dmd').frames[0])     
@@ -115,16 +125,13 @@ class POA(game.Mode):
                 
 
                 if self.letters_spotted==9:
-
                     completed.frame = dmd.Animation().load(game_path+'dmd/adventure_completed.dmd').frames[0]
                     completed.composite_op = "blacksrc"
 
                     self.delay(name='poa_ready', event_type=None, delay=2, handler=self.poa_ready)
-
-                    
                 else:
-                    
                     self.delay(name='clear', event_type=None, delay=2, handler=self.clear)
+
 
                 print(self.letters_spotted)
                 
@@ -134,7 +141,7 @@ class POA(game.Mode):
             
             #setup poa flasher
             #if self.game.switches.topPost.is_inactive():
-            self.game.coils.flasherPOA.schedule(0x33333, cycle_seconds=1, now=False)
+            self.game.coils.flasherPOA.schedule(0x30003000, cycle_seconds=0, now=True)
 
             #setup divertor for ball to mini playfield
             #if self.game.switches.rightRampEntrance.is_active():
@@ -150,21 +157,39 @@ class POA(game.Mode):
                 anim = dmd.Animation().load(game_path+"dmd/poa_lit.dmd")
                 animation_layer = dmd.AnimatedLayer(frames=anim.frames,hold=True,frame_time=2)
                 #animation_layer.add_frame_listener(-1,xxx)
+                self.delay(name='clear', event_type=None, delay=2.5, handler=self.clear)
                 self.layer = animation_layer
+
                 
             #display new pit value if second or more time around
             else:
                 self.pit_value +=10000000
-                pit_layer = dmd.TextLayer(128/2, 11, self.game.fonts['07x5'], "center", opaque=False).set_text("PIT VALUE INCREASED",1)
+                pit_layer = dmd.TextLayer(128/2, 11, self.game.fonts['07x5'], "center", opaque=False).set_text("PIT VALUE INCREASED",2)
                 self.layer = pit_layer
 
-
-
-            #self.delay(name='clear', event_type=None, delay=2, handler=self.clear)
+            #timer for poa start
+            self.delay(name='adventure_timeout', event_type=None, delay=25, handler=self.adventure_expired)
 
             #reset variables
             self.reset()
 
+
+        def adventure_start(self):
+            self.game.mini_playfield.path_sequence()
+            
+            self.game.coils.flasherPOA.disable()
+            self.game.sound.play("adventure_start")
+            self.adventure_started  = True
+
+        def adventure_expired(self):
+            # Manually cancel the delay in case this function was called
+            # externally.
+            self.cancel_delayed('adventure_continue_timer')
+            self.game.coils.divertorHold.disable()
+            self.game.coils.flasherPOA.disable()
+            self.reset_lamps()
+            self.game.mini_playfield.path_ended()
+            self.adventure_started  = False
 
         def continue_adventure(self):
             #setup timer for mode length
@@ -189,19 +214,15 @@ class POA(game.Mode):
 	def reset_lamps(self):
                 for i in range(len(self.lamps)):
                     self.game.effects.drive_lamp(self.lamps[i],'medium')
-
                     
+
+        def reset_pit_value(self):
+            self.pit_value = self.pit_value_base
+
+
         def clear(self):
             self.layer=None
 
-	def adventure_expired(self):
-		# Manually cancel the delay in case this function was called
-		# externally.
-		self.cancel_delayed('adventure_continue_timer')
-                self.game.coils.divertorHold.disable
-                self.reset_lamps()
-
-#		self.game.modes.remove(self)
 
         def letter_hit(self,toggle,lamp_name):
             if toggle == False:
@@ -267,6 +288,8 @@ class POA(game.Mode):
                 self.game.score(500000)
             else:
                 self.game.score(100000)
+                if self.set1==True:
+                    self.light_next_in_sequence()
 
             self.game.sound.play("target")
             self.spell_adventure()
@@ -281,6 +304,8 @@ class POA(game.Mode):
                 self.game.score(500000)
             else:
                 self.game.score(100000)
+                if self.set1==True:
+                    self.light_next_in_sequence()
 
             self.game.sound.play("target")
             self.spell_adventure()
@@ -295,6 +320,8 @@ class POA(game.Mode):
                 self.game.score(500000)
             else:
                 self.game.score(100000)
+                if self.set2==True:
+                    self.light_next_in_sequence()
 
             self.game.sound.play("target")
             self.spell_adventure()
@@ -309,6 +336,9 @@ class POA(game.Mode):
                 self.game.score(500000)
             else:
                 self.game.score(100000)
+                if self.set2==True:
+                    self.light_next_in_sequence()
+
 
             self.game.sound.play("target")
             self.spell_adventure()
@@ -323,6 +353,9 @@ class POA(game.Mode):
                 self.game.score(500000)
             else:
                 self.game.score(100000)
+                if self.set2==True:
+                    self.light_next_in_sequence()
+
 
             self.game.sound.play("target")
             self.spell_adventure()
@@ -337,6 +370,8 @@ class POA(game.Mode):
                 self.game.score(500000)
             else:
                 self.game.score(100000)
+                if self.set3==True:
+                    self.light_next_in_sequence()
 
             self.game.sound.play("target")
             self.spell_adventure()
@@ -351,6 +386,8 @@ class POA(game.Mode):
                 self.game.score(500000)
             else:
                 self.game.score(100000)
+                if self.set3==True:
+                    self.light_next_in_sequence()
 
             self.game.sound.play("target")
             self.spell_adventure()
@@ -365,13 +402,17 @@ class POA(game.Mode):
                 self.game.score(500000)
             else:
                 self.game.score(100000)
+                if self.set3==True:
+                    self.light_next_in_sequence()
 
             self.game.sound.play("target")
             self.spell_adventure()
 
-        def sw_topPost_active_for_500ms(self, sw):
-            self.game.coils.flasherPOA.disable()
-            self.game.modes.add(self.mini_playfield)
+        def sw_topPost_active(self, sw):
+            print("poa mode top post watcher")
+            if self.adventure_started==False:
+                self.adventure_start()
+
 
 
 

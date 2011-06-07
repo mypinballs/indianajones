@@ -21,6 +21,12 @@ class Plane_Chase(game.Mode):
             self.text_layer = dmd.TextLayer(128/2, 5, self.game.fonts['18x12'], "center", opaque=False)
             #self.text_layer.transition = dmd.ExpandTransition(direction='vertical')
 
+            self.game.sound.register_sound('stall', sound_path+"plane_stall.aiff")
+            self.game.sound.register_sound('flight', sound_path+"plane_1.aiff")
+            self.game.sound.register_sound('flight', sound_path+"plane_2.aiff")
+
+
+
             self.ramp_made_score = 1000000
             self.ramp_entered_score = 5000
             self.dog_fight_value = 40000000
@@ -40,6 +46,7 @@ class Plane_Chase(game.Mode):
             #flags to enable shot sequence to be progressed
             self.left_ramp_enabled = False
             self.right_ramp_enabled = False
+
 
             self.reset()
 
@@ -136,15 +143,19 @@ class Plane_Chase(game.Mode):
 
         def sw_leftRampEnter_active(self,sw):
             self.game.score(self.ramp_entered_score)
+            self.game.sound.play("stall")
+
 
         def sw_rightRampEnter_active(self,sw):
             self.game.score(self.ramp_entered_score)
+            self.game.sound.play("stall")
 
 
         def sw_leftRampMade_active(self,sw):
             if self.left_ramp_enabled:
                 self.ramps_made+=1
                 self.sequence(self.ramps_made)
+                self.game.sound.play("flight")
             else:
                 self.game.score(self.ramp_made_score/2)
 
@@ -156,6 +167,7 @@ class Plane_Chase(game.Mode):
             if self.right_ramp_enabled:
                 self.ramps_made+=1
                 self.sequence(self.ramps_made)
+                self.game.sound.play("flight")
             else:
                 self.game.score(self.ramp_made_score/2)
 

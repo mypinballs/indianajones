@@ -154,6 +154,7 @@ class Indy_Lanes(game.Mode):
             extra_ball_layer = dmd.TextLayer(128/2, 7, self.game.fonts['num_09Bx7'], "center", opaque=False)
             extra_ball_layer.set_text("EXTRA BALL LIT",1.5,5)#on for 1.5 seconds 5 blinks
             self.layer = extra_ball_layer
+            self.game.base_game_mode.extra_ball_lit()
 
         def max_bonus(self):
             max_bonus_layer = dmd.TextLayer(128/2, 7, self.game.fonts['num_09Bx7'], "center", opaque=False)

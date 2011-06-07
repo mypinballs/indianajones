@@ -4,6 +4,7 @@ import procgame
 import pinproc
 from layers import *
 from idol import *
+from mini_playfield import *
 from effects import *
 from info import *
 from bonus import *
@@ -186,6 +187,11 @@ class Attract(game.Mode):
             if self.game.switches.shooterLane.is_active():
                 self.game.coils.ballLaunch.pulse()
 
+            if self.game.switches.topPost.is_active():
+                self.game.coils.topLockupMain.pulse()
+                self.game.coils.topLockupHold.pulse(200)
+
+
         def change_lampshow(self):
 		shuffle(self.game.lampshow_keys)
                 
@@ -239,6 +245,7 @@ class Attract(game.Mode):
 
 	def mode_tick(self):
 		pass
+
 
 	# Enter service mode when the enter button is pushed.
 	def sw_enter_active(self, sw):
@@ -305,11 +312,14 @@ class BaseGameMode(game.Mode):
                 self.game.sound.register_sound('gun_shot', sound_path+"gun_shot.aiff")
                 self.game.sound.register_sound('outlane_sound', sound_path+"outlane.aiff")
                 self.game.sound.register_sound('electricity', sound_path+"electricity.aiff")
+                self.game.sound.register_sound('extra_ball_collected', sound_path+"extra_ball_lit_ff.aiff")
+                self.game.sound.register_sound('extra_ball_lit', sound_path+"extra_ball_lit_ff.aiff")
 
                 self.game.sound.register_sound('outlane_speech', speech_path+"goodbye.aiff")
                 self.game.sound.register_sound('outlane_speech', speech_path+"argh.aiff")
                 self.game.sound.register_sound('outlane_speech', speech_path+"blank.aiff")
                 self.game.sound.register_sound('outlane_speech', speech_path+"blank.aiff")
+                self.game.sound.register_sound('extra_ball_speech', speech_path+"extra_ball.aiff")
 
                 
 
@@ -469,6 +479,17 @@ class BaseGameMode(game.Mode):
 		self.game.end_ball()
                 
                 self.game.sound.stop_music()
+
+        def extra_ball_collected(self):
+            anim = dmd.Animation().load(game_path+"dmd/extra_ball.dmd")
+            self.layer = dmd.AnimatedLayer(frames=anim.frames,hold=False)
+            self.game.sound.play('extra_ball_collected')
+            self.game.sound.play_voice('extra_ball_speech')
+            self.game.effects.drive_lamp('extraBall','off')
+
+        def extra_ball_lit(self):
+            self.game.sound.play('extra_ball_lit')
+            self.game.effects.drive_lamp('extraBall','smarton')
 
 	def sw_startButton_active(self, sw):
 		if self.game.ball == 1 and len(self.game.players)<self.game.max_players:
@@ -741,6 +762,8 @@ class Game(game.BasicGame):
                 self.match = Match(self,10)
                 #add idol mode for idol logic and control
                 self.idol = Idol(self,15)
+                #setup mini_playfield
+                self.mini_playfield = Mini_Playfield(self,16)
                 #------------------
 
 		# Instead of resetting everything here as well as when a user
@@ -766,6 +789,7 @@ class Game(game.BasicGame):
                 self.modes.add(self.effects)
 		self.modes.add(self.ball_save)
                 self.modes.add(self.idol)
+                self.modes.add(self.mini_playfield)
 		self.modes.add(self.trough)
                 
     
@@ -813,6 +837,7 @@ class Game(game.BasicGame):
 	def extra_ball(self):
 		p = self.current_player()
 		p.extra_balls += 1
+                self.game.base_game_mode.extra_ball_collected()
 
 	def setup_ball_search(self):
 		# No special handlers in starter game.
@@ -883,6 +908,7 @@ def main():
 		game.yamlpath = machine_config_path
 		game.setup()
 		game.run_loop()
+                
 	finally:
 		del game
 
