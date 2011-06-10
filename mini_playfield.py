@@ -26,33 +26,36 @@ class Mini_Playfield(game.Mode):
             self.pit_value_active = False
             self.extra_ball_active = False
 
-            self.loop_num = 0
-            self.loop = 1
+            self.loop = 0
             self.status = 'initialise'
-            self.game_status = 'idle'
+            self.game_status = 'initialise'
             
             self.position =None
 
             if self.game.switches.miniLeftLimit.is_active():
-                self.postion='left'
+                self.position='left'
             elif self.game.switches.miniRightLimit.is_active():
                 self.position ='right'
             else:
                 self.position = 'unknown'
 
-
-            self.dirn_time = 150 #default timing for movement
+            self.dirn_time = 140 #default timing for movement
             self.centre_time = self.dirn_time/2
+            self.calibrated_dirn_time = 0
+            self.dirn_time_count = 0
+
             self.motor_off()
-            pass
 
 
         def mode_started(self):
             print("Mini Playfield Mode Started")
+            print("MP Position is:"+str(self.position))
 
             #setup mechanism
             #self.game.set_status(self.position)
-            #self.calibrate()
+            #self.check_switches()
+            #self.centre_playfield()
+            self.calibrate(6)
             #self.game.coils.miniMotorRight.pulse(self.centre_time)
             #self.game.coils.miniMotorLeft.pulse(self.centre_time)
 
@@ -152,11 +155,11 @@ class Mini_Playfield(game.Mode):
             
             if self.status !='broken':
                 if dirn=='left' and self.position!='left':
-                    self.game.coils.miniMotorLeft.pulse(self.dirn_time)#
-                    self.position='left' #set value in case pulse short
+                    self.game.coils.miniMotorLeft.pulse(self.dirn_time)
+                    self.position='unknown' #reset position value
                 elif dirn=='right'and self.position!='right':
-                    self.game.coils.miniMotorRight.pulse(self.dirn_time)#.schedule(schedule=0x33333333 , cycle_seconds=0, now=True)
-                    self.position='right' #set value in case pulse short
+                    self.game.coils.miniMotorRight.pulse(self.dirn_time)
+                    self.position='unknown' #reset position value
                 else: #safety catch
                     self.motor_off()
            
@@ -169,41 +172,42 @@ class Mini_Playfield(game.Mode):
 
 
         def calibrate(self,num=1):
-#            if num:
-#                self.loop_num = num
-#                self.loop = 0
 
-            time1 = self.game.switches.miniLeftLimit.last_changed*100
-            time2 = self.game.switches.miniRightLimit.last_changed*100
+            if self.position!='unknown':
+                time1 = self.game.switches.miniLeftLimit.last_changed*100
+                time2 = self.game.switches.miniRightLimit.last_changed*100
 
-            print("Time 1:"+str(time1))
-            print("Time 2:"+str(time2))
+                print("Time 1:"+str(time1))
+                print("Time 2:"+str(time2))
 
-            if time1>time2:
-                dirn_time = time1-time2
-            elif time2>time1:
-                dirn_time = time2-time1
+                if time1>time2:
+                    dirn_time = time1-time2
+                elif time2>time1:
+                    dirn_time = time2-time1
 
-            center_time = dirn_time/2
+                self.dirn_time_count += dirn_time
+                print("Posn Time is:"+str(dirn_time))
+                
+                #centre_time = dirn_time/2
+                #print("Center Time is:"+str(centre_time))
 
-            print("Max Posn Time is:"+str(dirn_time))
-            print("Center Time is:"+str(centre_time))
 
-
-            if self.loop<=12: #self.loop_num:
+            if self.loop<num: #self.loop_num:
                 print("Mini Playfield Position is:"+str(self.position))
 
                 if self.loop%2!=0:#odd
-                    print("Odd")
                     self.motor_on('left')
                 else:
-                    print("Even")
                     self.motor_on('right')
 
                 self.loop+=1
                 self.delay(name='calibration_loop', event_type=None, delay=0.5, handler=self.calibrate)
 
             else:
+                self.calibrated_dirn_time = self.dirn_time_count/num
+                print("Calibrated Full Posn Time is:"+ str(self.calibrated_dirn_time))
+                print("Calibrated Centre Posn Time is:"+ str(self.calibrated_dirn_time/2))
+                
                 self.centre_playfield()
 
 
@@ -216,41 +220,39 @@ class Mini_Playfield(game.Mode):
 
 
         def sw_flipperLwL_active(self,sw):
-            if self.game_status !='idle':
+            if self.game_status =='mode':
                 self.cancel_delayed('centre_timeout')
                 self.motor_on('left')
             
 
         def sw_flipperLwR_active(self,sw):
-            if self.game_status !='idle':
+            if self.game_status  =='mode':
                 self.cancel_delayed('centre_timeout')
                 self.motor_on('right')
 
 
         def sw_flipperLwL_inactive(self,sw):
-            if self.game_status !='idle':
-                self.delay(name='centre_timeout', event_type=None, delay=1, handler=self.centre_playfield)
+            if self.game_status  =='mode':
+                self.delay(name='centre_timeout', event_type=None, delay=5, handler=self.centre_playfield)
 
             
         def sw_flipperLwR_inactive(self,sw):
-            if self.game_status !='idle':
-                self.delay(name='centre_timeout', event_type=None, delay=1, handler=self.centre_playfield)
+            if self.game_status  =='mode':
+                self.delay(name='centre_timeout', event_type=None, delay=5, handler=self.centre_playfield)
             
 
 
         def sw_miniLeftLimit_active(self,sw):
             print("left limit")
-            self.game.set_status("left limit")
+            #self.game.set_status("left limit")
             self.position = 'left'
             self.motor_off()
-            self.check_switches()
 
         def sw_miniRightLimit_active(self,sw):
             print("right limit")
-            self.game.set_status("right limit")
+            #self.game.set_status("right limit")
             self.position = 'right'
             self.motor_off()
-            self.check_switches()
 
             
 
