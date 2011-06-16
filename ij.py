@@ -38,7 +38,9 @@ import random
 
 locale.setlocale(locale.LC_ALL, "en_GB") # en_GB Used to put commas in the score.
 
-base_path = "/Users/jim/Documents/Pinball/p-roc/p-roc system/src/"
+#base_path = "/Users/jim/Documents/Pinball/p-roc/p-roc system/src/"
+base_path = config.value_for_key_path('base_path')
+print("Base Path is: "+base_path)
 
 game_path = base_path+"games/indyjones/"
 fonts_path = base_path+"shared/dmd/"
@@ -51,7 +53,6 @@ game_data_template_path = game_path +"config/game_data_template.yaml"
 settings_template_path = game_path +"config/settings_template.yaml"
 
 voice_path = game_path +"speech/"
-voice_high_score_path = game_path +"speech/highscores/"
 sound_path = game_path +"sound/"
 music_path = game_path +"music/"
 font_tiny7 = dmd.Font(fonts_path+"04B-03-7px.dmd")
@@ -837,7 +838,7 @@ class Game(game.BasicGame):
 	def extra_ball(self):
 		p = self.current_player()
 		p.extra_balls += 1
-                self.game.base_game_mode.extra_ball_collected()
+                self.base_game_mode.extra_ball_collected()
 
 	def setup_ball_search(self):
 		# No special handlers in starter game.
@@ -890,6 +891,7 @@ class mpcPlayer(game.Player):
                 self.player_stats['mode_running'] = False
                 self.player_stats['multiball_running'] = False
                 self.player_stats['balls_locked'] = 0
+                self.player_stats['pit_value'] = 0
 
 
                 

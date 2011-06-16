@@ -26,8 +26,8 @@ class Loader(game.Mode):
             self.game.sound.register_sound('select', sound_path+"evil_laugh.aiff")
 
             self.selection=0
-            self.choices=['Williams L7','myPinballs V1.0']#improve to pul versions from config files
-            self.dates=['22/11/1993','02/06/2011']
+            self.choices=['Williams L7','myPinballs V1.0'] #improve to pull versions from config files
+            self.dates=['22/11/1993','12/06/2011']
 
             self.reset()
 
@@ -84,7 +84,7 @@ class Loader(game.Mode):
 		self.stop_proc()
 
 		# Call the pinmame executable to take over from here, further execution of Python code is halted.
-		os.system(r"pinmame\pinmamep.exe -rp pinmame ij_l7 -p-roc "+machine_config_path+" -alpha_on_dmd -skip_disclaimer -skip_gameinfo")
+                os.system(r"pinmame\pinmamep.exe -rp pinmame ij_l7 -p-roc "+machine_config_path+" -alpha_on_dmd -skip_disclaimer -skip_gameinfo")
 
 		#Pinmame executable was:
 		# - Quit by a delete on the keyboard
@@ -98,7 +98,7 @@ class Loader(game.Mode):
 	def launch_mypinballs(self):
 		self.stop_proc()
 
-		# Import and run the BoP startup script, further execution of this script is halted until the run_loop is stopped.
+		# Import and run the startup script, further execution of this script is halted until the run_loop is stopped.
 		import ij
 		ij.main()
 
