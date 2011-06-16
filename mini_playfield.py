@@ -8,10 +8,23 @@ import locale
 from procgame import *
 import random
 
+base_path = "/Users/jim/Documents/Pinball/p-roc/p-roc system/src/"
+game_path = base_path+"games/indyjones/"
+speech_path = game_path +"speech/"
+sound_path = game_path +"sound/"
+music_path = game_path +"music/"
+
 class Mini_Playfield(game.Mode):
 
 	def __init__(self, game, priority):
             super(Mini_Playfield, self).__init__(game, priority)
+
+            #setup sound calls
+            self.game.sound.register_sound('poa_lane_lit', sound_path+'poa_lane_lit.aiff')
+            self.game.sound.register_sound('poa_lane_unlit', sound_path+'poa_lane_unlit_1.aiff')
+            self.game.sound.register_sound('poa_lane_unlit', sound_path+'poa_lane_unlit_2.aiff')
+            self.game.sound.register_sound('poa_lane_unlit', sound_path+'poa_lane_unlit_3.aiff')
+            self.game.sound.register_sound('falling_scream', sound_path+'falling_scream.aiff')
 
             self.reset()
 
@@ -23,8 +36,13 @@ class Mini_Playfield(game.Mode):
             self.lamps = 2
             self.level_completed = False
             self.lamps_to_go = 0
+            self.adv_sequence_num = 0
             self.pit_value_active = False
             self.extra_ball_active = False
+
+            self.lane_lit_value = 5000000 
+            self.lane_unlit_value = 100000
+            self.poa_lane_anim = "dmd/5_million.dmd"
 
             self.loop = 0
             self.status = 'initialise'
@@ -84,24 +102,27 @@ class Mini_Playfield(game.Mode):
         def path_sequence(self):
 
             self.game_status='mode'
-            
+            self.cancel_delayed('path_timeout')
+            self.reset_lamps()
 
             #set level and sequence
             if self.level_completed or self.level==0:
                 self.level+=1
                 self.level_completed = False;
 
-            #setup num of lamps to put out
-            self.lamps_to_go = self.level*self.lamps
-            self.reset_lamps()
-
-            #create random lamp sequences
             if self.level<=4:
+
+                #setup num of lamps to put out
+                self.lamps_to_go = self.level*self.lamps
+                
+                #create random lamp sequences
                 for i in range(0,self.lamps_to_go):
                     lamp_number = random.randint(0, 7)
                     print("Lamp chosen "+self.list[lamp_number])
                     self.game.effects.drive_lamp(self.list[lamp_number],'medium')
                     self.lamp_flag[lamp_number]=True
+            else:
+                self.adv_path_sequence()
 
 
             if self.level%2==0:
@@ -114,9 +135,29 @@ class Mini_Playfield(game.Mode):
                  self.lamp_flag[8]=True
                  self.pit_value_active = True
 
+        def adv_path_sequence(self):
+            self.reset_lamps()
+
+            if self.adv_sequence_num>6:
+                self.adv_sequence_num=0
+
+            lamp_number = random.randint(sequence, sequence+1)
+            print("Lamp chosen "+self.list[lamp_number])
+            self.game.effects.drive_lamp(self.list[lamp_number],'medium')
+            self.lamp_flag[lamp_number]=True
+
+            move_delay = 3-self.level*0.3
+            if move_delay<=0.3:
+                move_delay=0.3
+
+            self.adv_sequence_num+=2
+
+            self.delay(name='path_timeout', event_type=None, delay=move_delay, handler=self.adv_path_sequence)
+
 
         def inc_pit_value(self):
-            self.game.poa.pit_value += 5000000+(1000000*self.level)
+            pit_value = self.game.get_player_stats('pit_value') + self.lane_lit_value+(1000000*self.level)
+            self.game.set_player_stats('pit_value',pit_value)
 
 
         def path_ended(self):
@@ -139,6 +180,8 @@ class Mini_Playfield(game.Mode):
                 if self.lamp_flag[i]:
                     self.game.effects.drive_lamp(self.list[i],'medium')
 
+        def clear(self):
+            self.layer = None
 
 
         def centre_playfield(self):
@@ -171,7 +214,7 @@ class Mini_Playfield(game.Mode):
 
 
 
-        def calibrate(self,num=1):
+        def calibrate(self,num=6):
 
             if self.position!='unknown':
                 time1 = self.game.switches.miniLeftLimit.last_changed*100
@@ -201,7 +244,7 @@ class Mini_Playfield(game.Mode):
                     self.motor_on('right')
 
                 self.loop+=1
-                self.delay(name='calibration_loop', event_type=None, delay=0.5, handler=self.calibrate)
+                self.delay(name='calibration_loop', event_type=None, delay=0.2, handler=self.calibrate)
 
             else:
                 self.calibrated_dirn_time = self.dirn_time_count/num
@@ -257,9 +300,15 @@ class Mini_Playfield(game.Mode):
             
 
         def sw_miniTopHole_active(self, sw):
-            if self.pit_active:
+            if self.pit_value_active:
                  self.game.score(self.game.poa.pit_value)
                  self.game.poa.reset_pit_value()
+            else:
+                #play fall anim
+                anim = dmd.Animation().load(game_path+"dmd/poa_fall.dmd")
+                self.layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False,frame_time=2)
+                self.layer.add_frame_listener(-1,self.clear)
+                self.game.sound.play('falling_scream')
                  
             self.game.enable_flippers(enable=True)
 
@@ -269,106 +318,70 @@ class Mini_Playfield(game.Mode):
 
             self.game.enable_flippers(enable=True)
 
-#        def sw_miniBottomRight_inactive_for_500ms(self, sw):
-#            self.game.enable_flippers(enable=True)
-#
-#        def sw_miniBottomLeft_inactive_for_500ms(self, sw):
-#            self.game.enable_flippers(enable=True)
+
+        def lanes(self,id):
+            if self.lamp_flag[id] == True:
+                
+                self.lamp_flag[id]=False;
+                self.game.effects.drive_lamp(self.list[id],'off')
+                self.lamps_to_go -=1
+                self.inc_pit_value()
+
+                if self.lamps_to_go==0:
+                    self.level_completed = True
+                    self.path_sequence()
+
+                #score
+                self.game.score(self.lane_lit_value)
+                
+                #play anim
+                anim = dmd.Animation().load(game_path+self.poa_lane_anim)
+                self.layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False,repeat=True,frame_time=2)
+                self.delay(name='clear', event_type=None, delay=1, handler=self.clear)
+
+                #play sounds
+                self.game.sound.play('poa_lane_lit')
+
+
+
+            else:
+                self.game.score(self.lane_unlit_value)
+                #play sounds
+                self.game.sound.play('poa_lane_unlit')
 
 
         def sw_miniTopLeft_active(self, sw):
-            if self.game.lamps.miniTopLeft.is_active():
-
-                self.game.lamps.miniTopLeft.disable()
-                self.lamps_to_go -=1
-                self.pit_value()
-
-                if self.lamps_to_go==0:
-                    self.level_completed = True
-                    self.path_sequence()
+            self.lanes(0)
 
         def sw_miniTopRight_active(self, sw):
-            if self.game.lamps.miniTopRight.is_active():
-
-                self.game.lamps.miniTopRight.disable()
-                self.lamps_to_go -=1
-
-                if self.lamps_to_go==0:
-                    self.level_completed = True
-                    self.path_sequence()
+            self.lanes(1)
 
         def sw_miniMiddleTopLeft_active(self, sw):
-            if self.game.lamps.miniMiddleTopLeft.is_active():
-
-                self.game.lamps.miniMiddleTopLeft.disable()
-                self.lamps_to_go -=1
-
-                if self.lamps_to_go==0:
-                    self.level_completed = True
-                    self.path_sequence()
+            self.lanes(2)
 
         def sw_miniMiddleTopRight_active(self, sw):
-            if self.game.lamps.miniMiddleTopRight.is_active():
-
-                self.game.lamps.miniMiddleTopRight.disable()
-                self.lamps_to_go -=1
-
-                if self.lamps_to_go==0:
-                    self.level_completed = True
-                    self.path_sequence()
-
+            self.lanes(3)
 
         def sw_miniMiddleBottomLeft_active(self, sw):
-            if self.game.lamps.miniMiddleBottomLeft.is_active():
-
-                self.game.lamps.miniMiddleBottomLeft.disable()
-                self.lamps_to_go -=1
-
-                if self.lamps_to_go==0:
-                    self.level_completed = True
-                    self.path_sequence()
-
+            self.lanes(4)
 
         def sw_miniMiddleBottomRight_active(self, sw):
-            if self.game.lamps.miniMiddleBottomRight.is_active():
-
-                self.game.lamps.miniMiddleBottomRight.disable()
-                self.lamps_to_go -=1
-
-                if self.lamps_to_go==0:
-                    self.level_completed = True
-                    self.path_sequence()
-
+            self.lanes(5)
 
         def sw_miniBottomLeft_active(self, sw):
-            if self.game.lamps.miniBottomLeft.is_active():
-
-                self.game.lamps.miniBottomLeft.disable()
-                self.lamps_to_go -=1
-
-                if self.lamps_to_go==0:
-                    self.level_completed = True
-                    self.path_sequence()
-
-                self.game.enable_flippers(enable=True)
+            self.lanes(6)
+            self.game.enable_flippers(enable=True)
 
         def sw_miniBottomRight_active(self, sw):
-            if self.game.lamps.miniBottomRight.is_active():
+            self.lanes(7)
+            self.game.enable_flippers(enable=True)
 
-                self.game.lamps.miniBottomRight.disable()
-                self.lamps_to_go -=1
-
-                if self.lamps_to_go==0:
-                    self.level_completed = True
-                    self.path_sequence()
-
-                self.game.enable_flippers(enable=True)
 
         def sw_topPost_active_for_2000ms(self, sw):
-                self.game.coils.topLockupMain.pulse()
-                self.game.coils.topLockupHold.pulse(200)
+            self.game.coils.topLockupMain.pulse()
+            self.game.coils.topLockupHold.pulse(200)
 
-                #disable flippers
-                self.game.enable_flippers(enable=False)
+            #disable flippers
+            self.game.enable_flippers(enable=False)
                 
             #return procgame.game.SwitchStop

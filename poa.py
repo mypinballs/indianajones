@@ -24,7 +24,10 @@ class POA(game.Mode):
                 self.full_sets_completed = 0
 
                 self.pit_value_base = 20000000
-                self.pit_value = 0
+                self.pit_value = self.game.get_player_stats('pit_value')
+
+                #register music files
+                self.game.sound.register_music('poa_play', music_path+"poa.aiff")
 
                 #setup sound calls
 		self.game.sound.register_sound('good shot', speech_path+'take_the_poa.aiff')
@@ -60,9 +63,10 @@ class POA(game.Mode):
 	
 	def mode_started(self):
                 print("POA Mode Started")
+
                 #debug
                 self.poa_ready()
-                self.adventure_start()
+                #self.adventure_start()
 
         
 
@@ -168,8 +172,11 @@ class POA(game.Mode):
                 self.layer = pit_layer
 
             #timer for poa start
-            self.delay(name='adventure_timeout', event_type=None, delay=25, handler=self.adventure_expired)
+            self.delay(name='adventure_timeout', event_type=None, delay=55, handler=self.adventure_expired)
 
+            #update player stats - pit value
+            self.game.set_player_stats('pit_value',self.pit_value)
+            
             #reset variables
             self.reset()
 
@@ -180,6 +187,7 @@ class POA(game.Mode):
             self.game.coils.flasherPOA.disable()
             self.game.sound.play("adventure_start")
             self.adventure_started  = True
+            self.game.sound.play_music('poa_play', loops=-1)
 
         def adventure_expired(self):
             # Manually cancel the delay in case this function was called
@@ -190,6 +198,9 @@ class POA(game.Mode):
             self.reset_lamps()
             self.game.mini_playfield.path_ended()
             self.adventure_started  = False
+            
+            self.game.sound.stop_music()
+            self.game.sound.play_music('general_play', loops=-1)
 
         def continue_adventure(self):
             #setup timer for mode length
