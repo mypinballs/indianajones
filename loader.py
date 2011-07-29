@@ -1,4 +1,4 @@
-# Top Rollover Lanes
+# Loader
 
 __author__="jim"
 __date__ ="$Jan 18, 2011 1:36:37 PM$"
@@ -8,8 +8,9 @@ import procgame
 import locale
 from procgame import *
 import random
+import os
 
-base_path = "/Users/jim/Documents/Pinball/p-roc/p-roc system/src/"
+base_path = config.value_for_key_path('base_path')
 game_path = base_path+"games/indyjones/"
 speech_path = game_path +"speech/"
 sound_path = game_path +"sound/"

@@ -2,7 +2,7 @@ import procgame
 import locale
 from procgame import *
 
-base_path = "/Users/jim/Documents/Pinball/p-roc/p-roc system/src/"
+base_path = config.value_for_key_path('base_path')
 game_path = base_path+"games/indyjones/"
 speech_path = game_path +"speech/"
 sound_path = game_path +"sound/"
@@ -65,7 +65,7 @@ class POA(game.Mode):
                 print("POA Mode Started")
 
                 #debug
-                self.poa_ready()
+                #self.poa_ready()
                 #self.adventure_start()
 
         
@@ -185,9 +185,23 @@ class POA(game.Mode):
             self.game.mini_playfield.path_sequence()
             
             self.game.coils.flasherPOA.disable()
-            self.game.sound.play("adventure_start")
             self.adventure_started  = True
+            anim = dmd.Animation().load(game_path+"dmd/poa_instructions.dmd")
+            self.layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False,repeat=True,frame_time=2)
+
             self.game.sound.play_music('poa_play', loops=-1)
+            self.cancel_delayed('adventure_timeout')
+
+            self.adventure_continue()
+
+        def adventure_continue(self):
+
+            self.game.sound.play("adventure_start")
+
+            #setup timer for mode length
+            self.cancel_delayed('adventure_continue_timer') #reset timer for each attempt
+            self.adventure_continue_timer = self.game.user_settings['Gameplay (Feature)']['Adventure Continue Timer']
+            self.delay(name='adventure_continue_timer', event_type=None, delay=self.adventure_continue_timer, handler=self.adventure_expired)
 
         def adventure_expired(self):
             # Manually cancel the delay in case this function was called
@@ -202,11 +216,7 @@ class POA(game.Mode):
             self.game.sound.stop_music()
             self.game.sound.play_music('general_play', loops=-1)
 
-        def continue_adventure(self):
-            #setup timer for mode length
-            self.adventure_continue_timer = self.game.user_settings['Gameplay (Feature)']['Adventure Continue Timer']
-            self.delay(name='adventure_continue_timer', event_type=None, delay=adventure_continue_timer, handler=self.adventure_expired)
-
+        
 
 
 	def begin(self):
@@ -423,8 +433,32 @@ class POA(game.Mode):
             print("poa mode top post watcher")
             if self.adventure_started==False:
                 self.adventure_start()
+            else:
+                self.adventure_continue()
 
 
+            self.delay(name='instructions', event_type=None, delay=2, handler=self.instructions)
 
+
+        def instructions(self):
+            anim = dmd.Animation().load(game_path+"dmd/poa_info_bgnd.dmd")
+            bgnd_layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False)
+
+            #set text layers
+            text_layer1 = dmd.TextLayer(80, 15, self.game.fonts['num_09Bx7'], "center", opaque=False)
+            text_layer2 = dmd.TextLayer(80, 23, self.game.fonts['num_09Bx7'], "center", opaque=False)
+            text_layer1.set_text("GET LIT LANES")
+            text_layer2.set_text("WATCH FOR EXTRA BALL",blink_frames=10)
+
+            #set display layer
+            self.layer = dmd.GroupedLayer(128, 32, [bgnd_layer,text_layer1,text_layer2])
+            self.delay(name='release_ball', event_type=None, delay=2, handler=self.release_ball)
+
+        def release_ball(self):
+            self.game.coils.topLockupMain.pulse()
+            self.game.coils.topLockupHold.pulse(200)
+
+            #clear display
+            self.clear()
 
 

@@ -10,7 +10,7 @@ from procgame import *
 import random
 from hand_of_fate import *
 
-base_path = "/Users/jim/Documents/Pinball/p-roc/p-roc system/src/"
+base_path = config.value_for_key_path('base_path')
 game_path = base_path+"games/indyjones/"
 speech_path = game_path +"speech/"
 sound_path = game_path +"sound/"
@@ -151,10 +151,7 @@ class Indy_Lanes(game.Mode):
 
 
         def extra_ball_lit(self):
-            extra_ball_layer = dmd.TextLayer(128/2, 7, self.game.fonts['num_09Bx7'], "center", opaque=False)
-            extra_ball_layer.set_text("EXTRA BALL LIT",1.5,5)#on for 1.5 seconds 5 blinks
-            self.layer = extra_ball_layer
-            self.game.base_game_mode.extra_ball_lit()
+            self.game.extra_ball.lit()
 
         def max_bonus(self):
             max_bonus_layer = dmd.TextLayer(128/2, 7, self.game.fonts['num_09Bx7'], "center", opaque=False)

@@ -6,6 +6,7 @@ from layers import *
 from idol import *
 from mini_playfield import *
 from effects import *
+from extra_ball import *
 from info import *
 from bonus import *
 from tilt import *
@@ -481,17 +482,6 @@ class BaseGameMode(game.Mode):
                 
                 self.game.sound.stop_music()
 
-        def extra_ball_collected(self):
-            anim = dmd.Animation().load(game_path+"dmd/extra_ball.dmd")
-            self.layer = dmd.AnimatedLayer(frames=anim.frames,hold=False)
-            self.game.sound.play('extra_ball_collected')
-            self.game.sound.play_voice('extra_ball_speech')
-            self.game.effects.drive_lamp('extraBall','off')
-
-        def extra_ball_lit(self):
-            self.game.sound.play('extra_ball_lit')
-            self.game.effects.drive_lamp('extraBall','smarton')
-
 	def sw_startButton_active(self, sw):
 		if self.game.ball == 1 and len(self.game.players)<self.game.max_players:
 			p = self.game.add_player()
@@ -716,6 +706,13 @@ class Game(game.BasicGame):
                 self.fonts['num_09Bx7'] = font_09Bx7
                 self.fonts['6x6_bold'] = font_6x6_bold
 
+                #setup paths
+                self.paths = {}
+                self.paths['game'] = game_path
+                self.paths['sound'] = sound_path
+                self.paths['speech'] = voice_path
+                self.paths['music'] = music_path
+
 
                 # Register lampshow files for attact
 		self.lampshow_keys = []
@@ -759,6 +756,8 @@ class Game(game.BasicGame):
 		self.base_game_mode = BaseGameMode(self)
                 #effects mode
                 self.effects = Effects(self)
+                #extra ball mode
+                self.extra_ball = Extra_Ball(self)
                 #match mode
                 self.match = Match(self,10)
                 #add idol mode for idol logic and control
@@ -792,6 +791,7 @@ class Game(game.BasicGame):
                 self.modes.add(self.idol)
                 self.modes.add(self.mini_playfield)
 		self.modes.add(self.trough)
+                self.modes.add(self.extra_ball)
                 
     
 
@@ -835,10 +835,10 @@ class Game(game.BasicGame):
 		self.dmd.set_message(text, 3)
 		print(text)
 
-	def extra_ball(self):
+	def extra_ball_count(self):
 		p = self.current_player()
 		p.extra_balls += 1
-                self.base_game_mode.extra_ball_collected()
+                
 
 	def setup_ball_search(self):
 		# No special handlers in starter game.

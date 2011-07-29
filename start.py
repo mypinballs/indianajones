@@ -15,8 +15,7 @@ from loader import *
 
 locale.setlocale(locale.LC_ALL, "en_GB") # en_GB Used to put commas in the score.
 
-base_path = "/Users/jim/Documents/Pinball/p-roc/p-roc system/src/"
-
+base_path = config.value_for_key_path('base_path')
 game_path = base_path+"games/indyjones/"
 fonts_path = base_path+"shared/dmd/"
 shared_sound_path = base_path+"shared/sound/"

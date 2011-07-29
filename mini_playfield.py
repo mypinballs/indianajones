@@ -8,7 +8,7 @@ import locale
 from procgame import *
 import random
 
-base_path = "/Users/jim/Documents/Pinball/p-roc/p-roc system/src/"
+base_path = config.value_for_key_path('base_path')
 game_path = base_path+"games/indyjones/"
 speech_path = game_path +"speech/"
 sound_path = game_path +"sound/"
@@ -33,7 +33,7 @@ class Mini_Playfield(game.Mode):
             self.lamp_flag = [False,False,False,False,False,False,False,False,False,False]
 
             self.level = 1
-            self.lamps = 2
+            #self.lamps = 2
             self.level_completed = False
             self.lamps_to_go = 0
             self.adv_sequence_num = 0
@@ -78,27 +78,6 @@ class Mini_Playfield(game.Mode):
             #self.game.coils.miniMotorLeft.pulse(self.centre_time)
 
 
-        def continue_adventure(self):
-            print("Continue Adventure?")
-#            top = dmd.TextLayer(20, 7, self.game.fonts['18x12'], "center", opaque=False)
-#            bottom = dmd.TextLayer(30, 7, self.game.fonts['07x5'], "center", opaque=False)
-#            self.layer = dmd.GroupedLayer(128, 32, [top,bottom])
-#
-#            if self.level_complete==True:
-#                top.setText("LEVEL "+str(self.level))
-#                bottom.setText("COMPLETED!")
-#
-    #        if 4 exit switches not activated for 2 secs
-#            #countdown timer - call mode_ended when expired
-#            num=15
-#            top.setText(str(num))
-#            bottom.setText("Continue Adventure?")
-            #call delay to end mode reset time if shot remade?
-
-
-
-
-
         def path_sequence(self):
 
             self.game_status='mode'
@@ -110,17 +89,22 @@ class Mini_Playfield(game.Mode):
                 self.level+=1
                 self.level_completed = False;
 
-            if self.level<=4:
+            if self.level<=3:
 
                 #setup num of lamps to put out
-                self.lamps_to_go = self.level*self.lamps
+                self.lamps_to_go = self.level+1
                 
                 #create random lamp sequences
-                for i in range(0,self.lamps_to_go):
-                    lamp_number = random.randint(0, 7)
-                    print("Lamp chosen "+self.list[lamp_number])
-                    self.game.effects.drive_lamp(self.list[lamp_number],'medium')
-                    self.lamp_flag[lamp_number]=True
+                sequence = [0,1,2,3,4,5,6,7]
+                random.shuffle(sequence)
+                lamp_number=0
+
+                for i in range(self.lamps_to_go):
+                    self.game.effects.drive_lamp(self.list[sequence[lamp_number]],'medium')
+                    print("Lamp chosen "+self.list[sequence[lamp_number]])
+                    self.lamp_flag[sequence[lamp_number]]=True
+                    lamp_number+=1
+
             else:
                 self.adv_path_sequence()
 
@@ -141,7 +125,7 @@ class Mini_Playfield(game.Mode):
             if self.adv_sequence_num>6:
                 self.adv_sequence_num=0
 
-            lamp_number = random.randint(sequence, sequence+1)
+            lamp_number = random.randint(self.adv_sequence_num, self.adv_sequence_num+1)
             print("Lamp chosen "+self.list[lamp_number])
             self.game.effects.drive_lamp(self.list[lamp_number],'medium')
             self.lamp_flag[lamp_number]=True
@@ -154,15 +138,23 @@ class Mini_Playfield(game.Mode):
 
             self.delay(name='path_timeout', event_type=None, delay=move_delay, handler=self.adv_path_sequence)
 
+            return
+        
 
         def inc_pit_value(self):
             pit_value = self.game.get_player_stats('pit_value') + self.lane_lit_value+(1000000*self.level)
             self.game.set_player_stats('pit_value',pit_value)
 
+        def pit_collected(self):
+            self.text_layer1.set_text("PIT COLLECTED")
+            self.text_layer2.set_text(locale.format("%d",self.game.get_player_stats('pit_value'),True),blink_frames=20)
+
+
 
         def path_ended(self):
 
             self.game_status ='idle'
+            self.cancel_delayed('path_timeout')
             #turn off all mini playfield lamps
             self.reset_lamps()
             self.centre_playfield()
@@ -192,6 +184,7 @@ class Mini_Playfield(game.Mode):
                 elif self.position=='right':
                     self.game.coils.miniMotorLeft.pulse(self.centre_time)
 
+                self.position='unknown'
 
 
         def motor_on(self,dirn):
@@ -275,12 +268,12 @@ class Mini_Playfield(game.Mode):
 
 
         def sw_flipperLwL_inactive(self,sw):
-            if self.game_status  =='mode':
+            if self.game_status  =='mode' or self.game_status  =='countdown':
                 self.delay(name='centre_timeout', event_type=None, delay=5, handler=self.centre_playfield)
 
             
         def sw_flipperLwR_inactive(self,sw):
-            if self.game_status  =='mode':
+            if self.game_status  =='mode' or self.game_status  =='countdown':
                 self.delay(name='centre_timeout', event_type=None, delay=5, handler=self.centre_playfield)
             
 
@@ -300,54 +293,80 @@ class Mini_Playfield(game.Mode):
             
 
         def sw_miniTopHole_active(self, sw):
-            if self.pit_value_active:
-                 self.game.score(self.game.poa.pit_value)
-                 self.game.poa.reset_pit_value()
-            else:
-                #play fall anim
-                anim = dmd.Animation().load(game_path+"dmd/poa_fall.dmd")
-                self.layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False,frame_time=2)
-                self.layer.add_frame_listener(-1,self.clear)
-                self.game.sound.play('falling_scream')
+
+            if self.game_status=='mode':
+                if self.pit_value_active:
+
+                    self.game.score(self.game.get_player_stats('pit_value'))
+
+                    anim = dmd.Animation().load(game_path+"dmd/pit_collected.dmd")
+                    self.text_layer1 = dmd.TextLayer(128/2, 2, self.game.fonts['num_09Bx7'], "center", opaque=False)
+                    self.text_layer2 = dmd.TextLayer(128/2, 15, self.game.fonts['18x12'], "center", opaque=False)
+                    self.animation_layer = dmd.AnimatedLayer(frames=anim.frames,hold=True,frame_time=2)
+                    self.animation_layer.add_frame_listener(-1,self.pit_collected)
+                    self.layer = dmd.GroupedLayer(128, 32, [self.animation_layer,self.text_layer1,self.text_layer2])
+                    self.delay(name='clear', event_type=None, delay=5, handler=self.clear)
+
+                    self.game.sound.play('pit_collected')
+
+                    #self.game.poa.reset_pit_value()
+                    
+                else:
+                    #play fall anim
+                    anim = dmd.Animation().load(game_path+"dmd/poa_fall.dmd")
+                    self.layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False,frame_time=2)
+                    self.layer.add_frame_listener(-1,self.clear)
+                    self.game.sound.play('falling_scream')
                  
-            self.game.enable_flippers(enable=True)
+                self.game.enable_flippers(enable=True)
+                self.game_status = 'countdown'
 
         def sw_miniBottomHole_active(self, sw):
-            if self.extra_ball_active:
-                 self.game.extra_ball()
 
-            self.game.enable_flippers(enable=True)
+            if self.game_status=='mode':
+                if self.extra_ball_active:
+                     self.game.extra_ball.collect()
+                else:
+                    #play fall anim
+                    anim = dmd.Animation().load(game_path+"dmd/poa_fall.dmd")
+                    self.layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False,frame_time=2)
+                    self.layer.add_frame_listener(-1,self.clear)
+                    self.game.sound.play('falling_scream')
+
+                self.game.enable_flippers(enable=True)
+                self.game_status = 'countdown'
 
 
         def lanes(self,id):
-            if self.lamp_flag[id] == True:
+            
+           if self.game_status=='mode':
+               
+                if self.lamp_flag[id] == True:
+
+                    self.lamp_flag[id]=False;
+                    self.game.effects.drive_lamp(self.list[id],'off')
+                    self.lamps_to_go -=1
+                    self.inc_pit_value()
+
+                    if self.lamps_to_go==0:
+                        self.level_completed = True
+                        self.path_sequence()
+
+                    #score
+                    self.game.score(self.lane_lit_value)
                 
-                self.lamp_flag[id]=False;
-                self.game.effects.drive_lamp(self.list[id],'off')
-                self.lamps_to_go -=1
-                self.inc_pit_value()
+                    #play anim
+                    anim = dmd.Animation().load(game_path+self.poa_lane_anim)
+                    self.layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False,repeat=True,frame_time=2)
+                    self.delay(name='clear', event_type=None, delay=1, handler=self.clear)
 
-                if self.lamps_to_go==0:
-                    self.level_completed = True
-                    self.path_sequence()
+                    #play sounds
+                    self.game.sound.play('poa_lane_lit')
 
-                #score
-                self.game.score(self.lane_lit_value)
-                
-                #play anim
-                anim = dmd.Animation().load(game_path+self.poa_lane_anim)
-                self.layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False,repeat=True,frame_time=2)
-                self.delay(name='clear', event_type=None, delay=1, handler=self.clear)
-
-                #play sounds
-                self.game.sound.play('poa_lane_lit')
-
-
-
-            else:
-                self.game.score(self.lane_unlit_value)
-                #play sounds
-                self.game.sound.play('poa_lane_unlit')
+                else:
+                    self.game.score(self.lane_unlit_value)
+                    #play sounds
+                    self.game.sound.play('poa_lane_unlit')
 
 
         def sw_miniTopLeft_active(self, sw):
@@ -371,17 +390,16 @@ class Mini_Playfield(game.Mode):
         def sw_miniBottomLeft_active(self, sw):
             self.lanes(6)
             self.game.enable_flippers(enable=True)
+            self.game_status = 'countdown'
 
         def sw_miniBottomRight_active(self, sw):
             self.lanes(7)
             self.game.enable_flippers(enable=True)
+            self.game_status = 'countdown'
 
 
-        def sw_topPost_active_for_2000ms(self, sw):
-            self.game.coils.topLockupMain.pulse()
-            self.game.coils.topLockupHold.pulse(200)
-
-            #disable flippers
+        def sw_topPost_active(self,sw):
             self.game.enable_flippers(enable=False)
-                
-            #return procgame.game.SwitchStop
+            #update game status
+            self.game_status = 'mode'
+            

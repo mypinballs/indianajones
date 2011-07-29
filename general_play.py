@@ -12,7 +12,7 @@ from poa import *
 from hand_of_fate import *
 from ij_modes import *
 
-base_path = "/Users/jim/Documents/Pinball/p-roc/p-roc system/src/"
+base_path = config.value_for_key_path('base_path')
 game_path = base_path+"games/indyjones/"
 
 class General_Play(game.Mode):
