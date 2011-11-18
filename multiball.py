@@ -197,7 +197,7 @@ class Multiball(game.Mode):
 
                     self.game.score(self.jackpot_value*self.jackpot_x)
                     self.jackpot_collected+=1
-                    self.game.effects.drive_lamp(self.jackpot_lamp[self.jackpot_collected],'smarton')
+                    self.game.effects.drive_lamp(self.jackpot_lamps[self.jackpot_collected],'smarton')
                     if self.jackpot_collected==3:
                         self.super_jackpot()
                     else:
