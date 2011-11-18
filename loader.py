@@ -35,8 +35,8 @@ class Loader(game.Mode):
 
         def reset(self):
             self.bgnd_layer = dmd.FrameLayer(opaque=False, frame=dmd.Animation().load(game_path+"dmd/loader_bgnd.dmd").frames[0])
-            self.text_layer = dmd.TextLayer(12, 9, self.game.fonts['tiny7'], "left", opaque=False)
-            self.date_layer = dmd.TextLayer(12, 18, self.game.fonts['tiny7'], "left", opaque=False)
+            self.text_layer = dmd.TextLayer(13, 9, self.game.fonts['tiny7'], "left", opaque=False)
+            self.date_layer = dmd.TextLayer(13, 17, self.game.fonts['tiny7'], "left", opaque=False)
             self.layer = dmd.GroupedLayer(128, 32, [self.bgnd_layer, self.text_layer, self.date_layer])#set clear time
 
 
