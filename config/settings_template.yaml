@@ -150,6 +150,9 @@ Gameplay (Feature):
     options: [5,120]
     increments: 5
     default: 30
+  'Mode Start Lit':
+    options: ['Always','Ball Start','Off']
+    default: 'Ball'
   'Get The Idol Timer':
     options: [5,120]
     increments: 5
@@ -162,7 +165,7 @@ Gameplay (Feature):
     options: [5,120]
     increments: 5
     default: 30
-  'Steel The Stones Timer':
+  'Steal The Stones Timer':
     options: [5,120]
     increments: 5
     default: 30

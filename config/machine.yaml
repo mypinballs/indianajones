@@ -254,7 +254,7 @@ PRCoils:
         number: C12
     rightSlingshot:
         number: C13
-    leftControlgate:
+    leftControlGate:
         number: C14
     rightControlGate:
         number: C15

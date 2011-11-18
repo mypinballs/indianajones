@@ -1,5 +1,5 @@
 Display: {Left side score justify: right}
-Gameplay (Feature): {A2.01 Timed Plunger: 0, Adventure Continue Timer: 15, Attract Mode Music: 'Yes',
+Gameplay (Feature): {A2.01 Timed Plunger: 0, Adventure Continue Timer: 25, Attract Mode Music: 'Yes',
   Attract Mode Sounds: 'Yes', Ball Saver Timer: 12, Buy Extra Ball - Buy-In Feature: 'No',
   Buy-In Ball Saver Timer: 15, Captive Multiball Start: 5, Captive Multiball Start Timer: 30,
   Castle Grunwald Timer: 30, Chain feature difficulty: medium, Choose Wisely Level Start: 1,
@@ -12,7 +12,7 @@ Gameplay (Feature): {A2.01 Timed Plunger: 0, Adventure Continue Timer: 15, Attra
   Multiball ballsaves: 2, New ball ballsave time: 10, New ball repeating ballsave: false,
   Outlane Ball Save: 'No', Path Of Adventure Start Level: 1, Path of Adventure Extra Ball/Pit Lit Difficulty: Easy,
   Quick Multiball Saver Timer: 5, Ramp Lit Timer: 30, Raven Bar Level Started: 1,
-  Rope Bridge Timer: 30, Steel The Stones Timer: 30, Streets Of Cairo Timer: 30, Super Jets Start: 100,
+  Rope Bridge Timer: 30, Steal The Stones Timer: 30, Streets Of Cairo Timer: 30, Super Jets Start: 100,
   Tank Chase Timer: 30, The 3 Challenges Timer: 30, Time per chain feature: 30, Timed Plunger: 0}
 Highscore: {Grand Champion: 350000000}
 Machine (Standard): {Allow Dim Illumination: 'No', Balls Per Game: 3, Clock Style: AM/PM,
