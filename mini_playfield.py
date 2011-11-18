@@ -47,15 +47,16 @@ class Mini_Playfield(game.Mode):
             self.loop = 0
             self.status = 'initialise'
             self.game_status = 'initialise'
-            
+
+            #playfield param setup
             self.position =None
 
             if self.game.switches.miniLeftLimit.is_active():
-                self.position='left'
+                self.set_posn('left')
             elif self.game.switches.miniRightLimit.is_active():
-                self.position ='right'
+                 self.set_posn('right')
             else:
-                self.position = 'unknown'
+                self.set_posn('unknown')
 
             self.dirn_time = 140 #default timing for movement
             self.centre_time = self.dirn_time/2
@@ -175,6 +176,11 @@ class Mini_Playfield(game.Mode):
         def clear(self):
             self.layer = None
 
+        def set_posn(self,dirn):
+            self.position=dirn;
+            #debug
+            self.game.set_status(dirn)
+            
 
         def centre_playfield(self):
 
@@ -184,7 +190,8 @@ class Mini_Playfield(game.Mode):
                 elif self.position=='right':
                     self.game.coils.miniMotorLeft.pulse(self.centre_time)
 
-                self.position='unknown'
+                self.set_posn('unknown') #reset position value
+                self.delay(name='set_posn', event_type=None, delay=self.centre_time, handler=self.set_posn, param='centre')
 
 
         def motor_on(self,dirn):
@@ -192,18 +199,25 @@ class Mini_Playfield(game.Mode):
             if self.status !='broken':
                 if dirn=='left' and self.position!='left':
                     self.game.coils.miniMotorLeft.pulse(self.dirn_time)
-                    self.position='unknown' #reset position value
+                    self.set_posn('unknown') #reset position value
+                    self.delay(name='set_posn', event_type=None, delay=self.dirn_time, handler=self.set_posn, param=dirn)
+
                 elif dirn=='right'and self.position!='right':
                     self.game.coils.miniMotorRight.pulse(self.dirn_time)
-                    self.position='unknown' #reset position value
+                    self.set_posn('unknown') #reset position value
+                    self.delay(name='set_posn', event_type=None, delay=self.dirn_time, handler=self.set_posn, param=dirn)
+
                 else: #safety catch
                     self.motor_off()
-           
+                
+
+
 
         def motor_off(self):
             self.game.coils.miniMotorLeft.disable()
             self.game.coils.miniMotorRight.disable()
             self.motor_dirn='off'
+            self.cancel_delayed('set_posn')
 
 
 
@@ -237,7 +251,7 @@ class Mini_Playfield(game.Mode):
                     self.motor_on('right')
 
                 self.loop+=1
-                self.delay(name='calibration_loop', event_type=None, delay=0.2, handler=self.calibrate)
+                self.delay(name='calibration_loop', event_type=None, delay=2, handler=self.calibrate)
 
             else:
                 self.calibrated_dirn_time = self.dirn_time_count/num
@@ -280,14 +294,12 @@ class Mini_Playfield(game.Mode):
 
         def sw_miniLeftLimit_active(self,sw):
             print("left limit")
-            #self.game.set_status("left limit")
-            self.position = 'left'
+            self.set_posn('left')
             self.motor_off()
 
         def sw_miniRightLimit_active(self,sw):
             print("right limit")
-            #self.game.set_status("right limit")
-            self.position = 'right'
+            self.set_posn('right')
             self.motor_off()
 
             
