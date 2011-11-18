@@ -40,7 +40,7 @@ class Indy_Lanes(game.Mode):
             self.game.sound.register_sound('drJones', speech_path+"dr_jones_intro.aiff")
 
 
-            self.lane_flag = [False,False,False,False]
+            self.lane_flag = self.game.get_player_stats('indy_lanes_flag')#[False,False,False,False]
             self.lamps = ['indyI','indyN','indyD','indyY']
            
             #setup friend collection order
@@ -182,6 +182,8 @@ class Indy_Lanes(game.Mode):
                 
                 self.letters_spotted +=1
                 self.lane_flag[id]=True;
+                #update player stats var
+                self.game.set_player_stats('indy_lanes_flag',self.lane_flag)
                 #print("indy lamp lit: %s "%(self.lamps[id]))
                 self.game.score(self.lane_unlit_value)
                 

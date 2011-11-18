@@ -66,7 +66,7 @@ font_09Bx7 = dmd.Font(fonts_path+"Font09Bx7.dmd")
 font_6x6_bold = dmd.Font(fonts_path+"Font_6x6_bold.dmd")
 
 #lampshow_files = [game_path +"lamps/attract_show_test.lampshow"]
-lampshow_files = [game_path +"lamps/general/flashers_red.lampshow", \
+lampshow_files = [game_path +"lamps/general/colours.lampshow", \
                   game_path +"lamps/general/updown.lampshow", \
                   game_path +"lamps/general/downup.lampshow", \
                   game_path +"lamps/general/leftright.lampshow", \
@@ -168,7 +168,7 @@ class Attract(game.Mode):
         def release_stuck_balls(self):
             #Release Stuck Balls code
             if self.game.switches.leftEject.is_active():
-               self.game.coils.leftEject.pulse(20)
+               self.game.coils.leftEject.pulse(15)
 
             #popper
             if self.game.switches.rightPopper.is_active():
@@ -323,7 +323,7 @@ class BaseGameMode(game.Mode):
                 self.game.sound.register_sound('outlane_speech', speech_path+"blank.aiff")
                 self.game.sound.register_sound('extra_ball_speech', speech_path+"extra_ball.aiff")
 
-                
+                self.ball_saved = False
 
 
 	def mode_started(self):
@@ -384,31 +384,33 @@ class BaseGameMode(game.Mode):
 
         def add_basic_modes(self,ball_in_play):
 
+           
+        #if self.game.ball==1:
             #lower priority basic modes
+            self.pops = Pops(self.game, 40)
+            self.narrow_escape = Narrow_Escape(self.game, 41)
+            self.indy_lanes = Indy_Lanes(self.game, 42)
+
+            #higher priority basic modes
+            self.poa = POA(self.game, 50)
+            self.totem = Totem(self.game, 51)
+            self.plane_chase = Plane_Chase(self.game, 52)
+            self.mode_select = Mode_Select(self.game, 95)
+            self.skillshot = Skillshot(self.game, 54)
+            self.multiball = Multiball(self.game, 60)
+
+            #start modes
+            self.game.modes.add(self.pops)
+            self.game.modes.add(self.narrow_escape)
+            self.game.modes.add(self.indy_lanes)
+            self.game.modes.add(self.poa)
+            self.game.modes.add(self.totem)
+            self.game.modes.add(self.plane_chase)
+            self.game.modes.add(self.mode_select)
+            self.game.modes.add(self.multiball)
+
+            #set idol - should be here already?
             if self.game.ball==1:
-                self.pops = Pops(self.game, 40)
-                self.narrow_escape = Narrow_Escape(self.game, 41)
-                self.indy_lanes = Indy_Lanes(self.game, 42)
-
-                #higher priority basic modes
-                self.poa = POA(self.game, 50)
-                self.totem = Totem(self.game, 51)
-                self.plane_chase = Plane_Chase(self.game, 52)
-                self.mode_select = Mode_Select(self.game, 53)
-                self.skillshot = Skillshot(self.game, 54)
-                self.multiball = Multiball(self.game, 60)
-
-                #start modes
-                self.game.modes.add(self.pops)
-                self.game.modes.add(self.narrow_escape)
-                self.game.modes.add(self.indy_lanes)
-                self.game.modes.add(self.poa)
-                self.game.modes.add(self.totem)
-                self.game.modes.add(self.plane_chase)
-                self.game.modes.add(self.mode_select)
-                self.game.modes.add(self.multiball)
-
-                #set idol - should be here already?
                 self.game.idol.home()
 
 
@@ -417,6 +419,8 @@ class BaseGameMode(game.Mode):
             self.layer = dmd.AnimatedLayer(frames=anim.frames,hold=False)
             self.game.sound.play_voice('dont_touch_anything')
             self.game.sound.play('electricity')
+
+            self.ball_saved = True
 
 
 	def ball_launch_callback(self):
@@ -435,15 +439,15 @@ class BaseGameMode(game.Mode):
 		# switches being hit.
 		self.game.ball_search.disable()
 
-                if self.game.ball==0:
-                    self.game.modes.remove(self.pops)
-                    self.game.modes.remove(self.narrow_escape)
-                    self.game.modes.remove(self.indy_lanes)
-                    self.game.modes.remove(self.poa)
-                    self.game.modes.remove(self.totem)
-                    self.game.modes.remove(self.plane_chase)
-                    self.game.modes.remove(self.mode_select)
-                    self.game.modes.remove(self.multiball)
+            #if self.game.ball==0:
+                self.game.modes.remove(self.pops)
+                self.game.modes.remove(self.narrow_escape)
+                self.game.modes.remove(self.indy_lanes)
+                self.game.modes.remove(self.poa)
+                self.game.modes.remove(self.totem)
+                self.game.modes.remove(self.plane_chase)
+                self.game.modes.remove(self.mode_select)
+                self.game.modes.remove(self.multiball)
 
 	def ball_drained_callback(self):
 		if self.game.trough.num_balls_in_play == 0:
@@ -509,6 +513,10 @@ class BaseGameMode(game.Mode):
 		#else:
 		#	self.game.ball_save.disable()
 
+        def sw_shooterLane_active_for_500ms(self,sw):
+            if self.ball_saved:
+                self.game.coils.ballLaunch.pulse(30)
+                self.ball_saved = False
 
 	# Note: Game specific item
 	# Set the switch name to the launch button on your game.
@@ -730,6 +738,7 @@ class Game(game.BasicGame):
                 self.lampctrl.register_show('success', game_path +"lamps/game/success.lampshow")
                 self.lampctrl.register_show('ball_lock', game_path +"lamps/game/ball_lock.lampshow")
                 self.lampctrl.register_show('hit', game_path +"lamps/game/success.lampshow")
+                self.lampctrl.register_show('jackpot', game_path +"lamps/game/success.lampshow")
 
                 # Setup High Scores
 		self.highscore_categories = []
@@ -887,11 +896,18 @@ class mpcPlayer(game.Player):
                 self.player_stats['ramps_made']=0
                 self.player_stats['adventure_letters_collected']=0
                 self.player_stats['current_mode_num']=0
+                self.player_stats['mode_enabled']=False
                 self.player_stats['lock_lit'] = False
                 self.player_stats['mode_running'] = False
                 self.player_stats['multiball_running'] = False
                 self.player_stats['balls_locked'] = 0
                 self.player_stats['pit_value'] = 0
+                self.player_stats['indy_lanes_flag']= [False,False,False,False]
+                self.player_stats['mode_select_list']= [0,0,0,0,0,0,0,0,0,0,0,0]
+                self.player_stats['last_mode_score']=0
+                self.player_stats['get_the_idol_score']=0
+
+
 
 
                 

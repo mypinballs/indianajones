@@ -76,7 +76,7 @@ class Hand_Of_Fate(game.Mode):
         def feature(self):
             if self.status=='lit':
                 self.animation()
-            else:
+            else:#if self.game.get_player_stats('mode_enabled')==False:
                 self.eject()
 
 
@@ -153,7 +153,7 @@ class Hand_Of_Fate(game.Mode):
             self.update_lamps()
 
         def eject(self):
-            self.game.coils.leftEject.pulse(30)
+            self.game.coils.leftEject.pulse(15)
             self.clear()
             
         def sw_leftEject_active_for_500ms(self,sw):
