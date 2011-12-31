@@ -105,7 +105,7 @@ class Multiball(game.Mode):
                 self.animation_layer.add_frame_listener(-30,self.launch_next_ball)
 
         def launch_next_ball(self):
-                self.game.trough.launch_balls(1)
+                self.game.trough.launch_balls(1,stealth=True) #set stealth to true so balls in play does not increase from lock
                 self.next_ball_ready = True
                 self.game.ball_save.start(time=5)
 
