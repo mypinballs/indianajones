@@ -33,10 +33,16 @@ class Bonus(game.Mode):
 	def mode_started(self):
 		# Disable the flippers
 		self.game.enable_flippers(enable=False)
+                print("Debug, Bonus Mode Started")
+
 
 	def mode_stopped(self):
 		# Enable the flippers
 		self.game.enable_flippers(enable=True)
+                self.game.sound.stop_music()
+                print("Debug, Bonus Mode Ended")
+
+
 
         def get_bonus_value(self):
             friends = self.game.get_player_stats('friends_collected') * 40000

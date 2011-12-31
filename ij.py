@@ -359,7 +359,7 @@ class BaseGameMode(game.Mode):
 		self.game.trough.launch_balls(1, self.ball_launch_callback)
 
                 #temp
-                self.game.sound.play_music('general_play', loops=-1)
+                #self.game.sound.play_music('general_play', loops=-1)
 
 
 		# Enable ball search in case a ball gets stuck during gameplay.
@@ -418,7 +418,7 @@ class BaseGameMode(game.Mode):
             anim = dmd.Animation().load(game_path+"dmd/eternal_life.dmd")
             self.layer = dmd.AnimatedLayer(frames=anim.frames,hold=False)
             self.game.sound.play_voice('dont_touch_anything')
-            self.game.sound.play('electricity')
+            #self.game.sound.play('electricity')
 
             self.ball_saved = True
 
@@ -427,10 +427,13 @@ class BaseGameMode(game.Mode):
             if self.ball_starting:
                 self.game.ball_save.start_lamp()
                 #start background music
+                print("Debug - Starting General Play Music")
                 self.game.sound.play_music('general_play', loops=-1)
 
 
 	def mode_stopped(self):
+
+                print("Basic Game Mode Ended, Ball "+str(self.game.ball))
 
 		# Ensure flippers are disabled
 		self.game.enable_flippers(enable=False)
@@ -460,7 +463,7 @@ class BaseGameMode(game.Mode):
                 self.game.sound.fadeout_music()
 
                 # Create the bonus mode so bonus can be calculated.
-		self.bonus = Bonus(self.game, 8)
+		self.bonus = Bonus(self.game, 98)
 		self.game.modes.add(self.bonus)
 
 		# Only compute bonus if it wasn't tilted away. 23/02/2011
@@ -483,9 +486,8 @@ class BaseGameMode(game.Mode):
 		# Tell the game object it can process the end of ball
 		# (to end player's turn or shoot again)
 		self.game.end_ball()
-                
-                self.game.sound.stop_music()
 
+                
 	def sw_startButton_active(self, sw):
 		if self.game.ball == 1 and len(self.game.players)<self.game.max_players:
 			p = self.game.add_player()
@@ -515,7 +517,7 @@ class BaseGameMode(game.Mode):
 
         def sw_shooterLane_active_for_500ms(self,sw):
             if self.ball_saved:
-                self.game.coils.ballLaunch.pulse(30)
+                self.game.coils.ballLaunch.pulse(50)
                 self.ball_saved = False
 
 	# Note: Game specific item
@@ -906,6 +908,7 @@ class mpcPlayer(game.Player):
                 self.player_stats['mode_select_list']= [0,0,0,0,0,0,0,0,0,0,0,0]
                 self.player_stats['last_mode_score']=0
                 self.player_stats['get_the_idol_score']=0
+                self.player_stats['castle_grunwald_score']=0
 
 
 
