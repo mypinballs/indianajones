@@ -45,8 +45,12 @@ class Get_The_Idol(game.Mode):
 
 
             #sound setup
-            self.game.sound.register_music('gti_play', music_path+"get_the_idol.aiff")
+            self.game.sound.register_music('gti_play', music_path+"get_the_idol_2.aiff")
             self.game.sound.register_sound('target_hit', sound_path+"outlane.aiff")
+            self.game.sound.register_sound('gti_speech0', speech_path+"nothing_to_fear_here.aiff")
+            self.game.sound.register_sound('gti_speech11', speech_path+"thats_what_scares_me.aiff")
+
+
 
             #var setup
             self.count = 0
@@ -74,6 +78,17 @@ class Get_The_Idol(game.Mode):
 
             self.reset_drops()
 
+            self.delay(name='mode_speech_delay', event_type=None, delay=2, handler=self.voice_call, param=self.count)
+
+
+        def voice_call(self,count):
+            self.game.sound.play_voice("gti_speech"+str(count))
+
+            if count==0:
+                self.delay(name='mode_speech_delay', event_type=None, delay=2, handler=self.voice_call, param=11)
+
+
+
         def update_score(self):
             score = self.game.current_player().score
             self.score_layer.set_text(locale.format("%d", score, True))
@@ -100,9 +115,10 @@ class Get_The_Idol(game.Mode):
         def mode_progression(self,type):
 
             if self.count<self.hits:
-                
-                self.load_anim(self.count)
+                self.count+=1
 
+                self.load_anim(self.count)
+                #self.voice_call("gti_speech"+str(self.count))
 
                 score_value = self.score_value_boost*self.count +self.score_value_start
                 self.game.set_player_stats('get_the_idol_score',score_value)
@@ -116,7 +132,8 @@ class Get_The_Idol(game.Mode):
             
            
                 self.reset_drops()
-                self.count+=1
+
+                
             elif self.count==self.hits and type==1:
                 self.completed()
 
