@@ -58,9 +58,10 @@ class Mini_Playfield(game.Mode):
             else:
                 self.set_posn('unknown')
 
-            self.dirn_time = 140 #default timing for movement
+            self.dirn_time = 150 #default timing for movement
             self.centre_time = self.dirn_time/2
             self.calibrated_dirn_time = 0
+            self.calibrated_centre_time = 0
             self.dirn_time_count = 0
 
             self.motor_off()
@@ -226,6 +227,7 @@ class Mini_Playfield(game.Mode):
             if self.position!='unknown':
                 time1 = self.game.switches.miniLeftLimit.last_changed*100
                 time2 = self.game.switches.miniRightLimit.last_changed*100
+                dirn_time =0
 
                 print("Time 1:"+str(time1))
                 print("Time 2:"+str(time2))
@@ -251,12 +253,14 @@ class Mini_Playfield(game.Mode):
                     self.motor_on('right')
 
                 self.loop+=1
-                self.delay(name='calibration_loop', event_type=None, delay=2, handler=self.calibrate)
+                self.delay(name='calibration_loop', event_type=None, delay=0.2, handler=self.calibrate)#change time here to slow calibration
 
             else:
                 self.calibrated_dirn_time = self.dirn_time_count/num
+                self.calibrated_centre_time = self.calibrated_dirn_time/2
+                
                 print("Calibrated Full Posn Time is:"+ str(self.calibrated_dirn_time))
-                print("Calibrated Centre Posn Time is:"+ str(self.calibrated_dirn_time/2))
+                print("Calibrated Centre Posn Time is:"+ str(self.calibrated_centre_time))
                 
                 self.centre_playfield()
 

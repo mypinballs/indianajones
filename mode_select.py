@@ -203,7 +203,7 @@ class Mode_Select(game.Mode):
      
 
         def start_scene(self):
-            if self.mode_enabled:
+            if self.mode_enabled and self.game.get_player_stats('multiball_running')==False:
 
                 #play sound
                 self.game.sound.play("scene_started")

@@ -9,6 +9,8 @@ import locale
 from procgame import *
 import random
 import os
+from procgame._version import __version_info__
+
 
 base_path = config.value_for_key_path('base_path')
 game_path = base_path+"games/indyjones/"
@@ -26,9 +28,13 @@ class Loader(game.Mode):
             self.game.sound.register_sound('up_down', sound_path+"gun_shot.aiff")
             self.game.sound.register_sound('select', sound_path+"evil_laugh.aiff")
 
+            
+            proc_game_version = '.'.join(map(str, __version_info__))
+
             self.selection=0
-            self.choices=['Williams L7','myPinballs V1.0'] #improve to pull versions from config files
-            self.dates=['22/11/1993','12/06/2011']
+            spacer = '    '
+            self.choices=['Williams L7','myPinballs v'+str(config.value_for_key_path('build_version'))+' p'+proc_game_version] #improve to pull versions from config files
+            self.dates=['22/11/1993'+spacer,str(config.value_for_key_path('build_date'))+spacer]
 
             self.reset()
 
@@ -85,7 +91,10 @@ class Loader(game.Mode):
 		self.stop_proc()
 
 		# Call the pinmame executable to take over from here, further execution of Python code is halted.
-                os.system(r"pinmame\pinmamep.exe -rp pinmame ij_l7 -p-roc "+machine_config_path+" -alpha_on_dmd -skip_disclaimer -skip_gameinfo")
+                #os.system(r"C:\pinmame_23\pinmamep.exe ij_l7 -rp C:\pinmame_23 -window -p-roc config\machine.yaml -alpha_on_dmd -skip_disclaimer -skip_gameinfo")
+                os.chdir("C:\pinmame_23");
+                os.system(r"pinmamep ij_l7 -window -p-roc C:\p-roc\games\indyjones\config\machine.yaml -alpha_on_dmd -skip_disclaimer -skip_gameinfo")
+
 
 		#Pinmame executable was:
 		# - Quit by a delete on the keyboard

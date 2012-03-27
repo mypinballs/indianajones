@@ -40,7 +40,7 @@ class Indy_Lanes(game.Mode):
             self.game.sound.register_sound('drJones', speech_path+"dr_jones_intro.aiff")
 
 
-            self.lane_flag = self.game.get_player_stats('indy_lanes_flag')#[False,False,False,False]
+            self.lane_flag = [False,False,False,False]
             self.lamps = ['indyI','indyN','indyD','indyY']
            
             #setup friend collection order
@@ -81,7 +81,11 @@ class Indy_Lanes(game.Mode):
 
         def mode_started(self):
             print("INDY Lanes Mode Started")
-            pass
+
+            #load player specific data
+            self.lane_flag = self.game.get_player_stats('indy_lanes_flag')
+            self.friends_collected = self.game.get_player_stats('friends_collected')
+
 
         def mode_tick(self):
             pass
@@ -175,6 +179,7 @@ class Indy_Lanes(game.Mode):
             self.game.sound.play_voice(self.friends[self.friends_collected])
             #up the count by 1 to get the next friend in the sequence
             self.friends_collected +=1
+            self.game.set_player_stats('friends_collected',self.friends_collected)
 
 
         def lanes(self,id):

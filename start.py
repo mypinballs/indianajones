@@ -13,7 +13,8 @@ from loader import *
 
 #os.chdir("/Users/jim/Documents/Pinball/p-roc/p-roc system/src/pyprocgame/")
 
-locale.setlocale(locale.LC_ALL, "en_GB") # en_GB Used to put commas in the score.
+game_locale = config.value_for_key_path('std_locale')
+locale.setlocale(locale.LC_ALL, game_locale) # en_GB Used to put commas in the score.
 
 base_path = config.value_for_key_path('base_path')
 game_path = base_path+"games/indyjones/"

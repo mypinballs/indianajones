@@ -7,6 +7,11 @@ import procgame
 import locale
 from procgame import *
 
+base_path = config.value_for_key_path('base_path')
+game_path = base_path+"games/indyjones/"
+speech_path = game_path +"speech/"
+sound_path = game_path +"sound/"
+music_path = game_path +"music/"
 
 class Idol(game.Mode):
 
@@ -24,6 +29,8 @@ class Idol(game.Mode):
             self.lock_lit = False
             self.next_posn_set=False
             self.next_posn_num=0
+
+            self.game.sound.register_sound('ball_release', sound_path+"elephant.aiff")
 
         def reset(self):
             pass
@@ -260,6 +267,8 @@ class Idol(game.Mode):
                 self.update_trough()
                 self.game.trough.num_balls_in_play +=1
                 self.check_popper()
+                self.game.sound.play("ball_release")
+
 
         def sw_buyInButton_active_for_500ms(self, sw):
             self.idol_state='empty'

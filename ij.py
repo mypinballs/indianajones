@@ -13,6 +13,7 @@ from tilt import *
 from match import *
 from pops import *
 from narrow_escape import *
+from loops import *
 from poa import *
 from hand_of_fate import *
 from totem import *
@@ -37,7 +38,8 @@ import random
 
 #os.chdir("/Users/jim/Documents/Pinball/p-roc/p-roc system/src/pyprocgame/")
 
-locale.setlocale(locale.LC_ALL, "en_GB") # en_GB Used to put commas in the score.
+game_locale = config.value_for_key_path('std_locale')
+locale.setlocale(locale.LC_ALL, game_locale) # en_GB Used to put commas in the score.
 
 #base_path = "/Users/jim/Documents/Pinball/p-roc/p-roc system/src/"
 base_path = config.value_for_key_path('base_path')
@@ -351,18 +353,16 @@ class BaseGameMode(game.Mode):
                 #print "Game Config: "+str(self.game.config)
 		self.game.enable_flippers(True)
 
+                # Each time this mode is added to game Q, set this flag true.
+		self.ball_starting = True
+
                 #setup basic modes
                 self.add_basic_modes(self);
 
 		# Put the ball into play and start tracking it.
-		# self.game.coils.trough.pulse(40)
 		self.game.trough.launch_balls(1, self.ball_launch_callback)
 
-                #temp
-                #self.game.sound.play_music('general_play', loops=-1)
-
-
-		# Enable ball search in case a ball gets stuck during gameplay.
+                # Enable ball search in case a ball gets stuck during gameplay.
 		self.game.ball_search.enable()
 
 		# Reset tilt warnings and status
@@ -373,8 +373,7 @@ class BaseGameMode(game.Mode):
 		# handler.
 		self.game.trough.drain_callback = self.ball_drained_callback
 
-		# Each time this mode is added to game Q, set this flag true.
-		self.ball_starting = True
+		
 
                 #ball save callback - exp
                 self.game.ball_save.callback = self.ball_save_callback
@@ -390,6 +389,7 @@ class BaseGameMode(game.Mode):
             self.pops = Pops(self.game, 40)
             self.narrow_escape = Narrow_Escape(self.game, 41)
             self.indy_lanes = Indy_Lanes(self.game, 42)
+            self.loops = Loops(self.game, 43)
 
             #higher priority basic modes
             self.poa = POA(self.game, 50)
@@ -403,6 +403,7 @@ class BaseGameMode(game.Mode):
             self.game.modes.add(self.pops)
             self.game.modes.add(self.narrow_escape)
             self.game.modes.add(self.indy_lanes)
+            self.game.modes.add(self.loops)
             self.game.modes.add(self.poa)
             self.game.modes.add(self.totem)
             self.game.modes.add(self.plane_chase)
@@ -424,12 +425,24 @@ class BaseGameMode(game.Mode):
 
 
 	def ball_launch_callback(self):
+            #print("Debug - Ball Starting var is:"+str(self.ball_starting))
             if self.ball_starting:
-                self.game.ball_save.start_lamp()
+                #print("Debug - Starting Ball Save Lamp")
+                #self.game.ball_save.start_lamp()
                 #start background music
-                print("Debug - Starting General Play Music")
+                #print("Debug - Starting General Play Music")
                 self.game.sound.play_music('general_play', loops=-1)
 
+        def mode_tick(self):
+            if self.game.switches.startButton.is_active(1) and self.game.switches.flipperLwL.is_active(1) and self.game.switches.flipperLwR.is_active():
+                print("reset button code entered")
+                self.game.sound.stop_music()
+                self.game.end_run_loop()
+
+		while len(self.game.dmd.frame_handlers) > 0:
+                    del self.game.dmd.frame_handlers[0]
+                    
+		del self.game.proc
 
 	def mode_stopped(self):
 
@@ -446,6 +459,7 @@ class BaseGameMode(game.Mode):
                 self.game.modes.remove(self.pops)
                 self.game.modes.remove(self.narrow_escape)
                 self.game.modes.remove(self.indy_lanes)
+                self.game.modes.remove(self.loops)
                 self.game.modes.remove(self.poa)
                 self.game.modes.remove(self.totem)
                 self.game.modes.remove(self.plane_chase)
@@ -894,6 +908,8 @@ class mpcPlayer(game.Player):
                 self.player_stats['status']=''
                 self.player_stats['bonus_x']=1
                 self.player_stats['friends_collected']=0
+                self.player_stats['loops_completed']=0
+                self.player_stats['loops_made']=0
                 self.player_stats['loop_value']=0
                 self.player_stats['ramps_made']=0
                 self.player_stats['adventure_letters_collected']=0
@@ -905,6 +921,7 @@ class mpcPlayer(game.Player):
                 self.player_stats['balls_locked'] = 0
                 self.player_stats['pit_value'] = 0
                 self.player_stats['indy_lanes_flag']= [False,False,False,False]
+                self.player_stats['poa_flag']= [False,False,False,False,False,False,False,False,False]
                 self.player_stats['mode_select_list']= [0,0,0,0,0,0,0,0,0,0,0,0]
                 self.player_stats['last_mode_score']=0
                 self.player_stats['get_the_idol_score']=0
