@@ -3,4 +3,5 @@
 /music/*
 /speech/*
 /xtra/*
+/config/settings.yaml
 *.pyc
