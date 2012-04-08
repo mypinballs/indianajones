@@ -9,6 +9,7 @@ import procgame
 import locale
 from procgame import *
 from get_the_idol import *
+from monkey_brains import *
 from castle_grunwald import *
 
 
@@ -34,7 +35,7 @@ class Mode_Select(game.Mode):
 
             self.lamp_list = ['getTheIdol','streetsOfCairo','wellOfSouls','ravenBar','monkeyBrains','stealTheStones','mineCart','ropeBridge','castleGrunwald','tankChase','theThreeChallenges','chooseWisely']
             self.select_list = [0,0,0,0,0,0,0,0,0,0,0,0]
-            self.current_mode_num = self.game.get_player_stats('current_mode_num')
+            self.current_mode_num = 0
             self.choice_id =0
 
             #default timer value
@@ -50,13 +51,13 @@ class Mode_Select(game.Mode):
 
             #setup game modes
             self.get_the_idol = Get_The_Idol(self.game, 80,self)
-            self.streets_of_cairo = Castle_Grunwald(self.game, 81,self)
-            self.well_of_souls = Castle_Grunwald(self.game, 82,self)
+            self.streets_of_cairo = Get_The_Idol(self.game, 81,self)
+            self.well_of_souls = Get_The_Idol(self.game, 82,self)
             self.raven_bar = Get_The_Idol(self.game, 83,self)
-            self.monkey_brains = Get_The_Idol(self.game, 84,self)
-            self.steal_the_stones = Get_The_Idol(self.game, 85,self)
-            self.mine_cart = Castle_Grunwald(self.game, 86,self)
-            self.rope_bridge = Castle_Grunwald(self.game, 87,self)
+            self.monkey_brains = Monkey_Brains(self.game, 84,self)
+            self.steal_the_stones = Monkey_Brains(self.game, 85,self)
+            self.mine_cart = Monkey_Brains(self.game, 86,self)
+            self.rope_bridge = Monkey_Brains(self.game, 87,self)
             self.castle_grunwald = Castle_Grunwald(self.game, 88,self)
             self.tank_chase = Castle_Grunwald(self.game, 89,self)
             self.the_three_challenges = Castle_Grunwald(self.game, 90,self)
@@ -84,38 +85,21 @@ class Mode_Select(game.Mode):
 
 
         def mode_started(self):
+            #load player stats
+            self.current_mode_num = self.game.get_player_stats('current_mode_num')
+            self.game.set_player_stats('mode_status_tracking',self.select_list)
+
+            #setup scene list
             self.unplayed_scenes()
 
         def mode_tick(self):
             pass
 
         def mode_stopped(self):
-            if self.current_mode_num==0:
-                self.game.modes.remove(self.get_the_idol)
-            elif self.current_mode_num==1:
-                self.game.modes.remove(self.streets_of_cairo)
-            elif self.current_mode_num==2:
-                self.game.modes.remove(self.well_of_souls)
-            elif self.current_mode_num==3:
-                self.game.modes.remove(self.raven_bar)
-            elif self.current_mode_num==4:
-                self.game.modes.remove(self.monkey_brains)
-            elif self.current_mode_num==5:
-                self.game.modes.remove(self.steal_the_stones)
-            elif self.current_mode_num==6:
-                self.game.modes.remove(self.mine_cart)
-            elif self.current_mode_num==7:
-                self.game.modes.remove(self.rope_bridge)
-            elif self.current_mode_num==8:
-                self.game.modes.remove(self.castle_grunwald)
-            elif self.current_mode_num==9:
-                self.game.modes.remove(self.tank_chase)
-            elif self.current_mode_num==10:
-                self.game.modes.remove(self.the_three_challenges)
-            elif self.current_mode_num==11:
-                self.game.modes.remove(self.choose_wisely)
+            #update player stats
+            self.game.set_player_stats('current_mode_num',self.current_mode_num)
+            self.game.set_player_stats('mode_status_tracking',self.select_list)
 
-            self.clear()
 
         def update_lamps(self):
             print("Updating Mode Lamps")
@@ -165,11 +149,8 @@ class Mode_Select(game.Mode):
 
             print("mode now active:"+str(self.lamp_list[self.current_mode_num]))
 
-            #update player stats
-            self.game.set_player_stats('current_mode_num',self.current_mode_num)
+           
 
-            #use this when a mode is completed, not here
-            #self.select_list[self.current_mode_num] =1
 
 
         def move_left(self):
@@ -186,16 +167,6 @@ class Mode_Select(game.Mode):
 
             self.game.coils.flasherRightRamp.schedule(schedule=0x30003000 , cycle_seconds=0, now=True)
             self.delay(name='disable_flasher', event_type=None, delay=2, handler=self.game.coils.flasherRightRamp.disable)
-
-
-
-        def sw_leftRampMade_active(self, sw):
-
-            self.move_left()
-
-        def sw_rightRampMade_active(self, sw):
-
-            self.move_right()
 
 
         def eject_ball(self):
@@ -310,6 +281,34 @@ class Mode_Select(game.Mode):
                 self.game.modes.add(self.the_three_challenges)
             elif self.current_mode_num==11:
                 self.game.modes.add(self.choose_wisely)
+
+        def remove_selected_scene(self):
+            print("Removing Movie Scene Mode"+str(self.current_mode_num))
+            if self.current_mode_num==0:
+                self.game.modes.remove(self.get_the_idol)
+            elif self.current_mode_num==1:
+                self.game.modes.remove(self.streets_of_cairo)
+            elif self.current_mode_num==2:
+                self.game.modes.remove(self.well_of_souls)
+            elif self.current_mode_num==3:
+                self.game.modes.remove(self.raven_bar)
+            elif self.current_mode_num==4:
+                self.game.modes.remove(self.monkey_brains)
+            elif self.current_mode_num==5:
+                self.game.modes.remove(self.steal_the_stones)
+            elif self.current_mode_num==6:
+                self.game.modes.remove(self.mine_cart)
+            elif self.current_mode_num==7:
+                self.game.modes.remove(self.rope_bridge)
+            elif self.current_mode_num==8:
+                self.game.modes.remove(self.castle_grunwald)
+            elif self.current_mode_num==9:
+                self.game.modes.remove(self.tank_chase)
+            elif self.current_mode_num==10:
+                self.game.modes.remove(self.the_three_challenges)
+            elif self.current_mode_num==11:
+                self.game.modes.remove(self.choose_wisely)
+
                     
         def mode_text(self):
             self.name_layer.set_text(self.name_text)
@@ -330,17 +329,25 @@ class Mode_Select(game.Mode):
             #play sound
             self.game.sound.play("scene_ended")
 
+            #remove the active scene
+            self.remove_selected_scene()
+
             #display mode total on screen
             bgnd_layer = dmd.FrameLayer(opaque=False, frame=dmd.Animation().load(game_path+"dmd/scene_ended_bgnd.dmd").frames[0])
-            self.info_layer.set_text(str(self.game.get_player_stats('last_mode_score')))
+            self.info_layer.set_text(locale.format("%d",self.game.get_player_stats('last_mode_score'),True))
             self.layer = dmd.GroupedLayer(128, 32, [bgnd_layer,self.name_layer,self.info_layer])
 
-            #run mode ended to remove active game scene
-            self.delay(name='scene_timeout', event_type=None, delay=2, handler=self.mode_stopped)
+            #update mode completed status tracking
+            self.select_list[self.current_mode_num] =1
+
+            #clean up
+            self.delay(name='clear_display', event_type=None, delay=2, handler=self.clear)
+            self.update_lamps()
             
 
         def clear(self):
             self.layer=None
+            
 
         def sw_leftEject_active_for_500ms(self,sw):
             self.start_scene()
@@ -348,3 +355,9 @@ class Mode_Select(game.Mode):
         def sw_leftEject_active(self,sw):
             if self.mode_enabled:
                 return procgame.game.SwitchStop
+
+        def sw_leftRampMade_active(self, sw):
+            self.move_left()
+
+        def sw_rightRampMade_active(self, sw):
+            self.move_right()

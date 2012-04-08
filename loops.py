@@ -35,7 +35,7 @@ class Loops(game.Mode):
 
 
             self.loop_unlit_value = 100000
-            self.loop_lit_value = 1000000
+            self.loop_value = 0
 
             self.loops_completed=self.game.get_player_stats('loops_completed')
             self.loops_made=self.game.get_player_stats('loops_made')
@@ -71,8 +71,9 @@ class Loops(game.Mode):
             self.loops_made=self.game.get_player_stats('loops_made')
             self.ramps_made=self.game.get_player_stats('ramps_made')
             self.friends_collected=self.game.get_player_stats('friends_collected')
+            self.loop_value = self.game.get_player_stats('loop_value')
 
-        def mode_ended(self):
+        def mode_stopped(self):
             pass
 
 
@@ -119,8 +120,8 @@ class Loops(game.Mode):
                 self.loop_stall()
 
         def score_display(self):
-
-            score = (self.loop_lit_value+(self.loop_lit_value * self.friends_collected))*self.loop_multiplier
+            #calc score
+            score = (self.loop_value)*self.loop_multiplier
             self.text_layer.set_text(locale.format("%d",score,True),blink_frames=20)
 
             self.game.score(score)
@@ -172,10 +173,11 @@ class Loops(game.Mode):
         def sw_leftLoopTop_active(self,sw):
             if self.side=='left':
                 self.cancel_delayed('stalled')
-                self.sequence(self.side)
             
                 if self.game.switches.rightLoopTop.time_since_change()<=1.5 and self.game.switches.rightLoopBottom.time_since_change()<=1.5:
                     self.multiplier()
+
+                self.sequence(self.side)
 
 
         def sw_rightLoopBottom_active(self,sw):
@@ -185,11 +187,11 @@ class Loops(game.Mode):
         def sw_rightLoopTop_active(self,sw):
             if self.side=='right':
                 self.cancel_delayed('stalled')
-                self.sequence(self.side)
 
                 if self.game.switches.leftLoopTop.time_since_change()<=1.5 and self.game.switches.leftLoopBottom.time_since_change()<=1.5:
                     self.multiplier()
 
+                self.sequence(self.side)
 
 
         def sw_leftInlane_active(self,sw):

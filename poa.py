@@ -43,6 +43,7 @@ class POA(game.Mode):
 
         def reset(self):
                 self.adventure_started  = False
+                self.letters_collected = 0
                 self.letters_spotted = 0
                 self.set1 = False
                 self.set2 = False
@@ -56,7 +57,7 @@ class POA(game.Mode):
                 self.adventureU_lit = False
                 self.adventureR_lit = False
                 self.adventureE2_lit = False
-                self.flag = [self.adventureA_lit,self.adventureD_lit,self.adventureV_lit,self.adventureE1_lit,self.adventureN_lit,self.adventureT_lit,self.adventureU_lit,self.adventureR_lit,self.adventureE2_lit]
+                self.flag = [False,False,False,False,False,False,False,False,False]
                 
                 self.reset_lamps()
                 self.reset_pit_value()
@@ -67,15 +68,38 @@ class POA(game.Mode):
 
                 #load player specific data
                 self.flag = self.game.get_player_stats('poa_flag')
+                self.load_aux_flags()
+                self.letters_spotted = self.game.get_player_stats('adventure_letters_spotted')
+                self.letters_collected = self.game.get_player_stats('adventure_letters_collected')
+
+                #update lamp states
+                self.update_lamps()
 
                 #debug
                 #self.poa_ready()
                 #self.adventure_start()
-
         
 
-        def mode_ended(self):
+        def mode_stopped(self):
+                #save player specific data
+                self.game.set_player_stats('poa_flag',self.flag)
+                self.game.set_player_stats('adventure_letters_spotted',self.letters_spotted)
+                self.letters_collected +=self.letters_spotted
+                self.game.set_player_stats('adventure_letters_collected',self.letters_collected)
+
+                #end adventure
                 self.adventure_expired()
+
+        def load_aux_flags(self):
+                self.adventureA_lit = self.flag[0]
+                self.adventureD_lit = self.flag[1]
+                self.adventureV_lit = self.flag[2]
+                self.adventureE1_lit = self.flag[3]
+                self.adventureN_lit = self.flag[4]
+                self.adventureT_lit = self.flag[5]
+                self.adventureU_lit = self.flag[6]
+                self.adventureR_lit = self.flag[7]
+                self.adventureE2_lit = self.flag[8]
 
         def spell_adventure(self):
                 bgnd = dmd.FrameLayer(opaque=False,frame=dmd.Animation().load(game_path+'dmd/adventure_bgnd.dmd').frames[0])     
@@ -208,8 +232,7 @@ class POA(game.Mode):
             self.delay(name='adventure_continue_timer', event_type=None, delay=self.adventure_continue_timer, handler=self.adventure_expired)
 
         def adventure_expired(self):
-            # Manually cancel the delay in case this function was called
-            # externally.
+            # Manually cancel the delay in case this function was called externally.
             self.cancel_delayed('adventure_continue_timer')
             self.game.coils.divertorHold.disable()
             self.game.coils.flasherPOA.disable()

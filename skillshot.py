@@ -46,10 +46,10 @@ class Skillshot(game.Mode):
             self.game.status = 'skillshot'
             self.delay(name='clear', event_type=None, delay=self.skill_timer, handler=self.clear)
 
-        def mode_ended(self):
+        def mode_tick(self):
             pass
 
-        def mode_tick(self):
+        def mode_stopped(self):
             pass
 
             

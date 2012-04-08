@@ -133,7 +133,7 @@ class Plane_Chase(game.Mode):
             pass
 
         
-        def mode_ended(self):
+        def mode_stopped(self):
             #turn off all mini playfield lamps
             pass
 

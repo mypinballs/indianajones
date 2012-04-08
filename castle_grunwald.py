@@ -153,11 +153,11 @@ class Castle_Grunwald(game.Mode):
 
         def mode_stopped(self):
             #update mode select list - get the idol is mode 0 in list
-            current_list = self.game.get_player_stats('mode_select_list');
-            updated_list =current_list
-            updated_list[0]=1
-        
-            self.game.set_player_stats('mode_select_list',updated_list)
+#            current_list = self.game.get_player_stats('mode_status_tracking');
+#            updated_list =current_list
+#            updated_list[0]=1
+#
+#            self.game.set_player_stats('mode_status_tracking',updated_list)
 
             #cancel speech calls
             self.cancel_delayed('mode_speech_delay')

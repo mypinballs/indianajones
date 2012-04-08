@@ -47,9 +47,9 @@ class Bonus(game.Mode):
         def get_bonus_value(self):
             friends = self.game.get_player_stats('friends_collected') * 40000
             ramps =  self.game.get_player_stats('ramps_made') * 10000
-            adventure_lettters = self.game.get_player_stats('adventure_letters_collected') * 5000
+            adventure_letters = self.game.get_player_stats('adventure_letters_collected') * 5000
 
-            return friends+ramps+adventure_lettters
+            return friends+ramps+adventure_letters
 
         def get_bonus_x(self):
             bonus_x = self.game.get_player_stats('bonus_x')

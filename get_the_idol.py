@@ -99,11 +99,11 @@ class Get_The_Idol(game.Mode):
 
         def mode_stopped(self):
             #update mode select list - get the idol is mode 0 in list
-            current_list = self.game.get_player_stats('mode_select_list');
-            updated_list =current_list
-            updated_list[0]=1
-        
-            self.game.set_player_stats('mode_select_list',updated_list)
+#            current_list = self.game.get_player_stats('mode_status_tracking');
+#            updated_list =current_list
+#            updated_list[0]=1
+#
+#            self.game.set_player_stats('mode_status_tracking',updated_list)
 
             #stop music
             self.game.sound.stop_music()

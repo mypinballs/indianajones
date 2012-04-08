@@ -47,7 +47,7 @@ class General_Play(game.Mode):
             self.game.idol.home()
 
         
-        def mode_ended(self):
+        def mode_stopped(self):
             self.modes.remove(self.pops)
             self.modes.remove(self.narrow_escape)
             self.modes.remove(self.poa)

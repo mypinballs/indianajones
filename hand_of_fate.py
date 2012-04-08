@@ -36,7 +36,7 @@ class Hand_Of_Fate(game.Mode):
             pass
 
         
-        def mode_ended(self):
+        def mode_stopped(self):
             pass
         
 

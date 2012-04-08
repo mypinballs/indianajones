@@ -34,7 +34,10 @@ import math
 import copy
 import yaml
 import random
+import logging
 
+
+logging.basicConfig(level=logging.ERROR, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
 #os.chdir("/Users/jim/Documents/Pinball/p-roc/p-roc system/src/pyprocgame/")
 
@@ -43,7 +46,7 @@ locale.setlocale(locale.LC_ALL, game_locale) # en_GB Used to put commas in the s
 
 #base_path = "/Users/jim/Documents/Pinball/p-roc/p-roc system/src/"
 base_path = config.value_for_key_path('base_path')
-print("Base Path is: "+base_path)
+logging.info("Base Path is: "+base_path)
 
 game_path = base_path+"games/indyjones/"
 fonts_path = base_path+"shared/dmd/"
@@ -82,6 +85,7 @@ class Attract(game.Mode):
 	"""docstring for AttractMode"""
 	def __init__(self, game):
 		super(Attract, self).__init__(game, 1)
+                self.log = logging.getLogger('ij.attract')
                 self.display_order = [0,1,2,3,4,5,6,7,8,9]
 		self.display_index = 0
 		self.game.sound.register_sound('burp', voice_path+'burp.wav')
@@ -97,7 +101,7 @@ class Attract(game.Mode):
                 # Turn on GI lamps
 		self.delay(name='stuck_balls', event_type=None, delay=0, handler=self.gi)
 
-                print("attract mode after gi turn on")
+                self.log.info("attract mode after gi turn on")
 
                 # run feature lamp patterns
                 self.change_lampshow()
@@ -391,13 +395,15 @@ class BaseGameMode(game.Mode):
             self.indy_lanes = Indy_Lanes(self.game, 42)
             self.loops = Loops(self.game, 43)
 
-            #higher priority basic modes
+            #medium priority basic modes
             self.poa = POA(self.game, 50)
             self.totem = Totem(self.game, 51)
             self.plane_chase = Plane_Chase(self.game, 52)
-            self.mode_select = Mode_Select(self.game, 95)
             self.skillshot = Skillshot(self.game, 54)
-            self.multiball = Multiball(self.game, 60)
+
+            #higher priority basic modes
+            self.mode_select = Mode_Select(self.game, 60)
+            self.multiball = Multiball(self.game, 61)
 
             #start modes
             self.game.modes.add(self.pops)
@@ -910,22 +916,26 @@ class mpcPlayer(game.Player):
                 self.player_stats['friends_collected']=0
                 self.player_stats['loops_completed']=0
                 self.player_stats['loops_made']=0
-                self.player_stats['loop_value']=0
+                self.player_stats['loop_value']=1000000 #1M default
                 self.player_stats['ramps_made']=0
                 self.player_stats['adventure_letters_collected']=0
+                self.player_stats['burps_collected']=0
                 self.player_stats['current_mode_num']=0
                 self.player_stats['mode_enabled']=False
-                self.player_stats['lock_lit'] = False
                 self.player_stats['mode_running'] = False
+                self.player_stats['mode_status_tracking']= [0,0,0,0,0,0,0,0,0,0,0,0]
+                self.player_stats['lock_lit'] = False                
                 self.player_stats['multiball_running'] = False
                 self.player_stats['balls_locked'] = 0
                 self.player_stats['pit_value'] = 0
                 self.player_stats['indy_lanes_flag']= [False,False,False,False]
+                self.player_stats['indy_lanes_letters_spotted'] = 0
                 self.player_stats['poa_flag']= [False,False,False,False,False,False,False,False,False]
-                self.player_stats['mode_select_list']= [0,0,0,0,0,0,0,0,0,0,0,0]
+                self.player_stats['adventure_letters_spotted']=0
                 self.player_stats['last_mode_score']=0
                 self.player_stats['get_the_idol_score']=0
                 self.player_stats['castle_grunwald_score']=0
+                self.player_stats['monkey_brains_score']=0
 
 
 

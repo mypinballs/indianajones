@@ -224,10 +224,17 @@ class Mini_Playfield(game.Mode):
 
         def calibrate(self,num=6):
 
+
             if self.position!='unknown':
-                time1 = self.game.switches.miniLeftLimit.last_changed*100
-                time2 = self.game.switches.miniRightLimit.last_changed*100
+                time1 = 0
+                time2 = 0
                 dirn_time =0
+
+                if self.game.switches.miniLeftLimit.last_changed !=None:
+                    time1 = self.game.switches.miniLeftLimit.last_changed*100
+              
+                if self.game.switches.miniRightLimit.last_changed !=None:
+                    time2 = self.game.switches.miniRightLimit.last_changed*100
 
                 print("Time 1:"+str(time1))
                 print("Time 2:"+str(time2))
@@ -239,9 +246,6 @@ class Mini_Playfield(game.Mode):
 
                 self.dirn_time_count += dirn_time
                 print("Posn Time is:"+str(dirn_time))
-                
-                #centre_time = dirn_time/2
-                #print("Center Time is:"+str(centre_time))
 
 
             if self.loop<num: #self.loop_num:
