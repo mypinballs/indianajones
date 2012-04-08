@@ -125,7 +125,7 @@ Gameplay (Feature):
   'Loop Lit Timer':
     options: [0,120]
     increments: 5
-    default: 30
+    default: 15
   'Ramp Lit Timer':
     options: [0,120]
     increments: 5
@@ -148,6 +148,10 @@ Gameplay (Feature):
     default: 5
   'Captive Multiball Start Timer':
     options: [5,120]
+    increments: 5
+    default: 30
+  'Dog Fight Timer':
+    options: [5,30]
     increments: 5
     default: 30
   'Mode Start Lit':
