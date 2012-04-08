@@ -6,9 +6,12 @@ __date__ ="$Jan 18, 2011 1:36:37 PM$"
 
 import procgame
 import locale
-from procgame import *
+import logging
 import random
+
+from procgame import *
 from hand_of_fate import *
+
 
 base_path = config.value_for_key_path('base_path')
 game_path = base_path+"games/indyjones/"
@@ -21,6 +24,8 @@ class Indy_Lanes(game.Mode):
 
 	def __init__(self, game, priority):
             super(Indy_Lanes, self).__init__(game, priority)
+
+            self.log = logging.getLogger('ij.indy_lanes')
 
             self.hof = Hand_Of_Fate(self.game, priority+1)
             self.game.modes.add(self.hof)
@@ -47,7 +52,7 @@ class Indy_Lanes(game.Mode):
             self.friends = ['marrion','willie','sallah','shorty','drJones']
             shuffle(self.friends)
 
-            self.friends_collected = 0 #ps
+            self.friends_collected = 0
             self.friend_dmd_image =""
             self.friend_sound_call = ""
             self.marrion = False
@@ -56,10 +61,10 @@ class Indy_Lanes(game.Mode):
             self.shorty = False
             self.dr_jones = False
 
-            self.bonusx = self.game.get_player_stats('bonus_x') #ps
-            self.loop_value =self.game.get_player_stats('loop_value') #ps
-            self.loop_base_value = 3000000
-            self.loop_increment_value = 1000000
+            self.bonusx = 0
+            self.loop_value =0
+            self.loop_base_value = 1000000
+
             self.lane_unlit_value = 50000
             self.lane_lit_value = 10000
             self.reset()
@@ -84,12 +89,28 @@ class Indy_Lanes(game.Mode):
 
             #load player specific data
             self.lane_flag = self.game.get_player_stats('indy_lanes_flag')
+            self.letters_spotted = self.game.get_player_stats('indy_lanes_letters_spotted')
             self.friends_collected = self.game.get_player_stats('friends_collected')
+            self.bonusx = self.game.get_player_stats('bonus_x')
+            self.loop_value =self.game.get_player_stats('loop_value')
+
+            #update lamp states
+            self.update_lamps()
+            
+
+        def mode_stopped(self):
+            #save player specific data
+            
+            self.game.set_player_stats('indy_lanes_flag',self.lane_flag)
+            self.game.set_player_stats('indy_lanes_letter_spotted',self.letters_spotted)
+            self.game.set_player_stats('friends_collected',self.friends_collected)
+            self.game.set_player_stats('bonus_x',self.bonusx)
+            self.game.set_player_stats('loop_value',self.loop_value)
 
 
         def mode_tick(self):
             pass
-
+            
 
         def update_lamps(self):
             print("Updating INDY lane Lamps")
@@ -98,10 +119,9 @@ class Indy_Lanes(game.Mode):
                     self.game.effects.drive_lamp(self.lamps[i],'on')
 
             print("Updating Friend Lamps")
-            friend_flags = [self.marrion,self.willie,self.sallah,self.shorty,self.dr_jones]
-            for i in range(len(friend_flags)):
-                if friend_flags[i]:
-                    self.game.effects.drive_lamp(self.lamps[self.friends[i]],'medium')
+            for i in range(self.friends_collected):
+                if self.friends_collected>0:
+                    self.game.effects.drive_lamp(self.friends[i-1],'medium')
 
 
         def clear(self):
@@ -123,8 +143,10 @@ class Indy_Lanes(game.Mode):
 
                      #add a friend
                     self.add_friend()
+
                     #set loop value
-                    self.loop_value=self.loop_base_value+(self.bonusx*self.loop_increment_value)
+                    self.loop_value=self.loop_base_value+(self.loop_base_value*2 * self.friends_collected)
+                    self.game.set_player_stats('loop_value',self.loop_value)
 
                     #load bgnd image layer
                     #anim = dmd.Animation().load(game_path+self.friend_dmd_image)
@@ -163,23 +185,24 @@ class Indy_Lanes(game.Mode):
             self.layer = max_bonus_layer
 
         def add_friend(self):
-            flag = [self.marrion,self.willie,self.sallah,self.shorty,self.dr_jones]
+            #flag = [self.marrion,self.willie,self.sallah,self.shorty,self.dr_jones]
 
-            if flag[self.friends_collected]==False:
+            #if flag[self.friends_collected]==False:
                 self.game.effects.drive_lamp(self.friends[self.friends_collected],'medium')
-                flag[self.friends_collected] = True
+                #flag[self.friends_collected] = True
                 self.friend_dmd_image = "dmd/"+self.friends[self.friends_collected]+".dmd"
 
                 time = self.game.sound.play_voice('lane_fanfare')
 		self.delay(name='intro_speech', event_type=None, delay=time+0.5, handler=self.friend_voice_call)
-                #self.game.sound.play_voice(self.friends[self.friends_collected])
+
+                #up the count by 1 to get the next friend in the sequence
+                self.friends_collected +=1
+                self.game.set_player_stats('friends_collected',self.friends_collected)
                 
                 
         def friend_voice_call(self):
             self.game.sound.play_voice(self.friends[self.friends_collected])
-            #up the count by 1 to get the next friend in the sequence
-            self.friends_collected +=1
-            self.game.set_player_stats('friends_collected',self.friends_collected)
+            
 
 
         def lanes(self,id):
@@ -269,6 +292,7 @@ class Indy_Lanes(game.Mode):
 
 
             self.lane_flag=flag_new
+            
             print(self.lane_flag)
 
 
