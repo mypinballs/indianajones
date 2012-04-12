@@ -1,5 +1,4 @@
-import random
-# Top Rollover Lanes
+# Mode Select
 
 __author__="jim"
 __date__ ="$Jan 18, 2011 1:36:37 PM$"
@@ -7,9 +6,13 @@ __date__ ="$Jan 18, 2011 1:36:37 PM$"
 
 import procgame
 import locale
+import random
+
 from procgame import *
 from get_the_idol import *
+from streets_of_cairo import *
 from monkey_brains import *
+from steal_the_stones import *
 from castle_grunwald import *
 
 
@@ -51,11 +54,11 @@ class Mode_Select(game.Mode):
 
             #setup game modes
             self.get_the_idol = Get_The_Idol(self.game, 80,self)
-            self.streets_of_cairo = Get_The_Idol(self.game, 81,self)
+            self.streets_of_cairo = Streets_Of_Cairo(self.game, 81,self)
             self.well_of_souls = Get_The_Idol(self.game, 82,self)
             self.raven_bar = Get_The_Idol(self.game, 83,self)
             self.monkey_brains = Monkey_Brains(self.game, 84,self)
-            self.steal_the_stones = Monkey_Brains(self.game, 85,self)
+            self.steal_the_stones = Steal_The_Stones(self.game, 85,self)
             self.mine_cart = Monkey_Brains(self.game, 86,self)
             self.rope_bridge = Monkey_Brains(self.game, 87,self)
             self.castle_grunwald = Castle_Grunwald(self.game, 88,self)
@@ -87,7 +90,7 @@ class Mode_Select(game.Mode):
         def mode_started(self):
             #load player stats
             self.current_mode_num = self.game.get_player_stats('current_mode_num')
-            self.game.set_player_stats('mode_status_tracking',self.select_list)
+            self.select_list = self.game.get_player_stats('mode_status_tracking')
 
             #setup scene list
             self.unplayed_scenes()
@@ -207,7 +210,7 @@ class Mode_Select(game.Mode):
                 elif self.current_mode_num==5:
                     self.timer = self.game.user_settings['Gameplay (Feature)']['Steal The Stones Timer']
                     self.name_text = 'STEAL THE STONES'
-                    self.info_text = 'XXX'
+                    self.info_text = 'GET ALL LIT LANES'
 
                 elif self.current_mode_num==6:
                     #timer = self.game.user_settings['Gameplay (Feature)']['Mine Cart Timer']
