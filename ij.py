@@ -317,7 +317,7 @@ class BaseGameMode(game.Mode):
                 self.game.sound.register_sound('slingshot', sound_path+"sling_4.aiff")
 
                 self.game.sound.register_sound('inlane', sound_path+"inlane.aiff")
-                self.game.sound.register_sound('gun_shot', sound_path+"gun_shot.aiff")
+                self.game.sound.register_sound('gun_shot', sound_path+"gun_shot_deep.aiff")
                 self.game.sound.register_sound('outlane_sound', sound_path+"outlane.aiff")
                 self.game.sound.register_sound('electricity', sound_path+"electricity.aiff")
                 self.game.sound.register_sound('extra_ball_collected', sound_path+"extra_ball_lit_ff.aiff")
@@ -920,6 +920,8 @@ class mpcPlayer(game.Player):
                 self.player_stats['ramps_made']=0
                 self.player_stats['adventure_letters_collected']=0
                 self.player_stats['burps_collected']=0
+                self.player_stats['soc_baskets_searched']=0
+                self.player_stats['stones_collected']=0
                 self.player_stats['current_mode_num']=0
                 self.player_stats['mode_enabled']=False
                 self.player_stats['mode_running'] = False
@@ -936,8 +938,8 @@ class mpcPlayer(game.Player):
                 self.player_stats['get_the_idol_score']=0
                 self.player_stats['castle_grunwald_score']=0
                 self.player_stats['monkey_brains_score']=0
-
-
+                self.player_stats['streets_of_cairo_score']=0
+                self.player_stats['steal_the_stones_score']=0
 
 
                 
