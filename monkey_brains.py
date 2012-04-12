@@ -41,7 +41,7 @@ class Monkey_Brains(game.Mode):
             print("Monkey Brains Timer is:"+str(self.timer))
 
             self.score_layer = ModeScoreLayer(128/2, -1, self.game.fonts['07x5'], self)
-            self.award_layer = dmd.TextLayer(128/2, 8, self.game.fonts['6x6_bold'], "center", opaque=False)
+            self.award_layer = dmd.TextLayer(128/2, 7, self.game.fonts['num_09Bx7'], "center", opaque=False)
             
             #sound setup
             self.game.sound.register_music('background_play', music_path+"monkey_brains.aiff")
@@ -215,12 +215,14 @@ class Monkey_Brains(game.Mode):
             return procgame.game.SwitchStop
         
         def sw_leftLoopTop_active(self, sw):
-            self.mode_progression()
+            if self.game.switches.rightLoopTop.time_since_change()>1:
+                self.mode_progression()
 
             return procgame.game.SwitchStop
 
         def sw_rightLoopTop_active(self, sw):
-            self.mode_progression()
+            if self.game.switches.leftLoopTop.time_since_change()>1:
+                self.mode_progression()
 
             return procgame.game.SwitchStop
  
