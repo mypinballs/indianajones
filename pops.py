@@ -20,7 +20,7 @@ class Pops(game.Mode):
 
 	def __init__(self, game, priority):
             super(Pops, self).__init__(game, priority)
-            self.text_layer = dmd.TextLayer(95, 0, self.game.fonts['num_14x10'], "left", opaque=False)
+            self.text_layer = dmd.TextLayer(104, 0, self.game.fonts['num_14x10'], "center", opaque=False)
 
             self.game.sound.register_sound('punch1', sound_path+"punch_1.aiff")
             self.game.sound.register_sound('punch2', sound_path+"punch_2.aiff")

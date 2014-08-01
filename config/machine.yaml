@@ -26,419 +26,612 @@ PRSwitches:
     #Flipper Grounded Swithes
     flipperLwR:
         number: SF2
+        label: 'LR Flipper'
     flipperLwL:
         number: SF4
+        label: 'LL Flipper'
     dropTargetLeft:
         number: SF5
         type: 'NC'
+        label: 'Drop Target Left'
     dropTargetMiddle:
         number: SF6
         type: 'NC'
+        label: 'Drop Target Middle'
     dropTargetRight:
         number: SF7
         type: 'NC'
+        label: 'Drop Target Right'
     leftRampMade:
         number: SF8
+        label: 'Left Ramp Made'
 
     #Dedicated Grounded Swtches
     exit: 
         number: SD5
+        label: 'Service Exit'
     down: 
         number: SD6
+        label: 'Service Down'
     up: 
         number: SD7
+        label: 'Service Up'
     enter: 
         number: SD8
+        label: 'Service Enter'
 
     #Regular Switches
     singleDropTop:
         number: S11
+        label: 'Single Drop Top'
     buyInButton:
         number: S12
+        label: 'Buy-In Button'
     startButton:
         number: S13
-    plumbBobTilt:
+        label: 'Start Button'
+    tilt:
         number: S14
+        label: 'Plumb Bob Tilt'
     leftOutlane:
         number: S15
+        label: 'Left Outlane'
     leftInlane:
         number: S16
+        label: 'Left Inlane'
     rightInlane:
         number: S17
+        label: 'Right Inlane'
     rightOutlaneTop:
         number: S18
-    tilt:
+        label: 'Right Outlane Top'
+    slamTilt:
         number: S21
+        label: 'Slam Tilt'
     coinDoorClosed:
         number: S22
+        label: 'Coin DOor Closed'
     ticketOpto:
         number: S23
+        label: 'Ticket Opto'
     alwaysClosed:
         number: S24
+        label: 'Always Closed'
     indyI:
         number: S25
+        label: 'Indy (I)'
     indyN:
         number: S26
+        label: 'Indy (N)'
     indyD:
         number: S27
+        label: 'Indy (D)'
     indyY:
         number: S28
+        label: 'Indy (Y)'
     leftEject:
         number: S31
+        label: 'Left Eject'
     exitIdol:
         number: S32
+        label: 'Exit Idol'
     leftSlingshot:
         number: S33
+        label: 'Left Slingshot'
     gunTrigger:
         number: S34
+        label: 'Gun Trigger'
     leftJet:
         number: S35
+        label: 'Left Jet'
     rightJet:
         number: S36
+        label: 'Right Jet'
     bottomJet:
         number: S37
+        label: 'Bottom Jet'
     centerStandup:
         number: S38
+        label: 'Center Standup'
     leftRampEnter:
         number: S41
         type: 'NC'
+        label: 'Left Ramp Enter'
     rightRampEnter:
         number: S42
         type: 'NC'
+        label: 'Right Ramp Enter'
     topIdolEnter:
         number: S43
         type: 'NC'
+        label: 'Top Idol Enter'
     rightPopper:
         number: S44
         type: 'NC'
+        label: 'Right Popper'
     centerEnter:
         number: S45
         type: 'NC'
+        label: 'Center Enter'
     topPost:
         number: S46
+        label: 'Top Post'
     subwayLockup:
         number: S47
         type: 'NC'
+        label: 'Subway Lockup'
     rightSlingshot:
         number: S48
+        label: 'Right Slingshot'
     adventureU:
         number: S51
+        label: 'Adventure (U)'
     adventureR:
         number: S52
+        label: 'Adventure (R)'
     adventureE2:
         number: S53
+        label: 'Adventure (E2)'
     leftLoopTop:
         number: S54
+        label: 'Left Loop Top'
     leftLoopBottom:
         number: S55
+        label: 'Left Loop Bottom'
     rightLoopTop:
         number: S56
+        label: 'Right Loop Top'
     rightLoopBottom:
         number: S57
+        label: 'Right Loop Bottom'
     rightOutlaneBottom:
         number: S58
+        label: 'Right Outlane Bottom'
     adventureA:
         number: S61
+        label: 'Adventure (A)'
     adventureD:
         number: S62
+        label: 'Adventure (D)'
     adventureV:
         number: S63
+        label: 'Adventure (V)'
     captiveBallBack:
         number: S64
+        label: 'Captive Ball Back'
     miniTopLeft:
         number: S65
+        label: 'Mini PF Top Left'
     miniMiddleTopLeft:
         number: S66
+        label: 'Mini PF Middle Top Left'
     miniMiddleBottomLeft:
         number: S67
+        label: 'Mini PF Middle Bottom Left'
     miniBottomLeft:
         number: S68
+        label: 'Mini PF Bottom Left'
     captiveBallFront:
         number: S71
         type: 'NC'
+        label: 'Captive Ball Front'
     miniTopHole:
         number: S72
         type: 'NC'
+        label: 'Mini PF Top Hole'
     miniBottomHole:
         number: S73
         type: 'NC'
+        label: 'Mini Bottom Hole'
     rightRampMade:
         number: S74
+        label: 'Right Ramp Made'
     miniTopRight:
         number: S75
+        label: 'Mini PF Top Right'
     miniMiddleTopRight:
         number: S76
+        label: 'Mini PF Middle Top Right'
     miniMiddleBottomRight:
         number: S77
+        label: 'Mini PF Middle Bottom Right'
     miniBottomRight:
         number: S78
+        label: 'Mini PF Bottom Right'
     trough1:
         number: S81
         type: 'NC'
+        label: 'Trough 1'
     trough2:
         number: S82
         type: 'NC'
+        label: 'Trough 2'
     trough3:
         number: S83
         type: 'NC'
+        label: 'Trough 3'
     trough4:
         number: S84
         type: 'NC'
+        label: 'Trough 4'
     trough5:
         number: S85
         type: 'NC'
+        label: 'Trough 5'
     trough6:
         number: S86
         type: 'NC'
+        label: 'Trough 6'
     troughTop:
         number: S87
         type: 'NC'
+        label: 'Trough Top (Eject)'
     shooterLane:
         number: S88
+        label: 'Shooter Lane'
     wheelPosition1:
         number: S91
         type: 'NC'
+        label: 'Wheel Posn 1'
     wheelPosition2:
         number: S92
         type: 'NC'
+        label: 'Wheel Posn 2'
     wheelPosition3:
         number: S93
         type: 'NC'
+        label: 'Wheel Posn 3'
     miniLeftLimit:
         number: S94
         type: 'NC'
+        label: 'Mini PF Left Limit'
     miniRightLimit:
         number: S95
         type: 'NC'
+        label: 'Mini PF Right Limit'
     
 PRCoils:
     flipperLwRMain:
         number: FLRM
+        label: 'LR Flipper Power'
     flipperLwRHold:
         number: FLRH
+        label: 'LR Flipper Hold'
     flipperLwLMain:
         number: FLLM
+        label: 'LL Flipper Power'
     flipperLwLHold:
         number: FLLH
+        label: 'LL Flipper Hold'
     divertorMain:
         number: FURM
+        label: 'Divertor Power'
     divertorHold:
         number: FURH
+        label: 'Divertor Hold'
     topLockupMain:
         number: FULM
+        label: 'Top Lock Power'
     topLockupHold:
         number: FULH
+        label: 'Top Lock Hold'
     ballPopper:
         number: C01
+        label: 'Ball Popper'
     ballLaunch:
         number: C02
+        label: 'Ball Launch'
     totemDropUp:
         number: C03
+        label: 'Totem Drop Up'
     trough:
         number: C04
+        label: 'Trough Eject'
     centerDropBank:
         number: C05
+        label: 'Center Drop Bank'
     idolRelease:
         number: C06
+        label: 'Idol Release'
     knocker:
         number: C07
+        label: 'Knocker'
     leftEject:
         number: C08
+        pulseTime: 15
+        label: 'Left Eject'
     leftJet:
         number: C09
+        label: 'Left Jet'
     rightJet:
         number: C10
+        label: 'Right Jet'
     bottomJet:
         number: C11
+        label: 'Bottom Jet'
     leftSlingshot:
         number: C12
+        label: 'Left Slingshot'
     rightSlingshot:
         number: C13
+        label: 'Right Slingshot'
     leftControlGate:
         number: C14
+        label: 'Left Control Gate'
     rightControlGate:
         number: C15
+        label: 'Right Control Gate'
     totemDropDown:
         number: C16
+        label: Totem Drop Down'
     flasherEternalLife:
         number: C17
+        label: 'Flasher Eternal Life'
     flasherLiteJackpot:
         number: C18
+        label: 'Flasher Lite Jackpot'
     flasherSuperJackpot:
         number: C19
+        label: 'Flasher Super Jackpot'
     flasherJackpot:
         number: C20
+        label: 'Flasher Jackpot'
     flasherPOA:
         number: C21
+        label: 'Flasher POA'
     miniMotorLeft:
         number: C22
+        label: 'Mini PF Motor Left'
     miniMotorRight:
         number: C23
+        label: 'Mini PF Motor Right'
     flasherPlaneGuns:
         number: C24
+        label: 'Flasher Plane Guns'
     flasherDogFight:
         number: C25
+        label: 'Flasher Dog Fight'
     flasherRightRamp:
         number: C26
+        label: 'Flasher Right Ramp'
     flasherLeftRamp:
         number: C27
+        label: 'Flasher Left Ramp'
     subwayRelease:
         number: C28
+        pulseTime: 120
+        label: 'Subway Release'
     flasherLeftSide:
         number: C37
+        label: 'Flasher Left Side'
     flasherRightSide:
         number: C38
+        label: 'Flasher Right Side'
     flasherSpecial:
         number: C39
+        label: 'Flasher Speical'
     flasherTotem:
         number: C40
+        label: 'Flasher Totem'
     flasherJackpotMultiplier:
         number: C41
+        label: 'Flasher Jackpot Mulitplier'
     wheelMotor:
         number: C42
+        label: 'Wheel Motor'
 PRLamps:
     modeStart:
         number: L11
+        label: 'Mode Start'
     handOfFate:
         number: L12
+        label: 'Hand Of Fate'
     extraBall:
         number: L13
+        label: 'Extra Ball'
     adventureV:
         number: L14
+        label: 'Adventure (V)'
     adventureD:
         number: L15
+        label: 'Adventure (D)'
     adventureA:
         number: L16
+        label: 'Adventure (A)'
     shootAgain:
         number: L17
+        label: 'Shoot Again'
     getTheIdol:
         number: L18
+        label: 'Get The Idol'
     tankChase:
         number: L21
+        label: 'Tank Chase'
     adventureT:
         number: L22
+        label: 'Adventure (T)'
     adventureE1:
         number: L23
+        label: 'Adventure (E1)'
     adventureN:
         number: L24
+        label: Adventure (N)'
     stealTheStones:
         number: L25
+        label: 'Steal The Stones'
     grailJackpot:
         number: L26
+        label: 'Grail Jackpot'
     streetsOfCairo:
         number: L27
+        label: 'Streets Of Cairo'
     stonesJackpot:
         number: L28
+        label: 'Stones Jackpot'
     leftRampArrow:
         number: L31
+        label: 'Left Ramp Arrow'
     castleGrunwald:
         number: L32
+        label: 'Castle Grunwald'
     leftPlaneTop:
         number: L33
+        label: 'Left Plane Top'
     monkeyBrains:
         number: L34
+        label: 'Monkey Brains'
     leftPlaneMiddle:
         number: L35
+        label: 'Left Plane Middle'
     sallah:
         number: L36
+        label: 'Sallah'
     bonus4X:
         number: L37
+        label: 'Bonus 4X'
     leftPlaneBottom:
         number: L38
+        label: 'Left Plane Bottom'
     #temp fix for lamp show typo
     leftPlanebottom:
         number: L38
+        label: 'Left Plane Bottom'
     mineCart:
         number: L41
+        label: 'Mine Cart'
     arkJackpot:
         number: L42
+        label: 'Ark Jackpot'
     ravenBar:
         number: L43
+        label: 'Raven Bar'
     rightPlaneMiddle:
         number: L44
+        label: 'Right Plane Middle'
     bonus6X:
         number: L45
+        label: 'Bonus 6X'
     rightPlaneBottom:
         number: L46
+        label: 'Right Plane Bottom'
     wellOfSouls:
         number: L47
+        label: 'Well Of Souls'
     leftLoop:
         number: L48
+        label: 'Left Loop'
     chooseWisely:
         number: L51
+        label: 'Choose Wisely'
     rightPlaneTop:
         number: L52
+        label: 'Right Plane Top'
     ropeBridge:
         number: L53
+        label: 'Rope Bridge'
     adventureU:
         number: L54
+        label: 'Adventure (U)'
     adventureR:
         number: L55
+        label: 'Adventure (R)'
     adventureE2:
         number: L56
+        label: 'Adventure (E2)'
     theThreeChallenges:
         number: L57
+        label: 'The Three Challenges'
     rightLoop:
         number: L58
+        label: 'Right Loop'
     indyI:
         number: L61
+        label: 'Indy (I)'
     indyN:
         number: L62
+        label: 'Indy (N)'
     indyD:
         number: L63
+        label: 'Indy (D)'
     indyY:
         number: L64
+        label: 'Indy (Y)'
     willie:
         number: L65
+        label: 'Willie'
     bonus2X:
         number: L66
+        label: 'Bonux 2X'
     shorty:
         number: L67
+        label: 'Shorty'
     rightRampArrow:
         number: L68
+        label: 'Right Ramp Arrow'
     miniTopLeft:
         number: L71
+        label: 'Mini PF Top Left'
     miniTopRight:
         number: L72
+        label: 'Mini PF Top Right'
     miniMiddleTopLeft:
         number: L73
+        label: 'Mini PF Middle Top Left'
     miniMiddleTopRight:
         number: L74
+        label: 'Mini PF Middle Top Right'
     miniTopArrow:
         number: L75
+        label: 'Mini PF  Top Arrow'
     marrion:
         number: L76
+        label: 'Marrion'
     bonus8X:
         number: L77
+        label: 'Bonux 8X'
     drJones:
         number: L78
+        label: 'Dr Jones'
     miniMiddleBottomLeft:
         number: L81
+        label: 'Mini PF Middle Bottom Left'
     miniMiddleBottomRight:
         number: L82
+        label: 'Mini PF Middle Bottom Right'
     miniBottomLeft:
         number: L83
+        label: 'Mini PF Bottom Left'
     miniBottomRight:
         number: L84
+        label: 'Mini PF Bottom Right'
     miniBottomArrow:
         number: L85
+        label: 'Mini PF Bottom Arrow'
     totemTopArrow:
         number: L86
+        label: 'Totem Top Arrow'
     centerLock:
         number: L87
+        label: 'Center Lock'
     startButton:
         number: L88
+        label: 'Start Button'
     gi01:
         number: G01
+        label: 'GI String 1'
     gi02:
         number: G02
+        label: 'GI String 2'
     gi03:
         number: G03
+        label: 'GI String 3'
     gi04:
         number: G04
+        label: 'GI String 4'
     gi05:
         number: G05
-
+        label: 'GI String 5'
+  
 PRBallSave:
     pulseCoils: [leftSlingshot, rightSlingshot, leftJet, rightJet, bottomJet, totemDropUp, centerDropBank]
     resetSwitches:

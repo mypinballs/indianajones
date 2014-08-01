@@ -30,6 +30,58 @@ class ModeScoreLayer(dmd.TextLayer):
 
 		return super(ModeScoreLayer, self).next_frame()
 
+#mpc animation layer for sprites
+class SpriteLayer(dmd.AnimatedLayer):
+
+        dot_type=None
+        
+        def __init__(self, opaque=False, hold=True, repeat=False, frame_time=1, frames=None, x=0,y=-4,dot_type=None):
+		super(SpriteLayer, self).__init__(opaque,x,y,dot_type)
+                self.target_x = x-44
+                self.target_y = y
+                self.dot_type = dot_type
+                self.composite_op = "blacksrc"
+
+                self.hold = hold
+		self.repeat = repeat
+		if frames == None:
+			self.frames = list()
+		else:
+			self.frames = frames
+
+		self.frame_time = frame_time # Number of frames each frame should be displayed for before moving to the next.
+		self.frame_time_counter = self.frame_time
+
+		self.frame_listeners = []
+
+		self.reset()
+
+	def next_frame(self):
+
+		frame = super(SpriteLayer, self).next_frame()
+                
+		if frame:
+			if self.dot_type == 1:
+				for x in range(128):
+					for y in range(32):
+						color = frame.get_dot(x,y)
+						if color == 5: # These are the same dots as in dot_type 2, so we remove them by letting blacksrc hide them. Possibly this could be an additional tint in other animations?
+							frame.set_dot(x,y,0) # Ideally this should be set to alpha 0%
+						elif color == 15:
+							# These are the highlights of the monkeys face, they should remain white
+							pass
+			elif self.dot_type == 2:
+				for x in range(128):
+					for y in range(32):
+						color = frame.get_dot(x,y)
+						if color == 5:
+							frame.set_dot(x,y,1) # Ideally this should be 0 at alpha 100% if we could use blendmode alpha. Now we use 1 to come as close to black as possible.
+						elif color == 15:
+							#These are the hightlights of the monkeys body, tone them down a little.
+							frame.set_dot(x,y,7)
+
+		return frame
+
 
 class Streets_Of_Cairo(game.Mode):
 
@@ -45,7 +97,11 @@ class Streets_Of_Cairo(game.Mode):
 
             self.score_layer = ModeScoreLayer(128/2, -1, self.game.fonts['07x5'], self)
             self.award_layer = dmd.TextLayer(128/2, 7, self.game.fonts['num_09Bx7'], "center", opaque=False)
-            
+
+#            self.sprite_data_layers = []
+#            self.sprite_layer = dmd.layers.GroupedLayer(128,32, self.sprite_data_layers)
+#            self.sprite_layer.composite_op ="blacksrc"
+
             #sound setup
             self.game.sound.register_music('soc_background_play', music_path+"streets_of_cairo.aiff")
             self.game.sound.register_sound('soc_marrion_0', sound_path+"soc_jingle.aiff")
@@ -69,6 +125,7 @@ class Streets_Of_Cairo(game.Mode):
             #var setup
             self.count = 0
             self.position = [1,0,0,0]
+            self.marrion_posn = 0
             self.score_value_boost = 1000000
             self.score_value_start = 10000000
             self.score_value_bonus = 2000000
@@ -99,8 +156,9 @@ class Streets_Of_Cairo(game.Mode):
             self.bgnd_anim = "dmd/streets_of_cairo_bgnd.dmd"
             anim = dmd.Animation().load(game_path+self.bgnd_anim)
             self.bgnd_layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False,repeat=True,frame_time=2)
-            self.layer = dmd.GroupedLayer(128, 32, [self.bgnd_layer,self.score_layer,self.timer_layer,self.info_layer,self.award_layer])
+            self.layer = dmd.GroupedLayer(128, 32, [self.bgnd_layer,self.sprite_layer,self.score_layer,self.timer_layer,self.info_layer,self.award_layer])
 
+            
         def load_dual_anim(self):
             #set mode flag
             self.dual_enabled = True
@@ -123,13 +181,133 @@ class Streets_Of_Cairo(game.Mode):
             self.bgnd_anim = "dmd/streets_of_cairo_dual_completed.dmd"
             anim = dmd.Animation().load(game_path+self.bgnd_anim)
             self.bgnd_layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False,repeat=False,frame_time=3)
-            self.scene_layer.add_frame_listener(-1,self.award_score)
+            self.bgnd_layer.add_frame_listener(-1,self.award_score)
             #call the mode select end scene sequence here
             self.bgnd_layer.add_frame_listener(-1, self.mode_select.end_scene)
+            self.bgnd_layer.add_frame_listener(-1, self.eject_ball)
             self.layer = dmd.GroupedLayer(128, 32, [self.bgnd_layer,self.score_layer,self.timer_layer,self.info_layer,self.award_layer])
 
             #play sounds
             self.game.sound.play('gun_shot')
+
+        def eject_ball(self):
+            #create eject delay
+            self.delay(name='eject_delay', event_type=None, delay=2, handler=self.mode_select.eject_ball)
+
+
+        def create_monkey_sprite(self,data=None,delay=None):
+            
+            x=data[0]  #horizontal position of sprite
+            frame_num=data[1] #sprite frame to load
+
+            if delay:
+                self.delay(name='create_sprite_layer', event_type=None, delay=delay, handler=self.create_monkey_sprite, param=data)
+            else:
+                monkey_frames = dmd.Animation().load("dmd/soc_monkey_moves.dmd").frames
+
+                even_frames = monkey_frames[0::2] # This layer gets the even frames
+                odd_frames = monkey_frames[1::2] # This layer gets the uneven frames
+
+
+                self.sprite_data1 = SpriteLayer(frames=[even_frames[frame_num]], opaque=False, hold=False, repeat=True, x=x, dot_type=1)
+                self.sprite_data2 = SpriteLayer(frames=[odd_frames[frame_num]], opaque=False, hold=False, repeat=True, x=x, dot_type=2)
+                #self.sprite_data1 = dmd.AnimatedLayer(frames=[monkey1_frames], opaque=False, hold=False, repeat=True)
+                #self.sprite_data2 = dmd.AnimatedLayer(frames=[monkey2_frames], opaque=False, hold=False, repeat=True)
+
+                self.sprite_data_layers = []
+                self.sprite_data_layers += [self.sprite_data2]
+                self.sprite_data_layers += [self.sprite_data1]
+
+                self.sprite_layer = dmd.layers.GroupedLayer(128,32, self.sprite_data_layers)
+                self.sprite_layer.composite_op ="blacksrc"
+                #print("sprite created")
+
+                self.bgnd_anim = "dmd/streets_of_cairo_bgnd.dmd"
+                anim = dmd.Animation().load(game_path+self.bgnd_anim)
+                self.bgnd_layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False,repeat=True,frame_time=2)
+                self.layer = dmd.GroupedLayer(128, 32, [self.bgnd_layer,self.sprite_layer,self.score_layer,self.timer_layer,self.info_layer,self.award_layer])
+
+
+            
+
+        def move_monkey(self):
+            #create posn for monkey based on shot to complete mode
+            for i in range(len(self.position)):
+                if self.position[i]==1:
+                    self.marrion_posn = i
+            #print(marrion_posn)
+
+            posn = 0
+
+            delay=0
+            self.create_monkey_sprite([posn,5])
+            delay+=1
+            
+            #move full right and stop
+
+            #turn
+            self.create_monkey_sprite([posn+(32*0),4],delay)
+            delay+=0.3
+
+            #move
+            for i in range(1,4):
+                self.create_monkey_sprite([posn+(32*i),2],delay)
+                delay+=0.1
+                self.create_monkey_sprite([posn+(32*i),3],delay)
+                delay+=0.1
+                #print(i)
+
+            #sit
+            self.create_monkey_sprite([posn+(32*3),5],delay)
+            delay+=1
+
+
+
+            #move full left and stop
+
+            #turn
+            self.create_monkey_sprite([posn+(32*3),6],delay)
+            delay+=0.3
+
+#            self.create_monkey_sprite([posn+(32*2),0],delay)
+#            delay+=0.1
+#            self.create_monkey_sprite([posn+(32*2),1],delay)
+#            delay+=0.1
+#
+#            self.create_monkey_sprite([posn+(32*1),0],delay)
+#            delay+=0.1
+#            self.create_monkey_sprite([posn+(32*1),1],delay)
+#            delay+=0.1
+#
+#            self.create_monkey_sprite([posn+(32*0),0],delay)
+#            delay+=0.1
+#            self.create_monkey_sprite([posn+(32*0),1],delay)
+#            delay+=0.1
+
+            #move
+            for i in range(3,-1,-1):
+                self.create_monkey_sprite([posn+(32*i),0],delay)
+                delay+=0.1
+                self.create_monkey_sprite([posn+(32*i),1],delay)
+                delay+=0.1
+
+                if i==self.marrion_posn:
+                    for k in range(8):
+                        self.create_monkey_sprite([posn+(32*self.marrion_posn),5],delay)
+                        delay+=0.1
+                        self.create_monkey_sprite([posn+(32*self.marrion_posn),7],delay)
+                        delay+=0.1
+                    self.voice_call(3)
+                    self.create_monkey_sprite([posn+(32*self.marrion_posn),6],delay)
+                    
+                #print(i)
+
+            #sit
+            self.create_monkey_sprite([posn+(32*0),5],delay)
+
+            
+
+            
 
         def mode_started(self):
             #load player stats
@@ -144,12 +322,13 @@ class Streets_Of_Cairo(game.Mode):
             #self.info_layer.set_text("SHOOT LIT SHOTS TO FIND MARRION",blink_frames=1000)
 
             #load animation
-            self.load_bgnd_anim()
+            self.move_monkey()
+            #self.load_bgnd_anim()
             
             #start mode music, speech & sounds
             self.game.sound.play_music('soc_background_play', loops=-1)
             self.delay(name='mode_speech_delay', event_type=None, delay=0.5, handler=self.voice_call, param=self.count)
-            self.monkey_chirp(3)
+            #self.monkey_chirp(3)
 
             #open gates
             self.open_gates('left')
@@ -162,7 +341,7 @@ class Streets_Of_Cairo(game.Mode):
             #save player stats
 
             self.baskets_searched+=self.count
-            self.game.set_player_stats('soc_baskets_searced',self.baskets_searched)
+            self.game.set_player_stats('soc_baskets_searched',self.baskets_searched)
 
             score_value = (self.score_value_start*self.count)+(self.score_value_dual*self.dual_completed)
             self.game.set_player_stats('streets_of_cairo_score',score_value)
@@ -211,7 +390,7 @@ class Streets_Of_Cairo(game.Mode):
             else:
                 self.delay(name='mode_speech_delay', event_type=None, delay=delay, handler=self.voice_call, param=count)
 
-        def monkey_chirp(self,delay):
+        def monkey_chirp(self,delay=None):
             #method that repeats a series of sound/voice calls at a preset time until cancelled
             start_delay = 0.5
             interval = 0.2
@@ -304,15 +483,16 @@ class Streets_Of_Cairo(game.Mode):
         def sw_leftEject_active(self, sw):
             if self.dual_enabled:
                 self.load_completed_anim()
-            else:
-                self.mode_bonus()
+                return procgame.game.SwitchStop
+            #else:
+                #self.mode_bonus()
 
-            return procgame.game.SwitchStop
+            
 
         def sw_gunTrigger_active(self, sw):
             if self.dual_enabled:
                 self.score_value_dual =  self.score_value_dual/10
-                self.dual_completed()
+                self.load_completed_anim()
 
             return procgame.game.SwitchStop
  

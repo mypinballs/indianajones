@@ -22,16 +22,16 @@ music_path = game_path +"music/"
 
 class Indy_Lanes(game.Mode):
 
-	def __init__(self, game, priority):
+	def __init__(self, game, priority, mode_select):
             super(Indy_Lanes, self).__init__(game, priority)
 
             self.log = logging.getLogger('ij.indy_lanes')
 
-            self.hof = Hand_Of_Fate(self.game, priority+1)
-            self.game.modes.add(self.hof)
+            self.mode_select = mode_select
+            self.hof = Hand_Of_Fate(self.game,95,mode_select)#priority+1
+           
 
-
-            self.bonus_layer = dmd.TextLayer(90, 1, self.game.fonts['num_09Bx7'], "center", opaque=False)
+            self.bonus_layer = dmd.TextLayer(90, 0, self.game.fonts['num_09Bx7'], "center", opaque=False)
             self.loop_layer = dmd.TextLayer(90, 24, self.game.fonts['6x6_bold'], "center", opaque=False)
 
             self.game.sound.register_sound('lane_unlit', sound_path+"top_lane_unlit.aiff")
@@ -51,6 +51,8 @@ class Indy_Lanes(game.Mode):
             #setup friend collection order
             self.friends = ['marrion','willie','sallah','shorty','drJones']
             shuffle(self.friends)
+
+            self.bonus_lamps = ['bonus2X','bonus4X','bonus6X','bonus8X']
 
             self.friends_collected = 0
             self.friend_dmd_image =""
@@ -85,43 +87,75 @@ class Indy_Lanes(game.Mode):
 
 
         def mode_started(self):
-            print("INDY Lanes Mode Started")
-
             #load player specific data
+            #-------------------------
             self.lane_flag = self.game.get_player_stats('indy_lanes_flag')
             self.letters_spotted = self.game.get_player_stats('indy_lanes_letters_spotted')
             self.friends_collected = self.game.get_player_stats('friends_collected')
             self.bonusx = self.game.get_player_stats('bonus_x')
             self.loop_value =self.game.get_player_stats('loop_value')
-
+            #-------------------------
+            
             #update lamp states
             self.update_lamps()
             
 
         def mode_stopped(self):
             #save player specific data
-            
+            #-------------------------
             self.game.set_player_stats('indy_lanes_flag',self.lane_flag)
-            self.game.set_player_stats('indy_lanes_letter_spotted',self.letters_spotted)
+            self.game.set_player_stats('indy_lanes_letters_spotted',self.letters_spotted)
             self.game.set_player_stats('friends_collected',self.friends_collected)
             self.game.set_player_stats('bonus_x',self.bonusx)
+
+            #reset bonus x if x8 reached
+            if self.bonusx>=8:
+                self.game.set_player_stats('bonus_x',1)
+            else:
+                self.game.set_player_stats('bonus_x',self.bonusx)
+
             self.game.set_player_stats('loop_value',self.loop_value)
+            #-------------------------
+            
+            #remove hof mode if needed
+            if self.game.get_player_stats('hof_status') !='off':
+                self.game.modes.remove(self.hof)
 
 
         def mode_tick(self):
             pass
-            
+
 
         def update_lamps(self):
-            print("Updating INDY lane Lamps")
+            self.update_lane_lamps()
+            self.update_friend_lamps()
+            self.update_bonus_lamps()
+
+        def update_lane_lamps(self):
+            self.log.info("Updating INDY lane Lamps")
             for i in range(len(self.lamps)):
                 if self.lane_flag[i]:
                     self.game.effects.drive_lamp(self.lamps[i],'on')
+                else:
+                    self.game.effects.drive_lamp(self.lamps[i],'off')
 
-            print("Updating Friend Lamps")
+        def update_friend_lamps(self):
+            self.log.info("Updating Friend Lamps")
+            self.log.info("Friends Collected:%s",self.friends_collected)
+            loops_completed = self.game.get_player_stats('loops_completed')
+
             for i in range(self.friends_collected):
-                if self.friends_collected>0:
-                    self.game.effects.drive_lamp(self.friends[i-1],'medium')
+                if loops_completed>=i+1:
+                    self.game.effects.drive_lamp(self.friends[i],'on')
+                else:
+                    self.game.effects.drive_lamp(self.friends[i],'medium')
+
+        def update_bonus_lamps(self):
+            self.log.info("Updating Bonus Lamps")
+            if self.bonusx>=2 and self.bonusx<=8:
+                for i in range(2,self.bonusx+1,2):#should create i sequence of 2,4,6,8
+                    j = (i/2)-1
+                    self.game.effects.drive_lamp(self.bonus_lamps[j],'on')
 
 
         def clear(self):
@@ -132,16 +166,22 @@ class Indy_Lanes(game.Mode):
             if self.letters_spotted ==4:
 
                 if self.friends_collected <len(self.friends):
+                    #bonus x
+                    #-----------------
                     #increase bonus x
                     if self.bonusx >=2:
                         self.bonusx +=2
                     else:
                          self.bonusx +=1
-                         
-                    self.game.set_player_stats('bonus_x',self.bonusx)
-                    print("bonus x "+str(self.bonusx))
 
-                     #add a friend
+                    #update bonus lamps
+                    self.update_bonus_lamps()
+
+                    self.game.set_player_stats('bonus_x',self.bonusx)
+                    self.log.info("bonus x "+str(self.bonusx))
+                    #-----------------
+
+                    #add a friend
                     self.add_friend()
 
                     #set loop value
@@ -161,7 +201,6 @@ class Indy_Lanes(game.Mode):
                     #set layer clear time
                     self.delay(name='clear', event_type=None, delay=2, handler=self.clear)
 
-                
 
                 if self.bonusx ==8:
                     self.delay(name='bonus_text', event_type=None, delay=2, handler=self.extra_ball_lit)
@@ -169,7 +208,9 @@ class Indy_Lanes(game.Mode):
                     self.delay(name='bonus_text', event_type=None, delay=2, handler=self.max_bonus)
                  
                 #light hof inlane lights - should we call hof mode instead to do this????
-                self.hof.ready()
+                #self.hof.ready()
+                if self.game.get_player_stats('hof_status') =='off':
+                    self.game.modes.add(self.hof)
 
                 #flash all lamps when completed then reset after delay  
                 self.completed()
@@ -188,7 +229,7 @@ class Indy_Lanes(game.Mode):
             #flag = [self.marrion,self.willie,self.sallah,self.shorty,self.dr_jones]
 
             #if flag[self.friends_collected]==False:
-                self.game.effects.drive_lamp(self.friends[self.friends_collected],'medium')
+                #self.game.effects.drive_lamp(self.friends[self.friends_collected],'medium')
                 #flag[self.friends_collected] = True
                 self.friend_dmd_image = "dmd/"+self.friends[self.friends_collected]+".dmd"
 
@@ -198,10 +239,13 @@ class Indy_Lanes(game.Mode):
                 #up the count by 1 to get the next friend in the sequence
                 self.friends_collected +=1
                 self.game.set_player_stats('friends_collected',self.friends_collected)
+
+                #update friend lamps
+                self.update_friend_lamps()
                 
                 
         def friend_voice_call(self):
-            self.game.sound.play_voice(self.friends[self.friends_collected])
+            self.game.sound.play_voice(self.friends[self.friends_collected-1])
             
 
 
@@ -279,21 +323,24 @@ class Indy_Lanes(game.Mode):
                     flag_new[i] = False
                     flag_new[j]= True
 
-                    self.game.effects.drive_lamp(list[i],'off')
-                    self.game.effects.drive_lamp(list[j],'on')
+                    #self.game.effects.drive_lamp(list[i],'off')
+                    #self.game.effects.drive_lamp(list[j],'on')
 
             #update the carry index if required
-            if carry and direction=='left':
-                flag_new[3]= True
-                self.game.effects.drive_lamp(list[3],'on')
-            elif carry and direction=='right':
-                flag_new[0]= True
-                self.game.effects.drive_lamp(list[0],'on')
+            if carry:
+                if direction=='left':
+                    flag_new[3]= True
+                    #self.game.effects.drive_lamp(list[3],'on')
+                elif direction=='right':
+                    flag_new[0]= True
+                    #self.game.effects.drive_lamp(list[0],'on')
 
-
+            #update main var
             self.lane_flag=flag_new
-            
-            print(self.lane_flag)
+            #update lamps
+            self.update_lane_lamps()
+            #debug log
+            self.log.info('New Lane order is:%s',self.lane_flag)
 
 
         def sw_flipperLwL_active(self, sw):

@@ -6,6 +6,7 @@ __date__ ="$Dec 22, 2010 3:01:38 PM$"
 import procgame
 import locale
 import random
+import logging
 
 from procgame import *
 from random import *
@@ -18,8 +19,13 @@ sound_path = game_path +"sound/"
 
 class Loops(game.Mode):
 
-	def __init__(self, game, priority):
+	def __init__(self, game, priority, mode1):
             super(Loops, self).__init__(game, priority)
+
+            self.log = logging.getLogger('ij.loops')
+
+            #setup mode links
+            self.indy_lanes = mode1
 
             self.text_layer = dmd.TextLayer(128/2, 1, self.game.fonts['18x12'], "center", opaque=False)
             #self.text_layer.transition = dmd.ExpandTransition(direction='vertical')
@@ -136,7 +142,8 @@ class Loops(game.Mode):
             if self.loop_multiplier==2:#set the loops progress store only on first successful loop
                 self.loops_completed+=1
                 self.game.set_player_stats('loops_completed',self.loops_completed)
-
+                self.indy_lanes.update_friend_lamps()
+                
         def jackpot(self):
             pass
 

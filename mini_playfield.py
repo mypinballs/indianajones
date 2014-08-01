@@ -5,8 +5,9 @@ __date__ ="$Dec 22, 2010 3:01:38 PM$"
 
 import procgame
 import locale
-from procgame import *
 import random
+import logging
+from procgame import *
 
 base_path = config.value_for_key_path('base_path')
 game_path = base_path+"games/indyjones/"
@@ -18,6 +19,8 @@ class Mini_Playfield(game.Mode):
 
 	def __init__(self, game, priority):
             super(Mini_Playfield, self).__init__(game, priority)
+
+            self.log = logging.getLogger('ij.miniPlayfield')
 
             #setup sound calls
             self.game.sound.register_sound('poa_lane_lit', sound_path+'poa_lane_lit.aiff')
@@ -68,8 +71,8 @@ class Mini_Playfield(game.Mode):
 
 
         def mode_started(self):
-            print("Mini Playfield Mode Started")
-            print("MP Position is:"+str(self.position))
+            self.log.info("Mini Playfield Mode Started")
+            self.log.info("MP Position is:"+str(self.position))
 
             #setup mechanism
             #self.game.set_status(self.position)
@@ -79,12 +82,18 @@ class Mini_Playfield(game.Mode):
             #self.game.coils.miniMotorRight.pulse(self.centre_time)
             #self.game.coils.miniMotorLeft.pulse(self.centre_time)
 
-
-        def path_sequence(self):
+        def get_status(self):
+            return self.game_status
+        
+        def path_sequence(self,level=None):
 
             self.game_status='mode'
             self.cancel_delayed('path_timeout')
             self.reset_lamps()
+
+            #special setter - pass in level directly for use by other modes
+            if level !=None:
+                self.level=level
 
             #set level and sequence
             if self.level_completed or self.level==0:
@@ -128,7 +137,7 @@ class Mini_Playfield(game.Mode):
                 self.adv_sequence_num=0
 
             lamp_number = random.randint(self.adv_sequence_num, self.adv_sequence_num+1)
-            print("Lamp chosen "+self.list[lamp_number])
+            self.log.info("Lamp chosen "+self.list[lamp_number])
             self.game.effects.drive_lamp(self.list[lamp_number],'medium')
             self.lamp_flag[lamp_number]=True
 
@@ -141,6 +150,23 @@ class Mini_Playfield(game.Mode):
             self.delay(name='path_timeout', event_type=None, delay=move_delay, handler=self.adv_path_sequence)
 
             return
+
+        def sts_path_sequence(self,num):
+            #method for steal the stones, not used for and does not count against poa progress
+            
+            self.game_status='mode'
+            self.reset_lamps()
+
+            #create random lamp sequences
+            sequence = [0,1,2,3,4,5,6,7]
+            random.shuffle(sequence)
+            lamp_number=0
+
+            for i in range(num):
+                self.game.effects.drive_lamp(self.list[sequence[lamp_number]],'medium')
+                print("Lamp chosen "+self.list[sequence[lamp_number]])
+                self.lamp_flag[sequence[lamp_number]]=True
+                lamp_number+=1
         
 
         def inc_pit_value(self):
@@ -180,7 +206,7 @@ class Mini_Playfield(game.Mode):
         def set_posn(self,dirn):
             self.position=dirn;
             #debug
-            self.game.set_status(dirn)
+            #self.log.info(dirn)
             
 
         def centre_playfield(self):
@@ -236,8 +262,8 @@ class Mini_Playfield(game.Mode):
                 if self.game.switches.miniRightLimit.last_changed !=None:
                     time2 = self.game.switches.miniRightLimit.last_changed*100
 
-                print("Time 1:"+str(time1))
-                print("Time 2:"+str(time2))
+                self.log.info("Time 1:"+str(time1))
+                self.log.info("Time 2:"+str(time2))
 
                 if time1>time2:
                     dirn_time = time1-time2
@@ -245,11 +271,11 @@ class Mini_Playfield(game.Mode):
                     dirn_time = time2-time1
 
                 self.dirn_time_count += dirn_time
-                print("Posn Time is:"+str(dirn_time))
+                self.log.info("Posn Time is:"+str(dirn_time))
 
 
             if self.loop<num: #self.loop_num:
-                print("Mini Playfield Position is:"+str(self.position))
+                self.log.info("Mini Playfield Position is:"+str(self.position))
 
                 if self.loop%2!=0:#odd
                     self.motor_on('left')
@@ -263,8 +289,8 @@ class Mini_Playfield(game.Mode):
                 self.calibrated_dirn_time = self.dirn_time_count/num
                 self.calibrated_centre_time = self.calibrated_dirn_time/2
                 
-                print("Calibrated Full Posn Time is:"+ str(self.calibrated_dirn_time))
-                print("Calibrated Centre Posn Time is:"+ str(self.calibrated_centre_time))
+                self.log.info("Calibrated Full Posn Time is:"+ str(self.calibrated_dirn_time))
+                self.log.info("Calibrated Centre Posn Time is:"+ str(self.calibrated_centre_time))
                 
                 self.centre_playfield()
 
@@ -301,12 +327,12 @@ class Mini_Playfield(game.Mode):
 
 
         def sw_miniLeftLimit_active(self,sw):
-            print("left limit")
+            self.log.info("left limit")
             self.set_posn('left')
             self.motor_off()
 
         def sw_miniRightLimit_active(self,sw):
-            print("right limit")
+            self.log.info("right limit")
             self.set_posn('right')
             self.motor_off()
 
@@ -419,7 +445,8 @@ class Mini_Playfield(game.Mode):
 
 
         def sw_topPost_active(self,sw):
-            self.game.enable_flippers(enable=False)
-            #update game status
-            self.game_status = 'mode'
+            if self.game.get_player_stats('multiball_started')==False and self.game.get_player_stats('quick_multiball_running')==False:
+                self.game.enable_flippers(enable=False)
+                #update game status
+                self.game_status = 'mode'
             

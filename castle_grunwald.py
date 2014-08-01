@@ -201,11 +201,14 @@ class Castle_Grunwald(game.Mode):
         def sw_singleDropTop_active(self, sw):
             return procgame.game.SwitchStop
 
-        
+        def sw_captiveBallFront_active(self, sw):
+            return procgame.game.SwitchStop
+
         def sw_captiveBallFront_active_for_200ms(self, sw):
             self.mode_progression()
 
             return procgame.game.SwitchStop
+        
 
         def sw_captiveBallBack_active(self, sw):
             #add extra points for hitting ball to back of capture ball area

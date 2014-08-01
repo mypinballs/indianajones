@@ -17,7 +17,7 @@ class Plane_Chase(game.Mode):
 	def __init__(self, game, priority):
             super(Plane_Chase, self).__init__(game, priority)
 
-            self.text_layer = dmd.TextLayer(128/2, 5, self.game.fonts['18x12'], "center", opaque=False)
+            self.text_layer = dmd.TextLayer(128/2, 5, self.game.fonts['23x12'], "center", opaque=False)
             #self.text_layer.transition = dmd.ExpandTransition(direction='vertical')
 
             self.game.sound.register_sound('stall', sound_path+"plane_stall.aiff")
@@ -47,10 +47,9 @@ class Plane_Chase(game.Mode):
             self.right_ramp_enabled = False
 
 
-            self.reset()
-
         def reset(self):
             #self.reset_lamps()
+            self.game.coils.flasherDogFight.disable()
 
             self.left_ramp_enabled = True
             #self.game.effects.drive_lamp('leftRampArrow','superfast')
@@ -105,7 +104,7 @@ class Plane_Chase(game.Mode):
                 self.animation_layer.add_frame_listener(-1,self.clear)
                 #self.text_layer.set_text(str(self.ramp_made_score),seconds=2)
                 self.layer = dmd.GroupedLayer(128, 32, [self.animation_layer,self.text_layer])
-                #self.delay(name='score', event_type=None, delay=2.5, handler=self.text_layer.set_text(str(self.ramp_made_score),seconds=2))
+                #self.delay(name='clear_delay', delay=2.5, handler=self.clear)
 
                 self.game.lampctrl.play_show('success', repeat=False,callback=self.game.update_lamps)#self.restore_lamps
                 self.game.score(self.ramp_made_score)
@@ -116,7 +115,7 @@ class Plane_Chase(game.Mode):
                 self.delay(name='expired', event_type=None, delay=self.game.user_settings['Gameplay (Feature)']['Dog Fight Timer'], handler=self.reset)
 
         def ramp_made_text(self):
-            self.text_layer.set_text(locale.format("%d",self.ramp_made_score,True),blink_frames=20)
+            self.text_layer.set_text(locale.format("%d",self.ramp_made_score,True),blink_frames=4)
 
         #def restore_lamps(self):
         #    self.game.lampctrl.restore_state('game')
@@ -130,15 +129,15 @@ class Plane_Chase(game.Mode):
             self.delay(name='update_time', event_type=None, delay=0.5, handler=self.dog_fight)
 
         def mode_started(self):
-            pass
+            self.reset()
 
         
         def mode_stopped(self):
-            #turn off all mini playfield lamps
-            pass
+            self.reset()
 
         def clear(self):
             self.layer = None
+            self.text_layer.set_text('')
 
         def sw_leftRampEnter_active(self,sw):
             self.game.score(self.ramp_entered_score)

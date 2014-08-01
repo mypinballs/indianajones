@@ -19,16 +19,31 @@ class Bonus(game.Mode):
 		self.bonus_layer = dmd.GroupedLayer(128, 32, [self.title_layer, self.value_layer])
                 #self.bonus_layer.transition = dmd.ExpandTransition(direction='vertical')
 
-                self.mode_bonus_bgnd = dmd.FrameLayer(opaque=True, frame=dmd.Animation().load(game_path+'dmd/mode_bonus_bgnd.dmd').frames[0])
+                self.mode_bonus_bgnd = dmd.FrameLayer(opaque=True, frame=dmd.Animation().load(game_path+'dmd/scene_ended_bgnd.dmd').frames[0])
                 self.mode_bonus_layer = dmd.GroupedLayer(128, 32, [self.title_layer, self.value_layer,self.mode_bonus_bgnd])
                 #self.mode_bonus_layer.transition = dmd.ExpandTransition(direction='vertical')
 
 		self.bonus_counter = 0
                 self.mode_counter =0
                 self.mode_total = 0
-		self.delay_time = 1.5
+		self.delay_time = 1.6
+                self.base_value = 100000
 
                 self.game.sound.register_music('bonus', music_path+"bonus.aiff")
+                self.game.sound.register_sound('bonus_end', sound_path+"bonus_end_jingle.aiff")
+                self.game.sound.register_sound('bonus_mode_completed1', sound_path+"bonus_mode_completed1.aiff")
+                self.game.sound.register_sound('bonus_mode_completed2', sound_path+"bonus_mode_completed2.aiff")
+                self.game.sound.register_sound('bonus_mode_completed3', sound_path+"bonus_mode_completed3.aiff")
+                self.game.sound.register_sound('bonus_mode_completed4', sound_path+"bonus_mode_completed4.aiff")
+                self.game.sound.register_sound('bonus_mode_completed5', sound_path+"bonus_mode_completed5.aiff")
+                self.game.sound.register_sound('bonus_mode_completed6', sound_path+"bonus_mode_completed6.aiff")
+                self.game.sound.register_sound('bonus_mode_completed7', sound_path+"bonus_mode_completed7.aiff")
+                self.game.sound.register_sound('bonus_mode_completed8', sound_path+"bonus_mode_completed8.aiff")
+                self.game.sound.register_sound('bonus_mode_completed9', sound_path+"bonus_mode_completed9.aiff")
+                self.game.sound.register_sound('bonus_mode_completed10', sound_path+"bonus_mode_completed10.aiff")
+                self.game.sound.register_sound('bonus_mode_completed11', sound_path+"bonus_mode_completed11.aiff")
+                self.game.sound.register_sound('bonus_mode_completed12', sound_path+"bonus_mode_completed12.aiff")
+
 
 	def mode_started(self):
 		# Disable the flippers
@@ -43,13 +58,13 @@ class Bonus(game.Mode):
                 print("Debug, Bonus Mode Ended")
 
 
-
         def get_bonus_value(self):
             friends = self.game.get_player_stats('friends_collected') * 40000
             ramps =  self.game.get_player_stats('ramps_made') * 10000
             adventure_letters = self.game.get_player_stats('adventure_letters_collected') * 5000
+            slingshots = self.game.get_player_stats('slingshot_hits')*3000
 
-            return friends+ramps+adventure_letters
+            return self.base_value+friends+ramps+adventure_letters+slingshots
 
         def get_bonus_x(self):
             bonus_x = self.game.get_player_stats('bonus_x')
@@ -78,32 +93,36 @@ class Bonus(game.Mode):
 
         def modes(self):
             
-
             self.elements = []
             self.value = []
-#            for element, value in mode_stats.iteritems():
-#		self.elements.append(element)
-#		self.value.append(value)
-            
-            if self.mode_counter <len(self.elements):
-                self.title_layer.set_text(self.elements[self.mode_counter],seconds=self.delay_time)
-                self.value_layer.set_text(locale.format("%d", self.value[self.mode_counter], True),seconds=self.delay_time)
-                self.layer = self.mode_bonus_layer
+            mode_stats = self.game.get_player_stats("bonus_mode_tracking")
+            for item in mode_stats:
+		self.elements.append(item['name'])
+		self.value.append(item['score'])
 
+            self.mode_counter = 0
+            self.modes_display()
+
+        def modes_display(self):
+            if self.mode_counter<len(self.elements):
+                self.title_layer.set_text(self.elements[self.mode_counter])
+                self.value_layer.set_text(locale.format("%d", self.value[self.mode_counter], True))
+                self.layer = self.mode_bonus_layer
+                self.game.sound.play('bonus_mode_completed'+str(self.mode_counter+1))
                 self.mode_total =self.mode_total+self.value[self.mode_counter]
-                self.delay(name='mode_bonus', event_type=None, delay=self.delay_time, handler=self.modes)
+                self.mode_counter+=1
+                
+                self.delay(name='mode_bonus', event_type=None, delay=self.delay_time, handler=self.modes_display)
+                
             else:
                 self.total()
-
-            self.mode_counter += 1
-
 
 	
 	def total(self):
             
             if self.bonus_counter == 0:
                 self.game.sound.fadeout_music()
-                self.game.sound.play('bonus')
+                self.game.sound.play('bonus_end')
                 total_bonus = (self.total_base * self.bonus_x)+self.mode_total
                 self.title_layer.set_text('TOTAL BONUS',seconds=self.delay_time)
                 self.value_layer.set_text(locale.format("%d", total_bonus, True),seconds=self.delay_time)

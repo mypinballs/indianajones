@@ -2,12 +2,15 @@ import sys
 sys.path.append(sys.path[0]+'/../..') # Set the path so we can find procgame.  We are assuming (stupidly?) that the first member is our directory.
 import procgame
 import pinproc
-from layers import *
+#from layers import *
 from idol import *
 from mini_playfield import *
 from effects import *
 from extra_ball import *
-from info import *
+from screens import *
+from mpcballsearch import *
+from service import *
+#from info import *
 from bonus import *
 from tilt import *
 from match import *
@@ -37,7 +40,7 @@ import random
 import logging
 
 
-logging.basicConfig(level=logging.ERROR, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
 #os.chdir("/Users/jim/Documents/Pinball/p-roc/p-roc system/src/pyprocgame/")
 
@@ -68,7 +71,9 @@ font_18x12 = dmd.Font(fonts_path+"Font18x12.dmd")
 font_07x4 = dmd.Font(fonts_path+"Font07x4.dmd")
 font_07x5 = dmd.Font(fonts_path+"Font07x5.dmd")
 font_09Bx7 = dmd.Font(fonts_path+"Font09Bx7.dmd")
-font_6x6_bold = dmd.Font(fonts_path+"Font_6x6_bold.dmd")
+font_6x6_bold = dmd.Font(fonts_path+"font_6x6_bold.dmd")
+font_23x12 = dmd.font_named("font_23x12_bold.dmd")
+font_8x6_bold = dmd.font_named("font_8x6_bold.dmd")
 
 #lampshow_files = [game_path +"lamps/attract_show_test.lampshow"]
 lampshow_files = [game_path +"lamps/general/colours.lampshow", \
@@ -88,6 +93,7 @@ class Attract(game.Mode):
                 self.log = logging.getLogger('ij.attract')
                 self.display_order = [0,1,2,3,4,5,6,7,8,9]
 		self.display_index = 0
+
 		self.game.sound.register_sound('burp', voice_path+'burp.wav')
  
 	def mode_topmost(self):
@@ -99,25 +105,22 @@ class Attract(game.Mode):
 		self.game.lamps.startButton.schedule(schedule=0x00ff00ff, cycle_seconds=0, now=False)
 
                 # Turn on GI lamps
-		self.delay(name='stuck_balls', event_type=None, delay=0, handler=self.gi)
+		self.delay(name='gi_on_delay', event_type=None, delay=0, handler=self.gi)
 
                 self.log.info("attract mode after gi turn on")
 
                 # run feature lamp patterns
+                self.lamp_show_set=True
                 self.change_lampshow()
 
                 #debug subway release issues
                 self.game.coils.subwayRelease.pulse(100)
 
                 #check for stuck balls
-                #self.release_stuck_balls()
-                self.delay(name='stuck_balls', event_type=None, delay=2, handler=self.release_stuck_balls)
+                self.delay(name='idol_empty_delay', event_type=None, delay=2, handler=self.empty_idol)
+                self.delay(name='stuck_balls_release_delay', event_type=None, delay=2, handler=self.release_stuck_balls)
 
-                #empty idol if trough not full
-                if not self.game.trough.is_full():
-                    self.game.idol.empty()
 
-                print("Trough is full:" +str(self.game.trough.is_full()))
                 #reset mini playfield code
 
                 #create dmd attract screens
@@ -159,6 +162,10 @@ class Attract(game.Mode):
                 #run attract dmd screens
                 self.attract_display()
 
+                #fadeout music (if any running)
+                self.delay(name='music_fadeout_delay', event_type=None, delay=10, handler=lambda:self.game.sound.fadeout_music(3000))
+
+
         def gi(self):
             self.game.lamps.gi01.pulse(0)
             self.game.lamps.gi02.pulse(0)
@@ -171,37 +178,59 @@ class Attract(game.Mode):
             self.game.lamps.gi03.disable()
             self.game.lamps.gi04.disable()
 
+        def empty_idol(self):
+            #total_balls = self.game.trough.num_balls()+self.game.trough.num_balls_locked
+            #if total_balls<self.game.num_balls_total:
+                #empty the idol mech
+                self.game.idol.empty()
+
         def release_stuck_balls(self):
             #Release Stuck Balls code
-            if self.game.switches.leftEject.is_active():
-               self.game.coils.leftEject.pulse(15)
 
-            #popper
-            if self.game.switches.rightPopper.is_active():
-                self.game.coils.ballPopper.pulse(50)
+            total_balls = self.game.trough.num_balls()+self.game.trough.num_balls_locked
+            if total_balls<self.game.num_balls_total:
+               
+                self.log.info('Trough is full::%s',self.game.trough.is_full())
+                self.log.info('Balls in trough::%s',self.game.trough.num_balls())
+                self.log.info('Subway Switch::%s',self.game.switches.subwayLockup.is_active())
+                self.log.info('Popper Switch::%s',self.game.switches.rightPopper.is_active())
+                self.log.info('Balls Locked::%s',self.game.trough.num_balls_locked)
 
-            #subway
-            if self.game.switches.subwayLockup.is_active():
-                self.game.coils.subwayRelease.pulse(30)
+                if self.game.switches.leftEject.is_active():
+                    self.game.coils.leftEject.pulse()
 
-            #reset drops
-            if self.game.switches.dropTargetLeft.is_active() or self.game.switches.dropTargetMiddle.is_active() or self.game.switches.dropTargetRight.is_active():
-                self.game.coils.centerDropBank.pulse(100)
+                #popper
+                if self.game.switches.rightPopper.is_active():
+                    self.game.coils.ballPopper.pulse(50)
 
-            if self.game.switches.singleDropTop.is_active():
-                self.game.coils.totemDropUp.pulse()
+                #subway
+                if self.game.switches.subwayLockup.is_active():
+                    self.game.coils.subwayRelease.pulse()
 
-            #check shooter lane
-            if self.game.switches.shooterLane.is_active():
-                self.game.coils.ballLaunch.pulse()
+                #reset drops
+                if self.game.switches.dropTargetLeft.is_active() or self.game.switches.dropTargetMiddle.is_active() or self.game.switches.dropTargetRight.is_active():
+                    self.game.coils.centerDropBank.pulse(100)
 
-            if self.game.switches.topPost.is_active():
-                self.game.coils.topLockupMain.pulse()
-                self.game.coils.topLockupHold.pulse(200)
+                if self.game.switches.singleDropTop.is_active():
+                    self.game.coils.totemDropUp.pulse()
 
+                #check shooter lane
+                if self.game.switches.shooterLane.is_active():
+                    self.game.coils.ballLaunch.pulse()
+
+                if self.game.switches.topPost.is_active():
+                    self.game.coils.topLockupMain.pulse()
+                    self.game.coils.topLockupHold.pulse(200)
+
+                self.delay(name='release_stuck_balls_loop', event_type=None, delay=5, handler=self.release_stuck_balls)
+            else:
+                self.cancel_delayed('release_stuck_balls_loop')
 
         def change_lampshow(self):
 		shuffle(self.game.lampshow_keys)
+                delay=10
+
+                self.game.lampctrl.stop_show()
                 
                 #turn gi on or off depending on lampshow chosen from shuffle
                 if self.game.lampshow_keys[0].find('flasher',0)>0:
@@ -209,8 +238,28 @@ class Attract(game.Mode):
                 else:
                     self.gi()
 
-		self.game.lampctrl.play_show(self.game.lampshow_keys[0], repeat=True)
-		self.delay(name='lampshow', event_type=None, delay=10, handler=self.change_lampshow)
+                if not self.lamp_show_set:
+                    #self.log.info('running pattern lamp show')
+                    self.game.lampctrl.play_show(self.game.lampshow_keys[0], repeat=True)
+                    self.lamp_show_set=True
+                else:
+                    #self.log.info('running standard lamp show')
+                    self.standard_lampshow()
+                    self.lamp_show_set=False
+                    delay=30
+
+		self.delay(name='lampshow', event_type=None, delay=delay, handler=self.change_lampshow)
+
+        def standard_lampshow(self, enable=True):
+		#flash all lamps in groups of 8 ordered by columns
+		schedules = [0xffff0000, 0xfff0000f, 0xff0000ff, 0xf0000fff, 0x0000ffff, 0x000ffff0, 0x00ffff00, 0x0ffff000]
+		for index, lamp in enumerate(sorted(self.game.lamps, key=lambda lamp: lamp.number)):
+                    if lamp.yaml_number.startswith('L'):
+			if enable:
+				sched = schedules[index%len(schedules)]
+				lamp.schedule(schedule=sched, cycle_seconds=0, now=False)
+			else:
+				lamp.disable()
 
 
         def attract_display(self):
@@ -282,7 +331,7 @@ class Attract(game.Mode):
 	# Perhaps if the trough isn't full after a few ball search attempts, it logs a ball
 	# as lost?
 	def sw_startButton_active(self, sw):
-		if self.game.trough.is_full:
+		if self.game.trough.is_full():
 			# Remove attract mode from mode queue - Necessary?
 			self.game.modes.remove(self)
 			# Initialize game
@@ -293,7 +342,7 @@ class Attract(game.Mode):
 			self.game.start_ball()
 		else:
 
-			self.game.set_status("Ball Search!")
+			#self.game.set_status("Ball Search!")
 			self.game.ball_search.perform_search(5)
 		return True
 
@@ -302,10 +351,12 @@ class BaseGameMode(game.Mode):
 	"""docstring for AttractMode"""
 	def __init__(self, game):
 		super(BaseGameMode, self).__init__(game, 2)
+
+                self.log = logging.getLogger('ij.base')
+                
 		self.tilt_layer = dmd.TextLayer(128/2, 7, font_jazz18, "center").set_text("TILT!")
 		self.layer = None # Presently used for tilt layer
-		self.ball_starting = True
-
+		
                 #register music files
                 self.game.sound.register_music('general_play', music_path+"general_play.aiff")
                 #register speech call files
@@ -325,10 +376,13 @@ class BaseGameMode(game.Mode):
 
                 self.game.sound.register_sound('outlane_speech', speech_path+"goodbye.aiff")
                 self.game.sound.register_sound('outlane_speech', speech_path+"argh.aiff")
-                self.game.sound.register_sound('outlane_speech', speech_path+"blank.aiff")
+                self.game.sound.register_sound('outlane_speech', speech_path+"why_snakes.aiff")
                 self.game.sound.register_sound('outlane_speech', speech_path+"blank.aiff")
                 self.game.sound.register_sound('extra_ball_speech', speech_path+"extra_ball.aiff")
 
+                #setup flags
+                self.ball_starting = True
+                self.ball_served= False
                 self.ball_saved = False
 
 
@@ -392,11 +446,8 @@ class BaseGameMode(game.Mode):
             #lower priority basic modes
             self.pops = Pops(self.game, 40)
             self.narrow_escape = Narrow_Escape(self.game, 41)
-            self.indy_lanes = Indy_Lanes(self.game, 42)
-            self.loops = Loops(self.game, 43)
-
+            
             #medium priority basic modes
-            self.poa = POA(self.game, 50)
             self.totem = Totem(self.game, 51)
             self.plane_chase = Plane_Chase(self.game, 52)
             self.skillshot = Skillshot(self.game, 54)
@@ -404,21 +455,26 @@ class BaseGameMode(game.Mode):
             #higher priority basic modes
             self.mode_select = Mode_Select(self.game, 60)
             self.multiball = Multiball(self.game, 61)
+            self.poa = POA(self.game, 95)
+
+            #modes with links to other modes
+            self.indy_lanes = Indy_Lanes(self.game, 42, self.mode_select)
+            self.loops = Loops(self.game, 43, self.indy_lanes)
 
             #start modes
             self.game.modes.add(self.pops)
             self.game.modes.add(self.narrow_escape)
             self.game.modes.add(self.indy_lanes)
             self.game.modes.add(self.loops)
-            self.game.modes.add(self.poa)
             self.game.modes.add(self.totem)
             self.game.modes.add(self.plane_chase)
             self.game.modes.add(self.mode_select)
             self.game.modes.add(self.multiball)
+            self.game.modes.add(self.poa)
 
             #set idol - should be here already?
-            if self.game.ball==1:
-                self.game.idol.home()
+            #if self.game.ball==1:
+                #self.game.idol.home()
 
 
         def ball_save_callback(self):
@@ -466,14 +522,15 @@ class BaseGameMode(game.Mode):
                 self.game.modes.remove(self.narrow_escape)
                 self.game.modes.remove(self.indy_lanes)
                 self.game.modes.remove(self.loops)
-                self.game.modes.remove(self.poa)
                 self.game.modes.remove(self.totem)
                 self.game.modes.remove(self.plane_chase)
                 self.game.modes.remove(self.mode_select)
                 self.game.modes.remove(self.multiball)
+                self.game.modes.remove(self.poa)
 
 	def ball_drained_callback(self):
-		if self.game.trough.num_balls_in_play == 0:
+                # temp addition of ball_served flag checking to try and resolve trough ball launch bounce in
+		if self.game.trough.num_balls_in_play == 0 and self.ball_served:
                     # End the ball
                     self.finish_ball()
 
@@ -502,6 +559,9 @@ class BaseGameMode(game.Mode):
 	def end_ball(self):
                 #remove bonus mode
                 self.game.modes.remove(self.bonus)
+
+                #reset ball served flag
+                self.ball_served=False
                 
 		# Tell the game object it can process the end of ball
 		# (to end player's turn or shoot again)
@@ -511,7 +571,7 @@ class BaseGameMode(game.Mode):
 	def sw_startButton_active(self, sw):
 		if self.game.ball == 1 and len(self.game.players)<self.game.max_players:
 			p = self.game.add_player()
-			self.game.set_status(p.name + " added!")
+			self.log.info(p.name + " added!")
 
         def sw_startButton_active_for_2s(self, sw):
 		if self.game.ball > 1 and self.game.user_settings['Machine (Standard)']['Game Restart']:
@@ -527,6 +587,7 @@ class BaseGameMode(game.Mode):
 			self.game.reset()
 			return True
 
+
 	def sw_shooterLane_open_for_1s(self,sw):
 		if self.ball_starting:
 			self.ball_starting = False
@@ -534,6 +595,9 @@ class BaseGameMode(game.Mode):
 			self.game.ball_save.start(num_balls_to_save=1, time=ball_save_time, now=True, allow_multiple_saves=False)
 		#else:
 		#	self.game.ball_save.disable()
+
+        def sw_shooterLane_active_for_150ms(self,sw):
+            self.ball_served = True
 
         def sw_shooterLane_active_for_500ms(self,sw):
             if self.ball_saved:
@@ -546,9 +610,9 @@ class BaseGameMode(game.Mode):
 	def sw_gunTrigger_active(self, sw):
 		if self.game.switches.shooterLane.is_active():
 			self.game.coils.ballLaunch.pulse(50)
-                        self.game.coils.flasherRightSide.schedule(0x00003333, cycle_seconds=1.5, now=True)
+                        self.game.coils.flasherRightSide.schedule(0x00003333, cycle_seconds=2, now=True)
                         self.game.sound.play("gun_shot")
-                if self.game.switches.flipperLwL.is_active():
+                if self.game.switches.flipperLwL.is_active() and self.ball_starting:
                         self.game.modes.add(self.skillshot)
 
         #skillshot preview
@@ -631,15 +695,17 @@ class BaseGameMode(game.Mode):
         def sling(self):
             self.game.score(110)
             self.game.sound.play('slingshot')
+            self.game.set_player_stats('slingshot_hits',self.game.get_player_stats('slingshot_hits')+1)
 
         def inlane(self):
             self.game.score(100000)
             self.game.sound.play("inlane")
 
         def outlane(self):
-            self.game.score(200000)
-            self.game.sound.play("outlane_sound")
-            self.game.sound.play("outlane_speech")
+            if not self.game.ball_save.is_active():
+                self.game.score(200000)
+                self.game.sound.play("outlane_sound")
+                self.game.sound.play("outlane_speech")
 
 
 
@@ -649,9 +715,17 @@ class Game(game.BasicGame):
 	"""docstring for Game"""
 	def __init__(self, machine_type):
 		super(Game, self).__init__(machine_type)
+
+                self.log = logging.getLogger('ij.game')
 		self.sound = procgame.sound.SoundController(self)
 		self.lampctrl = procgame.lamps.LampController(self)
 		self.settings = {}
+
+                #set the dmd colour map - level 1 is mask and set to 0
+                #dmd_map = [0, 0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+                dmd_map = [0, 0, 1, 1, 1, 2, 2, 3, 3, 4, 5, 11, 12, 13, 14, 15]
+                self.proc.set_dmd_color_mapping(dmd_map)
+
 
 	def save_settings(self):
 		#self.write_settings(settings_path)
@@ -701,7 +775,7 @@ class Game(game.BasicGame):
 		# the specific game being run.  In range(1,x), x = last number + 1.
 		for i in range(1,7):
 			trough_switchnames.append('trough' + str(i))
-		early_save_switchnames = ['rightOutlaneTop', 'leftOutlane']
+		early_save_switchnames = ['rightOutlaneBottom', 'leftOutlane']
 
 		# Note - Game specific item:
 		# Here, trough6 is used for the 'eject_switchname'.  This must
@@ -723,18 +797,25 @@ class Game(game.BasicGame):
 		self.sound.register_sound('service_switch_edge', sound_path+"switch_edge.wav")
 		self.sound.register_sound('service_save', sound_path+"save.wav")
 		self.sound.register_sound('service_cancel', sound_path+"cancel.wav")
-		self.service_mode = procgame.service.ServiceMode(self,100,font_tiny7,[])
+
+                #change this to my own version
+                #self.service_mode = procgame.service.ServiceMode(self,100,font_tiny7,[])
+                self.service_mode = ServiceMode(self,100,font_07x5,font_8x6_bold,[])
 
 		# Setup fonts
 		self.fonts = {}
-		self.fonts['tiny7'] = font_tiny7
 		self.fonts['jazz18'] = font_jazz18
         	self.fonts['18x12'] = font_18x12
- 		self.fonts['07x5'] = font_07x5
                 self.fonts['num_14x10'] = font_14x10
 		self.fonts['num_07x4'] = font_07x4
+
+                self.fonts['tiny7'] = font_tiny7
+                self.fonts['07x5'] = font_07x5
+                self.fonts['7x4'] = dmd.Font(fonts_path+"Font07x4.dmd")
                 self.fonts['num_09Bx7'] = font_09Bx7
                 self.fonts['6x6_bold'] = font_6x6_bold
+                self.fonts['8x6'] = font_8x6_bold
+                self.fonts['23x12'] = font_23x12
 
                 #setup paths
                 self.paths = {}
@@ -742,6 +823,7 @@ class Game(game.BasicGame):
                 self.paths['sound'] = sound_path
                 self.paths['speech'] = voice_path
                 self.paths['music'] = music_path
+                self.log.info(self.paths)
 
 
                 # Register lampshow files for attact
@@ -789,6 +871,8 @@ class Game(game.BasicGame):
                 self.effects = Effects(self)
                 #extra ball mode
                 self.extra_ball = Extra_Ball(self)
+                #screens mode
+                self.screens = Screens(self)
                 #match mode
                 self.match = Match(self,10)
                 #add idol mode for idol logic and control
@@ -823,6 +907,8 @@ class Game(game.BasicGame):
                 self.modes.add(self.mini_playfield)
 		self.modes.add(self.trough)
                 self.modes.add(self.extra_ball)
+                self.modes.add(self.screens)
+
                 
     
 
@@ -874,11 +960,11 @@ class Game(game.BasicGame):
 	def setup_ball_search(self):
 		# No special handlers in starter game.
 		special_handler_modes = []
-		self.ball_search = procgame.modes.BallSearch(self, priority=100, \
+		self.ball_search = mpcBallSearch(self, priority=100, \
                                      countdown_time=10, coils=self.ballsearch_coils, \
                                      reset_switches=self.ballsearch_resetSwitches, \
                                      stop_switches=self.ballsearch_stopSwitches, \
-                                     special_handler_modes=special_handler_modes)
+                                     special_handler_modes=special_handler_modes) #procgame.modes.BallSearch
 
 #       def enable_flippers(self, enable=True):
 #		super(Game, self).enable_flippers(enable)
@@ -913,6 +999,8 @@ class mpcPlayer(game.Player):
                 #set player stats defaults
                 self.player_stats['status']=''
                 self.player_stats['bonus_x']=1
+                self.player_stats['bonus_mode_tracking']=[]
+                self.player_stats['slingshot_hits']=0
                 self.player_stats['friends_collected']=0
                 self.player_stats['loops_completed']=0
                 self.player_stats['loops_made']=0
@@ -921,25 +1009,40 @@ class mpcPlayer(game.Player):
                 self.player_stats['adventure_letters_collected']=0
                 self.player_stats['burps_collected']=0
                 self.player_stats['soc_baskets_searched']=0
+                self.player_stats['snakes_torched']=0
                 self.player_stats['stones_collected']=0
+                self.player_stats['rope_bridge_distance']=0
+                self.player_stats['tank_chase_distance']=0
+                self.player_stats['challenges_collected']=0
                 self.player_stats['current_mode_num']=0
+                self.player_stats['hof_status']='off'
                 self.player_stats['mode_enabled']=False
                 self.player_stats['mode_running'] = False
                 self.player_stats['mode_status_tracking']= [0,0,0,0,0,0,0,0,0,0,0,0]
+                self.player_stats['multiball_mode_started'] = False
+                self.player_stats['path_mode_started'] = False
                 self.player_stats['lock_lit'] = False                
                 self.player_stats['multiball_running'] = False
+                self.player_stats['multiball_started'] = False
+                self.player_stats['quick_multiball_running'] = False
                 self.player_stats['balls_locked'] = 0
                 self.player_stats['pit_value'] = 0
                 self.player_stats['indy_lanes_flag']= [False,False,False,False]
                 self.player_stats['indy_lanes_letters_spotted'] = 0
                 self.player_stats['poa_flag']= [False,False,False,False,False,False,False,False,False]
+                self.player_stats['poa_queued'] = False
                 self.player_stats['adventure_letters_spotted']=0
                 self.player_stats['last_mode_score']=0
                 self.player_stats['get_the_idol_score']=0
                 self.player_stats['castle_grunwald_score']=0
                 self.player_stats['monkey_brains_score']=0
                 self.player_stats['streets_of_cairo_score']=0
+                self.player_stats['well_of_souls_score']=0
                 self.player_stats['steal_the_stones_score']=0
+                self.player_stats['rope_bridge_score']=0
+                self.player_stats['the_three_challenges_score']=0
+                self.player_stats['werewolf_score']=0
+                self.player_stats['choose_wisely_level']=1#int(self.game.user_settings['Gameplay (Feature)']['Choose Wisely Level Start'])
 
 
                 
