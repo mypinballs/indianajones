@@ -85,9 +85,7 @@ class Match(game.Mode):
             self.p4_layer = dmd.TextLayer(128, 0, self.game.fonts['6x6_bold'], "right", opaque=False)
 
             self.value_range = 9
-            self.value = 0
-            self.player_digits = [0,0,0,0]
-            self.play=False
+            
 
             self.game.sound.register_sound('see_you', speech_path+"see_you_tomorrow.aiff")
             self.game.sound.register_sound('top_men', speech_path+"top_men.aiff")
@@ -99,10 +97,14 @@ class Match(game.Mode):
 
 
         def reset(self):
-            pass
+            self.value = 0
+            self.player_digits = [0,0,0,0]
+            self.play=False
 
 
         def mode_started(self):
+            self.reset()
+
             self.game.sound.stop_music()
             self.generate_digits()
             self.generate_match()
@@ -189,9 +191,10 @@ class Match(game.Mode):
 
 
         def move_sprite(self,layer1,layer2):
-            layer1.target_x +=6
-            layer2.target_x +=6
+            layer1.target_x +=8
+            layer2.target_x +=8
 
+            self.cancel_delayed('move_sprite_forward')
             self.delay(name='move_sprite_forward',delay=0.2,handler=lambda:self.move_sprite(layer1,layer2))
 
             if layer1.target_x>128:

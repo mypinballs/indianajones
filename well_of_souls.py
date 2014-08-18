@@ -132,7 +132,7 @@ class Well_Of_Souls(game.Mode):
 
             #set mode player stats
             self.game.set_player_stats('multiball_mode_started',True)
-            
+        
             #setup additonal layers
             #self.info_layer.set_text("SHOOT LIT SHOTS",blink_frames=1000)
 

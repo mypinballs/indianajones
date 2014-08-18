@@ -1,0 +1,145 @@
+# This file contains the catalogue of audits that can be stored int he audits database
+generalAudits:
+  gamePlayed:
+    label: 'Game Played'
+  gameStarted:
+    label: 'Game Started'
+  gameTime:
+    label: 'Game Time'
+  attractTime:
+    label: 'Attract Time'
+  ballPlayed:
+    label: 'Ball Played'
+  tiltActivated:
+    label: 'Tilt Actived'
+  freePlayGameStarted:
+    label: 'Free Play Game Started'
+  creditGameStarted:
+    label: 'Credit Game Started'
+  ballSaved:
+    label: 'Ball Saved'
+  replayAwarded:
+    label: 'Replay Awarded'
+  specialAwarded:
+    label: 'Special Awarded'
+  matchAwarded:
+    label: 'Match Awarded'
+  extraBallLit:
+    label: 'Extra Ball Lit'
+  extraBallAwarded:
+    label: 'Extra Ball Awarded'
+  grandChampionCreditAwarded:
+    label: 'Grand Champion Credit Awarded'
+  1PlayerGameStarted:
+    label: '1 Player Game Started'
+  2PlayerGameStarted:
+    label: '2 Player Game Started'
+  3PlayerGameStarted:
+    label: '3 Player Game Started'
+  4PlayerGameStarted:
+    label: '4 Player Game Started'
+  timeSet:
+    label: 'Time Set'
+  bootUp:
+    label: 'Boot-Up'
+  grandChampionScoreEntry:
+    label: 'Grand Champion Score Entry'
+  highScoreEntry:
+    label: 'High Score Entry'
+  gameScore:
+    label: 'Game Score'
+  auditsReset:
+    label: 'Audits Reset'
+  leftFlipper:
+    label: 'Left Flipper'
+  rightFlipper:
+    label: 'Right Flipper'
+featureAudits:
+  leftOutlane:
+    label: 'Left Outlane'
+  rightOutlane:
+    label: 'Right Outlane'
+  leftInlane:
+    label: 'left Inlane'
+  rightInlane:
+    label: 'rightInlane'
+  skillshotMade:
+    label: 'Skillshot Made'
+  handOfFateCollected:
+    label: 'Hand of Fate Collected'
+  modeStarted:
+    label: 'Mode Started'
+  modeCompleted:
+    label: 'Mode Completed'
+  modeBonus:
+    label: 'Mode Bonus'
+  getTheIdolModeStarted:
+    label: 'Get The Idol Mode Started'
+  getTheIdolModeCompleted:
+    label: 'Get The Idol Mode Completed'
+  streetsOfCairoModeStarted:
+    label: 'Streets of Cairo Mode Started'
+  streetsOfCairoModeCompleted:
+    label: 'Streets of Cairo Mode Completed'
+  wellOfSoulsModeStarted:
+    label: 'Well Of Souls Mode Started'
+  wellOfSoulsModeCompleted:
+    label: 'Well Of Souls Mode Completed'
+  ravenBarModeStarted:
+    label: 'Raven Bar Mode Started'
+  ravenBarModeCompleted:
+    label: 'Raven Bar Mode Completed'
+  ravenBarModeCompleted:
+    label: 'Raven Bar Mode Completed'
+  monkeyBrainsModeStarted:
+    label: 'Monkey Brains Mode Started'
+  monkeyBrainsModeCompleted:
+    label: 'Monkey Brains Mode Completed'
+  stealTheStonesModeStarted:
+    label: 'Steal The Stones Mode Started'
+  stealTheStonesModeCompleted:
+    label: 'Steal The Stones Mode Completed'
+  ropeBridgeModeStarted:
+    label: 'Rope Bridge Mode Started'
+  ropeBridgeModeCompleted:
+    label: 'Rope Bridge Mode Completed'
+  mineCartModeStarted:
+    label: 'Mine Cart Mode Started'
+  mineCartModeCompleted:
+    label: 'Mine Cart Mode Completed'
+  castleGrunwaldModeStarted:
+    label: 'Castle Grunwald Mode Started'
+  castleGrunwaldModeCompleted:
+    label: 'Castle Grunwald Mode Completed'
+  tankChaseModeStarted:
+    label: 'Tank Chase Mode Started'
+  tankChaseModeCompleted:
+    label: 'Tank Chase Mode Completed'
+  the3ChallengesModeStarted:
+    label: 'The 3 Challenges Mode Started'
+  the3ChallengesModeCompleted:
+    label: 'The 3 Challenges Mode Completed'
+  chooseWiselyModeStarted:
+    label: 'Choose Wisely Mode Started'
+  chooseWiselyModeCompleted:
+    label: 'Choose Wisely Mode Completed'
+  multiballStarted:
+    label: 'Multiball Started'
+  quickMultiballStarted:
+    label: 'Quick Multiball Started'
+  ballLocked:
+    label: 'Ball Locked'
+  jackpotLit:
+    label: 'Jackpot Lit'
+  jackpotCollected:
+    label: 'Jackpot Collected'
+
+
+  moonlightMultiballStarted:
+    label: 'Moonlight Multiball Started'
+#this section is for items that o a value against them i.e read and write not just read
+counters:
+  credits:
+    label: 'Credits'
+  highScoreReset:
+    label: 'High Score Reset In'

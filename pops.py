@@ -20,7 +20,7 @@ class Pops(game.Mode):
 
 	def __init__(self, game, priority):
             super(Pops, self).__init__(game, priority)
-            self.text_layer = dmd.TextLayer(104, 0, self.game.fonts['num_14x10'], "center", opaque=False)
+            self.text_layer = dmd.TextLayer(104, 0, self.game.fonts['10x7_bold'], "center", opaque=False)
 
             self.game.sound.register_sound('punch1', sound_path+"punch_1.aiff")
             self.game.sound.register_sound('punch2', sound_path+"punch_2.aiff")
@@ -63,7 +63,7 @@ class Pops(game.Mode):
             self.game.sound.play(list[i])
 
 
-        def play_animation(self,opaque=False, repeat=False, hold=False, frame_time=3):
+        def play_animation(self,opaque=False, repeat=False, hold=False, frame_time=6):
 
             list=["dmd/pops.dmd","dmd/indy_punch.dmd","dmd/badguy_punch.dmd"]
 
@@ -86,7 +86,7 @@ class Pops(game.Mode):
 
         def update_count(self):
             self.super_pops_count -=1
-            self.text_layer.set_text(str(self.super_pops_count))
+            self.text_layer.set_text(str(self.super_pops_count),color=dmd.CYAN)
     
         def pops_score(self):
             if self.super_pops_count==0:

@@ -47,6 +47,22 @@ PRSwitches:
         label: 'Left Ramp Made'
 
     #Dedicated Grounded Swtches
+    leftCoin:
+        number: SD1
+        label: 'Left Coin Chute'
+        tags: coin
+    centerCoin:
+        number: SD2
+        label: 'Center Coin Chute'
+        tags: coin
+    rightCoin:
+        number: SD3
+        label: 'Right Coin Chute'
+        tags: coin
+    4thCoin:
+        number: SD4
+        label: '4th Coin Chute'
+        tags: coin
     exit: 
         number: SD5
         label: 'Service Exit'
@@ -76,6 +92,7 @@ PRSwitches:
     leftOutlane:
         number: S15
         label: 'Left Outlane'
+        tags: early_save
     leftInlane:
         number: S16
         label: 'Left Inlane'
@@ -187,6 +204,7 @@ PRSwitches:
     rightOutlaneBottom:
         number: S58
         label: 'Right Outlane Bottom'
+        tags: early_save
     adventureA:
         number: S61
         label: 'Adventure (A)'
@@ -242,26 +260,32 @@ PRSwitches:
         number: S81
         type: 'NC'
         label: 'Trough 1'
+        tags: trough
     trough2:
         number: S82
         type: 'NC'
         label: 'Trough 2'
+        tags: trough
     trough3:
         number: S83
         type: 'NC'
         label: 'Trough 3'
+        tags: trough
     trough4:
         number: S84
         type: 'NC'
         label: 'Trough 4'
+        tags: trough
     trough5:
         number: S85
         type: 'NC'
         label: 'Trough 5'
+        tags: trough
     trough6:
         number: S86
         type: 'NC'
         label: 'Trough 6'
+        tags: trough,trough_eject
     troughTop:
         number: S87
         type: 'NC'
@@ -269,6 +293,7 @@ PRSwitches:
     shooterLane:
         number: S88
         label: 'Shooter Lane'
+        tags: shooter_lane
     wheelPosition1:
         number: S91
         type: 'NC'
@@ -327,6 +352,7 @@ PRCoils:
     trough:
         number: C04
         label: 'Trough Eject'
+        tags: trough_eject
     centerDropBank:
         number: C05
         label: 'Center Drop Bank'
@@ -419,6 +445,9 @@ PRCoils:
     wheelMotor:
         number: C42
         label: 'Wheel Motor'
+    swCol9Coil:
+        number: C44
+        label: 'Virtual Test Coil For Gerry'
 PRLamps:
     modeStart:
         number: L11

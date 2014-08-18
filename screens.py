@@ -20,6 +20,7 @@ class Screens(game.Mode):
             super(Screens, self).__init__(game, 100)
 
             self.game.sound.register_sound('collect', sound_path+"mode_bonus_jingle.aiff")
+            
 
         def mode_bonus(self,timer,value):
 

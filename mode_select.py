@@ -8,6 +8,7 @@ import procgame
 import locale
 import random
 import logging
+import audits
 
 from procgame import *
 from get_the_idol import *
@@ -294,6 +295,9 @@ class Mode_Select(game.Mode):
 
                 #update lamp for mode start
                 self.mode_start_lamp(self.mode_enabled)
+
+                #record audits
+                audits.record_value(self,'modeStarted')
                 
             elif self.mode_running:
                 self.mode_bonus()
@@ -416,6 +420,8 @@ class Mode_Select(game.Mode):
             timer=2
             self.game.screens.mode_bonus(timer,self.mode_bonus_value)
             self.delay(name='eject_delay', event_type=None, delay=timer, handler=self.eject_ball)
+
+            audits.record_value(self,'modeBonus')
 
         def pre_clear(self):
             self.name_layer.set_text("")

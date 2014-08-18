@@ -179,9 +179,12 @@ class Multiball(game.Mode):
                 self.animation_layer.add_frame_listener(-100,self.launch_next_ball)
 
         def launch_next_ball(self):
-                self.game.trough.launch_balls(1,stealth=False) #stealth false, bip +1
+                self.game.trough.launch_balls(1,callback=self.launch_callback,stealth=False) #stealth false, bip +1
                 self.next_ball_ready = True
                 self.game.ball_save.start(time=5)
+                
+        def launch_callback(self):
+            pass
 
         def update_score(self):
             score = self.game.current_player().score

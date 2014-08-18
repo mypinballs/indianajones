@@ -1,5 +1,6 @@
 import procgame
 import locale
+import logging
 from procgame import *
 
 base_path = config.value_for_key_path('base_path')
@@ -24,6 +25,9 @@ class POA(game.Mode):
 	"""docstring for AttractMode"""
 	def __init__(self, game, priority):
 		super(POA, self).__init__(game, priority)
+
+                self.log = logging.getLogger('ij.poa')
+
 		self.text_layer = dmd.TextLayer(128/2, 7, self.game.fonts['07x5'], "center")
 		self.award_layer = dmd.TextLayer(128/2, 17, self.game.fonts['num_14x10'], "center")
 		self.layer = dmd.GroupedLayer(128, 32, [self.text_layer, self.award_layer])
@@ -97,6 +101,13 @@ class POA(game.Mode):
                 #self.poa_ready()
                 #self.adventure_start()
         
+
+        def mode_tick(self):
+                #monitor game flags for modes where adventure needs to end if running
+                if self.adventure_started and (self.game.get_player_stats("multiball_started") or self.game.get_player_stats('multiball_mode_started') or self.game.get_player_stats("path_mode_started")):
+                   self.log.debug("active adventure being cancelled by special mode starting")
+                   self.adventure_expired()
+
 
         def mode_stopped(self):
                 #save player specific data
@@ -282,10 +293,10 @@ class POA(game.Mode):
 
 
         def adventure_start2(self,timer=0):
-
             self.game.sound.play("adventure_start")
             self.delay(name='instructions', event_type=None, delay=timer, handler=self.instructions)
             self.adventure_continue()
+
 
         def adventure_continue(self):
             if self.game.mini_playfield.get_status()=='countdown':

@@ -262,6 +262,8 @@ class Indy_Lanes(game.Mode):
                 #play sounds
                 if self.letters_spotted ==4:
                     self.game.sound.play('lane_fanfare')
+                    
+                    self.spell_indy()
                 else:
                     self.game.sound.play('lane_unlit')
                     self.game.effects.drive_lamp(self.lamps[id],'smarton')
@@ -271,7 +273,7 @@ class Indy_Lanes(game.Mode):
                 #play sounds
                 self.game.sound.play('lane_lit')
 
-            self.spell_indy()
+
             print(self.lane_flag)
             print(self.letters_spotted)
 

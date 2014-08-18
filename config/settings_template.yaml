@@ -59,6 +59,20 @@ Machine (Standard):
   'Game Restart':
     options: [true,false]
     default: true
+  'Free Play':
+    options: ['Yes','No']
+    default: 'Yes'
+  'Color Display Pixel Size':
+    options: [14,10,8]
+    default: 8
+  'Color Display X Offset':
+    options: [-2500,2500]
+    increments: 1
+    default: 0
+  'Color Display Y Offset':
+    options: [-2500,2500]
+    increments: 1
+    default: -70
 Sound:
   'Initial volume':
     options: [0.1,1.0]

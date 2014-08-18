@@ -247,12 +247,15 @@ class Totem(game.Mode):
                 self.launch_ball()
             
 
-
         def launch_ball(self):
-            self.game.trough.launch_balls(1,stealth=False) #stealth false, bip +1
+            self.game.trough.launch_balls(1,callback=self.launch_callback,stealth=False) #stealth false, bip +1
             self.game.ball_save.start(time=5)
             
-
+            
+        def launch_callback(self):
+            pass
+        
+        
         def multiball_tracking(self):
 
             #end check

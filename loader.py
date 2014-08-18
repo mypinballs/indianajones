@@ -109,8 +109,8 @@ class Loader(game.Mode):
 		self.stop_proc()
 
 		# Import and run the startup script, further execution of this script is halted until the run_loop is stopped.
-		import ij
-		ij.main()
+		import game
+		game.main()
 
 		# Reset mode & restart P-ROC / pyprocgame
 		self.mode_started()

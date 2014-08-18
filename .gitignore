@@ -8,3 +8,5 @@
 *.pyc
 _notes/
 /var/*
+idol2.py
+idol_bkup.py

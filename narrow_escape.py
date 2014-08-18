@@ -52,7 +52,7 @@ class Narrow_Escape(game.Mode):
             anim = dmd.Animation().load(game_path+self.dmd_image)
             self.bgnd_layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False)
             #set text layers
-            self.text_layer.set_text(locale.format("%d",escape_value,True),blink_frames=10)
+            self.text_layer.set_text(locale.format("%d",escape_value,True),blink_frames=10,color=dmd.YELLOW)
             #set display layer
             self.layer = dmd.GroupedLayer(128, 32, [self.bgnd_layer,self.text_layer])
 
