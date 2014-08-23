@@ -34,7 +34,7 @@ class Mode_Select(game.Mode):
 
 	def __init__(self, game, priority):
             super(Mode_Select, self).__init__(game, priority)
-            self.log = logging.getLogger('ij.modeSelect')
+            self.log = logging.getLogger('ij.mode_select')
 
             self.name_layer = dmd.TextLayer(128/2, 6, self.game.fonts['num_09Bx7'], "center")
             self.info_layer = dmd.TextLayer(128/2, 16, self.game.fonts['07x5'], "center")
@@ -87,7 +87,7 @@ class Mode_Select(game.Mode):
             self.reset()
 
         def reset(self):
-            print("Main Mode Select Started")
+            self.log.debug("Main Mode Select Started")
             self.reset_lamps()
 
         def reset_lamps(self):
@@ -133,7 +133,7 @@ class Mode_Select(game.Mode):
 
 
         def update_lamps(self):
-            print("Updating Mode Lamps")
+            self.log.debug("Updating Mode Lamps")
 
             #current mode
             self.game.effects.drive_lamp(self.lamp_list[self.current_mode_num],'medium')
@@ -178,7 +178,7 @@ class Mode_Select(game.Mode):
             #update lamps
             self.update_lamps()
 
-            print("mode now active:"+str(self.lamp_list[self.current_mode_num]))
+            self.log.debug("mode now active:"+str(self.lamp_list[self.current_mode_num]))
 
            
 
@@ -213,7 +213,8 @@ class Mode_Select(game.Mode):
                 if self.current_mode_num==0:
                     self.timer = self.game.user_settings['Gameplay (Feature)']['Get The Idol Timer']
                     self.name_text = 'GET THE IDOL'
-                    self.info_text = 'HIT CENTER DROP TARGETS'
+                    self.info_text = 'HIT CENTER'
+                    self.info2_text = 'DROP TARGETS'
 
                 elif self.current_mode_num==1:
                     self.timer = self.game.user_settings['Gameplay (Feature)']['Streets Of Cairo Timer']
@@ -277,7 +278,7 @@ class Mode_Select(game.Mode):
                     self.info_text = 'VIDEO MODE'
 
                 anim = dmd.Animation().load(game_path+"dmd/start_scene.dmd")
-                self.animation_layer = dmd.AnimatedLayer(frames=anim.frames,hold=True,frame_time=2)
+                self.animation_layer = dmd.AnimatedLayer(frames=anim.frames,hold=True,frame_time=4)
                 
                 self.animation_layer.add_frame_listener(-1,self.mode_text)
 
@@ -306,7 +307,7 @@ class Mode_Select(game.Mode):
 
         def add_selected_scene(self):
 
-            print("Adding Movie Scene Mode"+str(self.current_mode_num))
+            self.log.debug("Adding Movie Scene Mode"+str(self.current_mode_num))
             if self.current_mode_num==0:
                 self.game.modes.add(self.get_the_idol)
             elif self.current_mode_num==1:
@@ -333,7 +334,7 @@ class Mode_Select(game.Mode):
                 self.game.modes.add(self.choose_wisely)
 
         def remove_selected_scene(self):
-            print("Removing Movie Scene Mode"+str(self.current_mode_num))
+            self.log.debug("Removing Movie Scene Mode"+str(self.current_mode_num))
             if self.current_mode_num==0:
                 self.game.modes.remove(self.get_the_idol)
             elif self.current_mode_num==1:
@@ -361,9 +362,9 @@ class Mode_Select(game.Mode):
 
                     
         def mode_text(self):
-            self.name_layer.set_text(self.name_text)
-            self.info_layer.set_text(self.info_text)
-            self.info2_layer.set_text(self.info2_text)
+            self.name_layer.set_text(self.name_text, color=dmd.BROWN)
+            self.info_layer.set_text(self.info_text, color=dmd.CYAN)
+            self.info2_layer.set_text(self.info2_text, color=dmd.CYAN)
 
         def scene_start_delay(self):
             time = 2
@@ -389,7 +390,7 @@ class Mode_Select(game.Mode):
 
             #display mode total on screen
             bgnd_layer = dmd.FrameLayer(opaque=False, frame=dmd.Animation().load(game_path+"dmd/scene_ended_bgnd.dmd").frames[0])
-            self.info_layer.set_text(locale.format("%d",self.game.get_player_stats('last_mode_score'),True))
+            self.info_layer.set_text(locale.format("%d",self.game.get_player_stats('last_mode_score'),True), color=dmd.GREEN)
             self.layer = dmd.GroupedLayer(128, 32, [bgnd_layer,self.name_layer,self.info_layer])
 
             #call the common end scene code

@@ -75,7 +75,7 @@ class Monkey_Brains(game.Mode):
 
             self.scene_anim = "dmd/monkey_brains_scene_"+str(scene_num)+".dmd"
             anim = dmd.Animation().load(game_path+self.scene_anim)
-            self.scene_layer = dmd.AnimatedLayer(frames=anim.frames,hold=False,opaque=False,repeat=False,frame_time=2)
+            self.scene_layer = dmd.AnimatedLayer(frames=anim.frames,hold=False,opaque=False,repeat=False,frame_time=6)
             self.scene_layer.add_frame_listener(-1,self.award_score)
             self.scene_layer.add_frame_listener(-1, self.load_bgnd_anim)
             self.layer = self.scene_layer
@@ -83,7 +83,7 @@ class Monkey_Brains(game.Mode):
         def load_bgnd_anim(self):
             self.bgnd_anim = "dmd/monkey_brains_bgnd.dmd"
             anim = dmd.Animation().load(game_path+self.bgnd_anim)
-            self.bgnd_layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False,repeat=True,frame_time=2)
+            self.bgnd_layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False,repeat=True,frame_time=6)
             self.layer = dmd.GroupedLayer(128, 32, [self.bgnd_layer,self.score_layer,self.timer_layer,self.info_layer,self.award_layer])
 
 
@@ -171,7 +171,7 @@ class Monkey_Brains(game.Mode):
 
         def update_score(self):
             score = self.game.current_player().score
-            self.score_layer.set_text(locale.format("%d", score, True))
+            self.score_layer.set_text(locale.format("%d", score, True), color=dmd.YELLOW)
      
 
         def mode_progression(self):
@@ -189,7 +189,7 @@ class Monkey_Brains(game.Mode):
         def award_score(self,score_value=0):
             score_value = self.score_value_start
 
-            self.award_layer.set_text(locale.format("%d",score_value,True),blink_frames=10,seconds=3)
+            self.award_layer.set_text(locale.format("%d",score_value,True),blink_frames=10,seconds=3, color=dmd.MAGENTA)
             self.game.score(score_value)
 
 

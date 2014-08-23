@@ -104,9 +104,9 @@ class POA(game.Mode):
 
         def mode_tick(self):
                 #monitor game flags for modes where adventure needs to end if running
-                if self.adventure_started and (self.game.get_player_stats("multiball_started") or self.game.get_player_stats('multiball_mode_started') or self.game.get_player_stats("path_mode_started")):
-                   self.log.debug("active adventure being cancelled by special mode starting")
-                   self.adventure_expired()
+                if self.game.get_player_stats('poa_enabled') and (self.game.get_player_stats("multiball_started") or self.game.get_player_stats('multiball_mode_started') or self.game.get_player_stats("path_mode_started")):
+                   self.log.debug("enabled adventure being cancelled and requeued by special mode starting")
+                   self.poa_requeued()
 
 
         def mode_stopped(self):
@@ -258,7 +258,7 @@ class POA(game.Mode):
 
         def poa_enabled(self):
             if self.game.get_player_stats("poa_queued")==False:
-
+                
                 #setup poa flasher
                 #if self.game.switches.topPost.is_inactive():
                 self.game.coils.flasherPOA.schedule(0x30003000, cycle_seconds=0, now=True)
@@ -269,13 +269,31 @@ class POA(game.Mode):
 
                 #play jingle
                 self.game.sound.play('poa_lit_jingle')
+                
+                #set player stats
+                self.game.set_player_stats('poa_enabled',True)
 
                 #timer for poa start
                 self.delay(name='adventure_timeout', event_type=None, delay=55, handler=self.adventure_expired)
                 self.cancel_delayed("poa_enabled_check")
+                
+                self.log.info('POA Enabled & Timer Running')
             else:
                 self.delay(name='poa_enabled_check', event_type=None, delay=1, handler=self.poa_enabled)
-
+                
+        
+        def poa_requeued(self):
+            #cancel the activated items
+            self.cancel_delayed('adventure_timeout')
+            self.game.coils.divertorHold.disable()
+            self.game.coils.flasherPOA.disable()
+            
+            #update the player stats
+            self.game.set_player_stats('poa_enabled',False)
+            self.game.set_player_stats("poa_queued",True)
+            
+            #setup the queue
+            self.poa_enabled()
 
 
         def adventure_start(self):
@@ -312,8 +330,8 @@ class POA(game.Mode):
                 info_layer1 = dmd.TextLayer(48, 14, self.game.fonts['8x6'], "center", opaque=False)
                 info_layer2 = dmd.TextLayer(48, 22, self.game.fonts['8x6'], "center", opaque=False)
 
-                info_layer1.set_text("Continue Path".upper())
-                info_layer2.set_text("Of Adventure".upper())
+                info_layer1.set_text("Continue Path".upper(), color=dmd.PURPLE)
+                info_layer2.set_text("Of Adventure".upper(),  color=dmd.PURPLE)
 
                 timer_layer = dmd.TimerLayer(115, 4, self.game.fonts['23x12'],self.adventure_continue_timer,"right")
 
@@ -373,7 +391,7 @@ class POA(game.Mode):
 
         def update_score(self):
             score = self.game.current_player().score
-            self.score_layer.set_text(locale.format("%d", score, True))
+            self.score_layer.set_text(locale.format("%d", score, True), color=dmd.YELLOW)
 
 
         def letter_hit(self,toggle,lamp_name):
@@ -600,13 +618,13 @@ class POA(game.Mode):
 
         def instructions(self):
             anim = dmd.Animation().load(game_path+"dmd/poa_info_bgnd.dmd")
-            bgnd_layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False)
+            bgnd_layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False, frame_time=6)
 
             #set text layers
             text_layer1 = dmd.TextLayer(64, 18, self.game.fonts['tiny7'], "center", opaque=False)
             text_layer2 = dmd.TextLayer(64, 24, self.game.fonts['tiny7'], "center", opaque=False)
-            text_layer1.set_text("GET LIT LANES")
-            text_layer2.set_text("WATCH FOR EXTRA BALL",blink_frames=4)
+            text_layer1.set_text("GET LIT LANES", color=dmd.CYAN)
+            text_layer2.set_text("WATCH FOR EXTRA BALL",blink_frames=4, color=dmd.RED)
 
             #set display layer
             self.layer = dmd.GroupedLayer(128, 32, [bgnd_layer,text_layer1,text_layer2])

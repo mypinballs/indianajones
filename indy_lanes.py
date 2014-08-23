@@ -194,8 +194,8 @@ class Indy_Lanes(game.Mode):
                     self.bgnd_layer = dmd.FrameLayer(opaque=False, frame=dmd.Animation().load(game_path+self.friend_dmd_image).frames[0])
 
                     #set text layers
-                    self.bonus_layer.set_text("BONUS X"+str(self.bonusx),seconds=2)
-                    self.loop_layer.set_text(locale.format("%d", self.loop_value,True),seconds=2)
+                    self.bonus_layer.set_text("BONUS X"+str(self.bonusx),seconds=2, color=dmd.PURPLE)
+                    self.loop_layer.set_text(locale.format("%d", self.loop_value,True),seconds=2, color=dmd.CYAN)
                     #set display layer
                     self.layer = dmd.GroupedLayer(128, 32, [self.bgnd_layer, self.bonus_layer, self.loop_layer])#set clear time
                     #set layer clear time
@@ -222,7 +222,7 @@ class Indy_Lanes(game.Mode):
 
         def max_bonus(self):
             max_bonus_layer = dmd.TextLayer(128/2, 7, self.game.fonts['num_09Bx7'], "center", opaque=False)
-            max_bonus_layer.set_text(str(self.bonusx)+"X MAXIMUM BONUS",1.5,10)
+            max_bonus_layer.set_text(str(self.bonusx)+"X MAXIMUM BONUS",1.5,10, color=dmd.RED)
             self.layer = max_bonus_layer
 
         def add_friend(self):

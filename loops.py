@@ -111,7 +111,7 @@ class Loops(game.Mode):
                     
                 elif self.loops_completed<=self.friends_collected:
                     anim = dmd.Animation().load(game_path+"dmd/loop_"+side+"_"+self.vehicles[self.loops_completed]+".dmd")
-                    self.animation_layer = dmd.AnimatedLayer(frames=anim.frames,hold=False,frame_time=2)
+                    self.animation_layer = dmd.AnimatedLayer(frames=anim.frames,hold=False,frame_time=6)
                     self.animation_layer.add_frame_listener(-10,self.score_display)
                     self.animation_layer.add_frame_listener(-1,self.clear)
                     self.layer = dmd.GroupedLayer(128, 32, [self.animation_layer,self.text_layer])

@@ -145,7 +145,7 @@ class ScoreDisplay(game.Mode):
 		if self.credit_string_callback:
 			credit_str = self.credit_string_callback()
 		if self.game.ball == 0:
-			common.set_text(credit_str,color=dmd.BROWN)
+			common.set_text(credit_str,color=dmd.GREEN)
 		elif len(credit_str) > 0:
 			common.set_text("BALL %d      %s" % (self.game.ball, credit_str),color=dmd.BROWN)
 		else:

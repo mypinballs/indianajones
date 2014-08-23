@@ -19,7 +19,7 @@ Machine (Standard): {Allow Dim Illumination: 'No', Balls Per Game: 3, Clock Styl
   Custom Message: false, Date Style: Euro, Euro. Score Format: 'No', Game Restart: true,
   General Illumination Power Saver: 0, Maximum Extra Balls: 4, Maximum Extra Balls/Ball In Play: 0,
   No Bonus Flips: 'Yes', Power Saver Level: 4, Show Date and Time: 'Yes', Tilt Warnings: 3,
-  Tournament Play: 'No', Tournament Type: Local}
+  Tournament Play: 'No', Tournament Type: Local, Color Display Y Offset: -400}
 Network: {Gateway: 0, IP Address: 0, Subnet: 0, Tournament Server: 0}
 Replay: {Replay Award: Audit, Replay Boost: 100000, Replay Level 1: 100000, Replay Level 2: 200000,
   Replay Level 3: 300000, Replay Level 4: 400000, Replay Levels: 1, Replay Percentage: 10,

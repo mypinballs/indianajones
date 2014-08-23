@@ -199,7 +199,7 @@ class Match(game.Mode):
 
             if layer1.target_x>128:
                 self.cancel_delayed('move_sprite_forward')
-            elif layer1.target_x>=90 and not self.play:
+            elif layer1.target_x>=100 and not self.play:
                 self.play=True
                 self.bgnd_layer = dmd.AnimatedLayer(frames=self.bgnd_anim.frames,repeat=False,frame_time=3)
                 self.bgnd_layer.composite_op = "blacksrc"

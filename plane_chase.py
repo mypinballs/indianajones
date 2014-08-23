@@ -18,6 +18,7 @@ class Plane_Chase(game.Mode):
             super(Plane_Chase, self).__init__(game, priority)
 
             self.text_layer = dmd.TextLayer(128/2, 5, self.game.fonts['23x12'], "center", opaque=False)
+            self.text_layer.composite_op ="blacksrc"
             #self.text_layer.transition = dmd.ExpandTransition(direction='vertical')
 
             self.game.sound.register_sound('stall', sound_path+"plane_stall.aiff")
@@ -99,13 +100,13 @@ class Plane_Chase(game.Mode):
                 #self.game.lampctrl.save_state('game')
 
                 anim = dmd.Animation().load(game_path+"dmd/plane_chase.dmd")
-                self.animation_layer = dmd.AnimatedLayer(frames=anim.frames,hold=False,frame_time=2)
-                self.animation_layer.add_frame_listener(-10,self.ramp_made_text)
-                self.animation_layer.add_frame_listener(-1,self.clear)
-                #self.text_layer.set_text(str(self.ramp_made_score),seconds=2)
+                self.animation_layer = dmd.AnimatedLayer(frames=anim.frames,hold=True,frame_time=6)
+                #add the made text before the end of the animation
+                self.animation_layer.add_frame_listener(-3,self.ramp_made_text)
+                #queue the clean up at the animation end
+                self.animation_layer.add_frame_listener(-1,self.queue_clear)
                 self.layer = dmd.GroupedLayer(128, 32, [self.animation_layer,self.text_layer])
-                #self.delay(name='clear_delay', delay=2.5, handler=self.clear)
-
+                
                 self.game.lampctrl.play_show('success', repeat=False,callback=self.game.update_lamps)#self.restore_lamps
                 self.game.score(self.ramp_made_score)
 
@@ -115,7 +116,7 @@ class Plane_Chase(game.Mode):
                 self.delay(name='expired', event_type=None, delay=self.game.user_settings['Gameplay (Feature)']['Dog Fight Timer'], handler=self.reset)
 
         def ramp_made_text(self):
-            self.text_layer.set_text(locale.format("%d",self.ramp_made_score,True),blink_frames=4)
+            self.text_layer.set_text(locale.format("%d",self.ramp_made_score,True),blink_frames=4, color=dmd.CYAN)
 
         #def restore_lamps(self):
         #    self.game.lampctrl.restore_state('game')
@@ -135,6 +136,9 @@ class Plane_Chase(game.Mode):
         def mode_stopped(self):
             self.reset()
 
+        def queue_clear(self):
+            self.delay(name='clear_delay', delay=1.5, handler=self.clear)
+            
         def clear(self):
             self.layer = None
             self.text_layer.set_text('')

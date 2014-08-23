@@ -99,7 +99,7 @@ class The_Three_Challenges(game.Mode):
                  item_layer3.target_y=16
 
             info_layer_1 = dmd.TextLayer(128/2, 8, self.game.fonts['07x5'], "center", opaque=False)
-            info_layer_1.set_text("GET ALL LIT LANES",blink_frames=4)
+            info_layer_1.set_text("GET ALL LIT LANES",blink_frames=4, color=dmd.PURPLE)
             self.layer = dmd.GroupedLayer(128, 32, [bgnd_layer,item_layer1,item_layer2,item_layer3,info_layer_1,self.timer_layer])
 
         def load_mp_instructions(self):
@@ -126,7 +126,7 @@ class The_Three_Challenges(game.Mode):
             #setup additonal layers
             self.timer_layer = dmd.TimerLayer(128, 25, self.game.fonts['07x5'],self.timer,"right")
             self.info_layer = dmd.TextLayer(86, 18, self.game.fonts['07x5'], "center", opaque=False)
-            self.info_layer.set_text("SHOOT RIGHT RAMP",blink_frames=4)
+            self.info_layer.set_text("SHOOT RIGHT RAMP",blink_frames=4,color=dmd.PURPLE)
 
             #turn on coils and flashers
             self.game.coils.flasherPOA.schedule(0x30003000, cycle_seconds=0, now=True)
@@ -189,7 +189,7 @@ class The_Three_Challenges(game.Mode):
 
         def update_score(self):
             score = self.game.current_player().score
-            self.score_layer.set_text(locale.format("%d", score, True))
+            self.score_layer.set_text(locale.format("%d", score, True), color=dmd.YELLOW)
      
 
         def mode_progression(self):

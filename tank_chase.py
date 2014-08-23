@@ -216,7 +216,7 @@ class Tank_Chase(game.Mode):
             self.delay(name='scene_cleanup', event_type=None, delay=2, handler=self.mode_select.end_scene)
 
         def load_bgnd_anim(self):
-            self.bgnd_anim = "dmd/tank_chase_bgnd1.dmd"
+            self.bgnd_anim = "dmd/tank_chase_bgnd.dmd"
             anim = dmd.Animation().load(game_path+self.bgnd_anim)
             self.bgnd_layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False,repeat=True,frame_time=6)
             self.layer = dmd.GroupedLayer(128, 32, [self.bgnd_layer,self.score_layer,self.timer_layer,self.info_layer,self.award_layer])
@@ -250,7 +250,7 @@ class Tank_Chase(game.Mode):
 
                 self.log.info("sprite created")
 
-                self.bgnd_anim = "dmd/tank_chase_bgnd1.dmd"
+                self.bgnd_anim = "dmd/tank_chase_bgnd.dmd"
                 anim = dmd.Animation().load(game_path+self.bgnd_anim)
                 self.bgnd_layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False,repeat=True,frame_time=6)
                 self.layer = dmd.GroupedLayer(128, 32, [self.bgnd_layer,self.sprite_layer,self.score_layer,self.timer_layer,self.info_layer,self.award_layer])
@@ -365,7 +365,7 @@ class Tank_Chase(game.Mode):
 
         def update_score(self):
             score = self.game.current_player().score
-            self.score_layer.set_text(locale.format("%d", score, True))
+            self.score_layer.set_text(locale.format("%d", score, True), color=dmd.YELLOW)
      
 
         def mode_progression(self):
@@ -382,13 +382,13 @@ class Tank_Chase(game.Mode):
         def award_score(self,score_value=0):
             score_value = self.score_value_start
 
-            self.award_layer.set_text(locale.format("%d",score_value,True),blink_frames=10,seconds=1)
+            self.award_layer.set_text(locale.format("%d",score_value,True),blink_frames=10,seconds=1, color=dmd.MAGENTA)
             self.game.score(score_value)
 
         def award_completed_score(self,score_value=0):
             score_value = self.score_value_completed
 
-            self.award_layer.set_text(locale.format("%d",score_value,True),blink_frames=10,seconds=2)
+            self.award_layer.set_text(locale.format("%d",score_value,True),blink_frames=10,seconds=2, color=dmd.GREEN)
             self.game.score(score_value)
 
             

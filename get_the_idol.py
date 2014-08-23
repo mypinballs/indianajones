@@ -41,7 +41,9 @@ class Get_The_Idol(game.Mode):
 
             self.score_layer = ModeScoreLayer(0, -1, self.game.fonts['07x5'], self)
             self.timer_layer = dmd.TimerLayer(128, -1, self.game.fonts['07x5'],timer)
-            self.text_layer = dmd.TextLayer(128/2, 12, self.game.fonts['6x6_bold'], "center", opaque=False)
+            #self.text_layer = dmd.TextLayer(128/2, 12, self.game.fonts['6x6_bold'], "center", opaque=False)
+            self.text_layer = dmd.TextLayer(128/2, 5, self.game.fonts['23x12'], "center", opaque=False)
+            self.text_layer.composite_op ="blacksrc"
 
 
             #sound setup
@@ -68,7 +70,7 @@ class Get_The_Idol(game.Mode):
         def load_anim(self,count):
             self.bgnd_anim = "dmd/get_the_idol_bgnd_"+str(count)+".dmd"
             anim = dmd.Animation().load(game_path+self.bgnd_anim)
-            self.bgnd_layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False,repeat=True,frame_time=2)
+            self.bgnd_layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False,repeat=True,frame_time=6)
 
 
         def mode_started(self):
@@ -124,7 +126,7 @@ class Get_The_Idol(game.Mode):
                 self.game.set_player_stats('get_the_idol_score',score_value)
                 self.game.set_player_stats('last_mode_score',self.game.get_player_stats('get_the_idol_score' ))
                 #set text layers
-                self.text_layer.set_text(locale.format("%d",score_value,True),blink_frames=10,seconds=3)
+                self.text_layer.set_text(locale.format("%d",score_value,True),blink_frames=10,seconds=3, color=dmd.MAGENTA)
 
             
                 self.game.score(score_value)
@@ -140,7 +142,7 @@ class Get_The_Idol(game.Mode):
         def completed(self):
             self.bgnd_anim = "dmd/get_the_idol_completed.dmd"
             anim = dmd.Animation().load(game_path+self.bgnd_anim)
-            self.layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False,hold=True,frame_time=2)
+            self.layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False,hold=True,frame_time=6)
             #self.layer.transition = dmd.CrossFadeTransition(width=128,height=32)
             #end scene when animation completes
             self.layer.add_frame_listener(-1,self.mode_select.end_scene)

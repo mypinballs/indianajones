@@ -174,7 +174,7 @@ class Attract(game.Mode):
 
             self.coins_top_layer = dmd.TextLayer(128/2, 6, self.game.fonts['num_09Bx7'], "center", opaque=True).set_text(self.pricing_top,color=dmd.BROWN)
             #self.coins_top_layer.transition = dmd.PushTransition(direction='north')
-            self.coins_bottom_layer = dmd.TextLayer(128/2, 18, self.game.fonts['num_09Bx7'], "center", opaque=False).set_text(self.pricing_bottom,color=dmd.DARK_GREEN)
+            self.coins_bottom_layer = dmd.TextLayer(128/2, 18, self.game.fonts['num_09Bx7'], "center", opaque=False).set_text(self.pricing_bottom,color=dmd.GREEN)
             #self.coins_bottom_layer.transition = dmd.PushTransition(direction='south')
 
             self.coins_layer = dmd.GroupedLayer(128, 32, [self.coins_top_layer, self.coins_bottom_layer])

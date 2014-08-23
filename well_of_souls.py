@@ -99,7 +99,7 @@ class Well_Of_Souls(game.Mode):
 
             self.scene_anim = "dmd/wos_scene_"+str(scene_num)+".dmd"
             anim = dmd.Animation().load(game_path+self.scene_anim)
-            self.scene_layer = dmd.AnimatedLayer(frames=anim.frames,hold=False,opaque=False,repeat=False,frame_time=2)
+            self.scene_layer = dmd.AnimatedLayer(frames=anim.frames,hold=False,opaque=False,repeat=False,frame_time=6)
             self.scene_layer.add_frame_listener(-1,self.award_score)
             self.scene_layer.add_frame_listener(-1, self.load_bgnd_anim)
             self.layer = self.scene_layer
@@ -111,7 +111,7 @@ class Well_Of_Souls(game.Mode):
         def load_bgnd_anim(self):
             self.bgnd_anim = "dmd/wos_bgnd.dmd"
             anim = dmd.Animation().load(game_path+self.bgnd_anim)
-            self.bgnd_layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False,repeat=True,frame_time=2)
+            self.bgnd_layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False,repeat=True,frame_time=6)
             self.layer = dmd.GroupedLayer(128, 32, [self.bgnd_layer,self.score_layer,self.bip_layer,self.info_layer,self.award_layer])
 
             #loads sounds linked to anim
@@ -255,11 +255,11 @@ class Well_Of_Souls(game.Mode):
 
         def update_score(self):
             score = self.game.current_player().score
-            self.score_layer.set_text(locale.format("%d", score, True))
+            self.score_layer.set_text(locale.format("%d", score, True), color=dmd.YELLOW)
 
         def update_bip(self):
             balls_in_play = self.game.trough.num_balls_in_play
-            self.bip_layer.set_text(locale.format("%d", balls_in_play)+" BALLS IN PLAY", True)
+            self.bip_layer.set_text(locale.format("%d", balls_in_play)+" BALLS IN PLAY", True, color=dmd.MAGENTA)
 
      
 

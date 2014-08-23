@@ -78,7 +78,7 @@ class Choose_Wisely(game.Mode):
             grail_cup_layer.target_x=56
             grail_cup_layer.target_y=8
 
-            self.info_layer.set_text("FOLLOW FLASHING GRAIL",blink_frames=6)
+            self.info_layer.set_text("FOLLOW FLASHING GRAIL",blink_frames=6,color=dmd.CYAN)
             self.layer = dmd.GroupedLayer(128, 32, [bgnd_layer,grail_cup_layer,self.info_layer])
 
             self.generate_sequence()
@@ -150,7 +150,7 @@ class Choose_Wisely(game.Mode):
             arrow_anim = dmd.Animation().load(game_path+"dmd/arrow.dmd")
             self.arrow_layer = dmd.AnimatedLayer(frames=arrow_anim.frames,opaque=False,repeat=False,frame_time=3)
             self.arrow_layer.composite_op = "blacksrc"
-            self.arrow_layer.target_x = 64
+            self.arrow_layer.target_x = 62
             self.arrow_layer.target_y =0
 
             grail_cup = dmd.Animation().load(game_path+"dmd/grail_cup.dmd")
@@ -159,7 +159,7 @@ class Choose_Wisely(game.Mode):
             self.grail_cup_layer.target_x=-50
             self.grail_cup_layer.target_y=8
 
-            self.info_layer.set_text("FLIPPERS MOVE. GUN PICKS.",blink_frames=6)
+            self.info_layer.set_text("FLIPPERS MOVE. GUN PICKS.",blink_frames=6,color=dmd.CYAN)
             self.choose_ready = True
 
             self.layer = dmd.GroupedLayer(128, 32, [bgnd_layer,self.grail_cup_layer,self.info_layer,self.timer_layer,self.arrow_layer])
@@ -243,7 +243,7 @@ class Choose_Wisely(game.Mode):
             self.score_value = self.score_value_start+(self.score_value_boost*self.level)
 
             award_layer = dmd.TextLayer(128/2, 4, self.game.fonts['23x12'], "center", opaque=True)
-            award_layer.set_text(locale.format("%d",self.score_value,True),blink_frames=2)
+            award_layer.set_text(locale.format("%d",self.score_value,True),blink_frames=2,color=dmd.GREEN)
             self.layer = award_layer
 
             self.game.score(self.score_value)

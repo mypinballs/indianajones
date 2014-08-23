@@ -153,7 +153,7 @@ class Multiball(game.Mode):
 
             #animations
             anim = dmd.Animation().load(game_path+"dmd/lock_"+str(self.balls_locked)+".dmd")
-            self.animation_layer = dmd.AnimatedLayer(frames=anim.frames,hold=True,frame_time=3)
+            self.animation_layer = dmd.AnimatedLayer(frames=anim.frames,hold=True,frame_time=6)
             self.animation_layer.add_frame_listener(-1,self.clear)
             self.layer = dmd.GroupedLayer(128, 32, [self.animation_layer,self.text_layer])
 
@@ -203,7 +203,7 @@ class Multiball(game.Mode):
             #animations
             #self.game.set_status("MULTIBALL!") #debug
             anim = dmd.Animation().load(game_path+"dmd/multiball_start.dmd")
-            self.animation_layer = dmd.AnimatedLayer(frames=anim.frames,hold=True,frame_time=3)
+            self.animation_layer = dmd.AnimatedLayer(frames=anim.frames,hold=True,frame_time=6)
             #self.animation_layer.add_frame_listener(-1,self.delayed_clear)
             self.animation_layer.add_frame_listener(-1,self.game.idol.empty)
             #queue the jackpot tracking

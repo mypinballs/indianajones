@@ -160,7 +160,7 @@ class Game(game.BasicGame):
 
                 #define system status var
                 self.system_status='power_up'
-                self.system_version='0.5.0'
+                self.system_version='0.5.1'
                 self.system_name='Indiana Jones 2'.upper()
 
                 #update audit data on boot up time
@@ -381,8 +381,8 @@ class Game(game.BasicGame):
 		self.enable_flippers(enable=False)
                 
                 #temp addition -testing for Gerry
-                self.coils.swCol9Coil.pulse(0)
-                self.log.info('%s On',self.coils.swCol9Coil.label)
+                #self.coils.swCol9Coil.pulse(0)
+                #self.log.info('%s On',self.coils.swCol9Coil.label)
 
 
 	# Empty callback just incase a ball drains into the trough before another
@@ -517,6 +517,7 @@ def main():
         #set invidivual log levels here
         logging.getLogger('ij.base').setLevel(logging.DEBUG)
         logging.getLogger('ij.poa').setLevel(logging.DEBUG)
+        logging.getLogger('ij.mode_select').setLevel(logging.DEBUG)
         logging.getLogger('ij.match').setLevel(logging.DEBUG)
         logging.getLogger('game.vdriver').setLevel(logging.INFO)
         logging.getLogger('game.driver').setLevel(logging.INFO)

@@ -165,7 +165,7 @@ class BaseGameMode(game.Mode):
 
         def ball_save_callback(self):
             anim = dmd.Animation().load(game_path+"dmd/eternal_life.dmd")
-            self.layer = dmd.AnimatedLayer(frames=anim.frames,hold=False)
+            self.layer = dmd.AnimatedLayer(frames=anim.frames,hold=False,frame_time=3)
             self.game.sound.play_voice('dont_touch_anything')
             #self.game.sound.play('electricity')
 

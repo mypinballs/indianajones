@@ -38,7 +38,7 @@ class Steal_The_Stones(game.Mode):
 
             #screen setup
             self.timer = int(self.game.user_settings['Gameplay (Feature)']['Steal The Stones Timer'])
-            print("Monkey Brains Timer is:"+str(self.timer))
+            print("Steal The Stones Timer is:"+str(self.timer))
 
             self.score_layer = ModeScoreLayer(76, 10, self.game.fonts['num_09Bx7'],self)
             self.award_layer = dmd.TextLayer(128/2, 7, self.game.fonts['num_09Bx7'], "center", opaque=False)

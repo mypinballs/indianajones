@@ -6,6 +6,7 @@ __date__ ="$Jan 18, 2011 1:36:37 PM$"
 
 import procgame
 import locale
+import logging
 from procgame import *
 
 base_path = config.value_for_key_path('base_path')
@@ -32,17 +33,20 @@ class Castle_Grunwald(game.Mode):
 
 	def __init__(self, game, priority,mode_select):
             super(Castle_Grunwald, self).__init__(game, priority)
+            
+            #logging
+            self.log = logging.getLogger('ij.castle_grunwald')
 
             #setup link back to mode_select mode
             self.mode_select = mode_select
 
             #screen setup
             self.timer = int(self.game.user_settings['Gameplay (Feature)']['Castle Grunwald Timer'])
-            print("CG Timer is:"+str(self.timer))
+            self.log.info("CG Timer is:"+str(self.timer))
 
             self.score_layer = ModeScoreLayer(128/2, -1, self.game.fonts['07x5'], self)
-            self.award_layer = dmd.TextLayer(128/2, 12, self.game.fonts['6x6_bold'], "center", opaque=False)
-            
+            self.award_layer = dmd.TextLayer(128/2, 4, self.game.fonts['23x12'], "center", opaque=False)
+            self.award_layer.composite_op ="blacksrc"
             
             #sound setup
             self.game.sound.register_music('castle_grunwald_play', music_path+"castle_grunwald.aiff")
@@ -78,7 +82,7 @@ class Castle_Grunwald(game.Mode):
         def load_scene_anim(self,count):
             self.bgnd_anim = "dmd/castle_grunwald_scene_"+str(count)+".dmd"
             anim = dmd.Animation().load(game_path+self.bgnd_anim)
-            self.bgnd_layer = dmd.AnimatedLayer(frames=anim.frames,hold=True,opaque=False,repeat=False,frame_time=3)
+            self.bgnd_layer = dmd.AnimatedLayer(frames=anim.frames,hold=True,opaque=False,repeat=False,frame_time=6)
             self.layer = self.bgnd_layer #dmd.GroupedLayer(128, 32, [self.bgnd_layer,self.score_layer,self.timer_layer,self.award_layer,self.info_layer])
 
             #cancel extra speech calls queued
@@ -102,15 +106,15 @@ class Castle_Grunwald(game.Mode):
         def load_bgnd_anim(self):
             self.bgnd_anim = "dmd/castle_grunwald_bgnd.dmd"
             anim = dmd.Animation().load(game_path+self.bgnd_anim)
-            self.bgnd_layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False,repeat=True,frame_time=2)
-            self.layer = dmd.GroupedLayer(128, 32, [self.bgnd_layer,self.score_layer,self.timer_layer,self.award_layer,self.info_layer])
+            self.bgnd_layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False,repeat=True,frame_time=6)
+            self.layer = dmd.GroupedLayer(128, 32, [self.bgnd_layer,self.score_layer,self.timer_layer,self.info_layer,self.award_layer])
 
 
         def mode_started(self):
             #setup additonal layers
             self.timer_layer = dmd.TimerLayer(128, -1, self.game.fonts['07x5'],self.timer)
-            self.info_layer = dmd.TextLayer(128/2, 23, self.game.fonts['07x5'], "center", opaque=False)
-            self.info_layer.set_text("HIT CAPTIVE BALL",blink_frames=1000)
+            self.info_layer = dmd.TextLayer(128/2, 26, self.game.fonts['07x5'], "center", opaque=False)
+            self.info_layer.set_text("HIT CAPTIVE BALL", blink_frames=10, color=dmd.PURPLE)
 
             #load animation
             self.load_bgnd_anim()
@@ -120,10 +124,10 @@ class Castle_Grunwald(game.Mode):
             self.delay(name='mode_speech_delay', event_type=None, delay=2, handler=self.voice_call, param=self.count)
 
             #knock target down if needed
-            print("Setup Drop Target for cg")
+            self.log.debug("Setup Drop Target for cg")
             if self.game.switches.singleDropTop.is_inactive():
                 self.game.coils.totemDropDown.pulse(30)
-                print("drop target should be down")
+                self.log.debug("drop target should be down")
 
         def voice_call(self,count,delay=None):
             if delay==None:
@@ -145,7 +149,7 @@ class Castle_Grunwald(game.Mode):
 
         def update_score(self):
             score = self.game.current_player().score
-            self.score_layer.set_text(locale.format("%d", score, True))
+            self.score_layer.set_text(locale.format("%d", score, True), color=dmd.YELLOW)
 
 
         def mode_tick(self):
@@ -182,7 +186,7 @@ class Castle_Grunwald(game.Mode):
             self.game.set_player_stats('castle_grunwald_score',score_value)
             self.game.set_player_stats('last_mode_score',self.game.get_player_stats('castle_grunwald_score' ))
             #set text layers
-            self.award_layer.set_text(locale.format("%d",score_value,True),blink_frames=10,seconds=2)
+            self.award_layer.set_text(locale.format("%d",score_value,True),blink_frames=10,seconds=2, color=dmd.CREAM)
 
             self.delay(name='scene_anim_delay', event_type=None, delay=2, handler=self.load_scene_anim, param=self.count)
             

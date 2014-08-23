@@ -46,6 +46,7 @@ class Player(procgame.game.Player):
                 self.player_stats['indy_lanes_letters_spotted'] = 0
                 self.player_stats['poa_flag']= [False,False,False,False,False,False,False,False,False]
                 self.player_stats['poa_queued'] = False
+                self.player_stats['poa_enabled'] = False
                 self.player_stats['adventure_letters_spotted']=0
                 self.player_stats['last_mode_score']=0
                 self.player_stats['get_the_idol_score']=0
