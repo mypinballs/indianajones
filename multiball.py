@@ -9,6 +9,8 @@ __date__ ="$Jan 18, 2011 1:36:37 PM$"
 
 import procgame
 import locale
+import logging
+import audits
 from procgame import *
 
 base_path = config.value_for_key_path('base_path')
@@ -19,7 +21,7 @@ music_path = game_path +"music/"
 
 class ModeScoreLayer(dmd.TextLayer):
 	def __init__(self, x, y, font,mode, justify="center", opaque=False):
-		super(ModeScoreLayer, self).__init__(x, y, font,mode)
+		super(ModeScoreLayer, self).__init__(x, y, font,justify)
 		self.mode = mode
 
 	def next_frame(self):
@@ -31,7 +33,7 @@ class ModeScoreLayer(dmd.TextLayer):
 
 class JackpotWorthLayer(dmd.TextLayer):
 	def __init__(self, x, y, font,mode, justify="left", opaque=False):
-		super(JackpotWorthLayer, self).__init__(x, y, font,mode)
+		super(JackpotWorthLayer, self).__init__(x, y, font,justify)
 		self.mode = mode
 
 	def next_frame(self):
@@ -46,6 +48,7 @@ class Multiball(game.Mode):
 
 	def __init__(self, game, priority):
             super(Multiball, self).__init__(game, priority)
+            self.log = logging.getLogger('ij.multiball')
 
             self.text_layer = dmd.TextLayer(128/2, 7, self.game.fonts['num_09Bx7'], "center", opaque=False)
             self.jackpot_value_layer = dmd.TextLayer(128/2, 4, self.game.fonts['23x12'], "center", opaque=True)
@@ -67,25 +70,17 @@ class Multiball(game.Mode):
             self.game.sound.register_sound('jackpot2', speech_path+"double_jackpot.aiff")
             self.game.sound.register_sound('jackpot3', speech_path+"triple_jackpot.aiff")
             self.game.sound.register_sound('super_jackpot', speech_path+"super_jackpot.aiff")
-
-
             self.game.sound.register_music('multiball_play', music_path+"multiball.aiff")
+            
+            self.jackpot_lamps = ['arkJackpot','stonesJackpot','grailJackpot','grailJackpot']
 
-            self.balls_needed = self.game.idol.ball_max
+            self.balls_needed = 3 #change to setting
             self.balls_in_play = 1
-
 
             self.lock_ball_score = 500000
             self.jackpot_base = 25000000
             self.jackpot_boost = 20000000
-            self.jackpot_value = self.jackpot_base
-            self.jackpot_x = 1
-            self.jackpot_collected = 0
-            self.jackpot_lamps = ['arkJackpot','stonesJackpot','grailJackpot','grailJackpot']
-            self.jackpot_status = 'notlit'
-            self.super_jackpot_enabled = False
             self.super_jackpot_value = 100000000
-            self.next_ball_ready = False
 
             self.lock_lit = False
             self.mode_running = False
@@ -95,7 +90,7 @@ class Multiball(game.Mode):
 
             self.cheat_value_start = 5000000
             self.cheat_value_boost = 1000000
-            self.cheat_count = 0
+            
             
             self.reset()
 
@@ -106,18 +101,32 @@ class Multiball(game.Mode):
 
         def mode_started(self):
             #set player stats for mode
+            self.jackpot_value = self.jackpot_base
+            self.jackpot_x = 1
+            self.jackpot_status = 'notlit'
+            self.jackpot_collected = self.game.get_player_stats('jackpots_collected')
+            self.super_jackpot_enabled = False
+            self.next_ball_ready = False
+            self.cheat_count = self.game.get_player_stats('cheat_count')
             self.lock_lit = self.game.get_player_stats('lock_lit')
             self.mode_running = self.game.get_player_stats('mode_running')
             self.balls_locked = self.game.get_player_stats('balls_locked')
             self.multiball_running = self.game.get_player_stats('multiball_running')
             self.multiball_started = self.game.get_player_stats('multiball_started')
+            
+            self.log.info('multiball started flag:%s',self.multiball_started)
+            self.log.info('multiball running flag:%s',self.multiball_running)
+            self.log.info('balls locked:%s',self.balls_locked)
+            self.log.info('lock lit:%s',self.lock_lit)
 
         def mode_stopped(self):
             self.jackpot('cancelled')
+            self.game.set_player_stats('jackpots_collected',self.jackpot_collected)
+            self.game.set_player_stats('cheat_count',self.cheat_count)
 
         
         def mode_tick(self):
-            if self.multiball_started:
+            if self.multiball_started is True:
                 self.balls_in_play = self.game.trough.num_balls_in_play
 
                 #debug
@@ -167,16 +176,16 @@ class Multiball(game.Mode):
             self.game.score(self.lock_ball_score)
                 
             #reset drops after delay
-            self.delay(name='reset_drops', event_type=None, delay=1, handler=self.reset_drops)
+            self.delay(name='reset_drops', event_type=None, delay=2, handler=self.reset_drops)
 
             if self.balls_locked==self.balls_needed:
                 #set flag
                 self.multiball_started = True
                 self.game.set_player_stats('multiball_started', self.multiball_started)
                 #queue start method
-                self.animation_layer.add_frame_listener(-30, self.multiball_start)
+                self.animation_layer.add_frame_listener(-15, self.multiball_start)
             elif self.game.idol.balls_in_idol<3: #only launch new ball if idol is not full
-                self.animation_layer.add_frame_listener(-100,self.launch_next_ball)
+                self.animation_layer.add_frame_listener(-20,self.launch_next_ball)
 
         def launch_next_ball(self):
                 self.game.trough.launch_balls(1,callback=self.launch_callback,stealth=False) #stealth false, bip +1
@@ -198,7 +207,9 @@ class Multiball(game.Mode):
             #check is any additional ball launches are needed - multi-player game etc
             if self.game.idol.balls_in_idol<self.balls_needed:
                 additional_balls = self.balls_needed-self.game.idol.balls_in_idol
-                self.game.trough.launch_balls(additional_balls,stealth=False)
+                self.log.info("Additional Ball to Launch:%s",additional_balls)
+                #self.game.set_status("ADDITIONAL BALLS LAUNCH:"+str(additional_balls))
+                self.game.trough.launch_balls(additional_balls,callback=self.launch_callback,stealth=False)
 
             #animations
             #self.game.set_status("MULTIBALL!") #debug
@@ -227,7 +238,7 @@ class Multiball(game.Mode):
             
             
             #end check
-            if self.balls_in_play==1 and self.game.idol.balls_in_idol==0:
+            if self.balls_in_play==1:# and self.game.idol.balls_in_idol==0:
                 #end tracking
                 self.multiball_running=False
                 self.multiball_started = False
@@ -243,6 +254,7 @@ class Multiball(game.Mode):
                 #light jackpot if not collected during multiball otherwise cancel
                 if self.jackpot_collected==0:
                     self.jackpot('lit')
+                    self.log.info('Jackpot lit after multiball end, not collected')
                     self.delay(name='jackpot_timeout', event_type=None, delay=10, handler=self.jackpot, param='cancelled')
                 else:
                     self.jackpot('cancelled')
@@ -400,6 +412,7 @@ class Multiball(game.Mode):
                     self.game.coils.flasherJackpot.disable()
                     self.game.coils.divertorHold.disable()
                     self.game.coils.topLockupHold.disable()
+                    self.clear()
 
         def super_jackpot_display(self):
             self.game.coils.flasherSuperJackpot.schedule(schedule=0x30003000 , cycle_seconds=0, now=True)
@@ -493,7 +506,7 @@ class Multiball(game.Mode):
                 #self.game.idol.lock_release()
 
         def sw_exitIdol_active(self,sw):
-            if self.multiball_running:
+            if self.multiball_running and self.jackpot_x>1:
                  self.jackpot_x-=1
 
         def sw_leftRampMade_active(self, sw):
@@ -555,5 +568,5 @@ class Multiball(game.Mode):
 
         #check for shooter lane launches in multiball
         def sw_shooterLane_active_for_500ms(self,sw):
-            if self.multiball_running:
+            if self.multiball_started:
                 self.game.coils.ballLaunch.pulse(50)

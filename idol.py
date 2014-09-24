@@ -28,6 +28,7 @@ class Idol(game.Mode):
             self.idol_state="initialise"
             self.idol_moving = False
             self.balls_waiting = False
+            
             #self.release= False
             self.lock_lit = False
             self.next_posn_set=False
@@ -35,6 +36,12 @@ class Idol(game.Mode):
             self.lock_ready_flag = False
             self.complete = True
             self.stored_state = None
+            
+            #subway tracking vars
+            self.balls_in_subway = 0
+            self.subway_active=False
+            self.subway_coil_fired = False
+            
 
             self.game.sound.register_sound('ball_release', sound_path+"elephant.aiff")
 
@@ -157,12 +164,14 @@ class Idol(game.Mode):
                     posn=1
 
                 if self.balls_in_idol==1:
-                    self.move_to_posn(posn_num=posn,delay=1,callback1=self.release,delay1=hold_time)
+                    self.move_to_posn(posn_num=3,delay=1,callback1=self.relock,delay1=hold_time)
                 elif self.balls_in_idol==2:
-                    self.move_to_posn(posn_num=posn,delay=1,callback1=self.release,delay1=hold_time)
+                    self.move_to_posn(posn_num=5,delay=1,callback1=self.relock,delay1=hold_time)
                 elif self.balls_in_idol==3:
-                    self.relock()
-            
+                    self.move_to_posn(posn_num=1,delay=1,callback1=self.relock,delay1=hold_time)
+                    #self.relock()
+
+
             elif self.idol_state=='release': #used with hold or after a ball is locked only
                 #move to +1 posn
                 #callback to release ball no delay
@@ -269,6 +278,10 @@ class Idol(game.Mode):
             self.delay(name='check_popper_repeat', event_type=None, delay=0.5, handler=self.check_popper)
 
             if self.game.switches.rightPopper.is_active() and self.complete:
+                if self.balls_in_subway>0: #record the sucessfull movement of a ball out of subway
+                    self.balls_in_subway-=1 
+                self.subway_coil_fired = False #reset subway fired flag
+
                 if self.balls_in_idol<3:
                     #kick the ball
                     self.game.coils.ballPopper.pulse(50)
@@ -283,19 +296,50 @@ class Idol(game.Mode):
 
             
 
+        def subway_logic(self):
+            self.subway_active=True
+            self.log.debug('Subway Logic is running, Balls:%s Subway Lock SW:%s',self.balls_in_subway,self.game.switches.subwayLockup.is_active())
+            #debug_ball_data = "BIS:"+str(self.balls_in_subway)+" SUBWAY SW:"+str(self.game.switches.subwayLockup.is_active())
+            #self.game.set_status(debug_ball_data)
+            
+            if self.balls_in_subway >0:
+                #check for settled ball and no ball in popper
+                if self.game.switches.subwayLockup.is_active() and self.game.switches.rightPopper.is_inactive():
+                    self.game.coils.subwayRelease.pulse()
+                    self.subway_coil_fired = True
+                
+                #check if ball got caught by subway release
+                elif self.subway_coil_fired and self.game.switches.rightPopper.is_inactive(): 
+                    self.game.coils.subwayRelease.pulse(50)
+                    
+                self.delay(name='subway_logic_repeat', delay=1, handler=self.subway_logic)
+            else:
+                self.cancel_delayed('subway_logic_repeat') #cancel subway check repeat
+                self.log.debug('Subway Logic is stopped, Balls:%s',self.balls_in_subway)
+                self.subway_active=False
+                self.subway_coil_fired = False
+                
 
         #idol upkicker
         def sw_rightPopper_active_for_500ms(self, sw):
             self.check_popper()
         
+        
 
 
         #subway
-        def sw_subwayLockup_active(self, sw):
-            #check for clear path
-            if self.game.switches.rightPopper.is_inactive():
-                self.game.coils.subwayRelease.pulse()
+#        def sw_subwayLockup_active(self, sw):
+#            #check for clear path
+#            self.log.info("Subway Active")
+#            if self.game.switches.rightPopper.is_inactive():
+#                self.game.coils.subwayRelease.pulse()
 
+        def sw_centerEnter_active(self, sw):
+            if self.game.ball>0 or len(self.game.players)>0:
+                self.balls_in_subway+=1
+                if not self.subway_active:
+                    self.subway_logic() #start the subway logic
+            
 
         def update_ball_tracking(self,num):
             self.game.trough.num_balls_locked = self.balls_in_idol
@@ -333,7 +377,9 @@ class Idol(game.Mode):
                 
 
 
-        def sw_buyInButton_active_for_500ms(self, sw):
-            self.idol_state='empty'
-
-
+        #hidden debug button combination
+        def sw_buyInButton_active_for_250ms(self, sw):
+            if self.game.switches.gunTrigger.is_active(0.5):
+                self.idol_state='empty'
+            elif self.game.switches.flipperLwL.is_active(0.5):
+                self.game.coils.subwayRelease.pulse()

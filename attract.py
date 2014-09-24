@@ -60,7 +60,8 @@ class Attract(game.Mode):
                 self.game.coils.subwayRelease.pulse(100)
 
                 #check for stuck balls
-                self.delay(name='idol_empty_delay', event_type=None, delay=2, handler=self.empty_idol)
+                
+                self.delay(name='idol_empty_delay', event_type=None, delay=2, handler=self.init_idol)
                 self.delay(name='stuck_balls_release_delay', event_type=None, delay=2, handler=self.game.utility.release_stuck_balls)
 
 
@@ -114,11 +115,11 @@ class Attract(game.Mode):
             self.game.lamps.gi03.disable()
             self.game.lamps.gi04.disable()
 
-        def empty_idol(self):
-            #total_balls = self.game.trough.num_balls()+self.game.trough.num_balls_locked
-            #if total_balls<self.game.num_balls_total:
-                #empty the idol mech
+        def init_idol(self):
+            if not self.game.trough.is_full():
                 self.game.idol.empty()
+            else:
+                self.game.idol.home()
 
        
         def change_lampshow(self):
@@ -320,7 +321,7 @@ class Attract(game.Mode):
 			# Remove attract mode from mode queue - Necessary?
 			self.game.modes.remove(self)
 			# Initialize game
-			self.game.start_game()
+			self.game.start_game(force_moonlight=False)
 			# Add the first player
 			self.game.add_player()
 			# Start the ball.  This includes ejecting a ball from the trough.

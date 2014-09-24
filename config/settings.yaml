@@ -11,11 +11,11 @@ Gameplay (Feature): {A2.01 Timed Plunger: 0, Adventure Continue Timer: 25, Attra
   Monkey Brains Timer: 30, Multiball Ballsaves: 2, Multiball Saver Timer: 5, Multiball ballsave time: 20,
   Multiball ballsaves: 2, New ball ballsave time: 10, New ball repeating ballsave: false,
   Outlane Ball Save: 'No', Path Of Adventure Start Level: 1, Path of Adventure Extra Ball/Pit Lit Difficulty: Easy,
-  Quick Multiball Saver Timer: 5, Ramp Lit Timer: 30, Raven Bar Level Started: 1,
+  Quick Multiball Saver Timer: 5, Ramp Lit Timer: 30, Raven Bar Level Started: 1, Raven Bar Lives: 5,
   Rope Bridge Timer: 30, Steal The Stones Timer: 30, Streets Of Cairo Timer: 30, Super Jets Start: 100,
   Tank Chase Timer: 30, The 3 Challenges Timer: 30, Time per chain feature: 30, Timed Plunger: 0}
 Highscore: {Grand Champion: 350000000}
-Machine (Standard): {Allow Dim Illumination: 'No', Balls Per Game: 3, Clock Style: AM/PM,
+Machine (Standard): {Allow Dim Illumination: 'No', Balls Per Game: 1, Clock Style: AM/PM,
   Custom Message: false, Date Style: Euro, Euro. Score Format: 'No', Game Restart: true,
   General Illumination Power Saver: 0, Maximum Extra Balls: 4, Maximum Extra Balls/Ball In Play: 0,
   No Bonus Flips: 'Yes', Power Saver Level: 4, Show Date and Time: 'Yes', Tilt Warnings: 3,

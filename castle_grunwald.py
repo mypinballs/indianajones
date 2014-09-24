@@ -1,4 +1,4 @@
-# Get The Idol Game Mode
+# Castle Grunwald Game Mode
 
 __author__="jim"
 __date__ ="$Jan 18, 2011 1:36:37 PM$"
@@ -18,7 +18,7 @@ music_path = game_path +"music/"
 #locale.setlocale(locale.LC_ALL, 'en_GB')
 class ModeScoreLayer(dmd.TextLayer):
 	def __init__(self, x, y, font,mode, justify="center", opaque=False):
-		super(ModeScoreLayer, self).__init__(x, y, font,mode)
+		super(ModeScoreLayer, self).__init__(x, y, font,justify)
 		self.mode = mode
                 
 	def next_frame(self):

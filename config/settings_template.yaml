@@ -170,7 +170,7 @@ Gameplay (Feature):
     default: 30
   'Mode Start Lit':
     options: ['Always','Ball Start','Off']
-    default: 'Ball'
+    default: 'Ball Start'
   'Get The Idol Timer':
     options: [5,120]
     increments: 5
@@ -211,10 +211,25 @@ Gameplay (Feature):
     options: [5,120]
     increments: 5
     default: 30
-  'Raven Bar Level Started':
+  'Raven Bar Level Start':
     options: [1,4]
     increments: 1
     default: 1
+  'Raven Bar Lives':
+    options: [1,9]
+    increments: 1
+    default: 5
+  'Raven Bar Hits For Medallion':
+    options: [1,50]
+    increments: 1
+    default: 20
+  'Raven Bar Hits For Extra Ball':
+    options: [1,50]
+    increments: 1
+    default: 15
+  'Raven Bar Animate Scores For Hits':
+    options: ['Yes','No']
+    default: 'Yes'
   'Choose Wisely Level Start':
     options: [1,4]
     increments: 1
@@ -285,6 +300,10 @@ Gameplay (Feature):
   'Coin Door Ball Save':
     options: ['Yes','No']
     default: 'Yes'
+  'Moonlight Mins to Midnight':
+    options: [5,30]
+    increments: 5
+    default: 15
 Network:
   'IP Address':
     options: [0,255]

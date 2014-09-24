@@ -22,6 +22,7 @@ from tank_chase import *
 from the_three_challenges import *
 from choose_wisely import *
 from werewolf import *
+from raven_bar import *
 
 
 base_path = config.value_for_key_path('base_path')
@@ -74,7 +75,8 @@ class Mode_Select(game.Mode):
             self.get_the_idol = Get_The_Idol(self.game, 80,self)
             self.streets_of_cairo = Streets_Of_Cairo(self.game, 81,self)
             self.well_of_souls = Well_Of_Souls(self.game, 82,self)
-            self.raven_bar = Werewolf(self.game, 83,self)
+            self.raven_bar = Raven_Bar(self.game, 83,self)
+            self.werewolf = Werewolf(self.game, 83,self)
             self.monkey_brains = Monkey_Brains(self.game, 84,self)
             self.steal_the_stones = Steal_The_Stones(self.game, 85,self)
             self.mine_cart = Choose_Wisely(self.game, 86,self)
@@ -87,7 +89,7 @@ class Mode_Select(game.Mode):
             self.reset()
 
         def reset(self):
-            self.log.debug("Main Mode Select Started")
+            self.secret_mode = False
             self.reset_lamps()
 
         def reset_lamps(self):
@@ -106,6 +108,7 @@ class Mode_Select(game.Mode):
 
 
         def mode_started(self):
+            self.log.info("Main Mode Select Started")
             #load player stats
             self.current_mode_num = self.game.get_player_stats('current_mode_num')
             self.select_list = self.game.get_player_stats('mode_status_tracking')
@@ -229,10 +232,12 @@ class Mode_Select(game.Mode):
 
                 elif self.current_mode_num==3:
                     #timer = self.game.user_settings['Gameplay (Feature)']['Raven Bar Timer']
-                    #self.name_text = 'RAVEN BAR'
-                    #self.info_text = 'XXX'
-                    self.name_text = 'Werewolf Attack!'.upper()
-                    self.info_text = 'Secret Video Mode'.upper()
+                    if self.secret_mode:
+                        self.name_text = 'Werewolf Attack!'.upper()
+                        self.info_text = 'Secret Video Mode'.upper()
+                    else:
+                        self.name_text = 'RAVEN BAR'
+                        self.info_text = 'VIDEO MODE'
 
                 elif self.current_mode_num==4:
                     self.timer = self.game.user_settings['Gameplay (Feature)']['Monkey Brains Timer']
@@ -252,7 +257,8 @@ class Mode_Select(game.Mode):
                 elif self.current_mode_num==7:
                     self.timer = self.game.user_settings['Gameplay (Feature)']['Rope Bridge Timer']
                     self.name_text = 'ROPE BRIDGE'
-                    self.info_text = 'XXX'
+                    self.info_text = 'SHOOT RAMPS'
+                    self.info2_text = 'TO CROSS ROPE BRIDGE'
 
                 elif self.current_mode_num==8:
                     self.timer = self.game.user_settings['Gameplay (Feature)']['Castle Grunwald Timer']
@@ -315,7 +321,10 @@ class Mode_Select(game.Mode):
             elif self.current_mode_num==2:
                 self.game.modes.add(self.well_of_souls)
             elif self.current_mode_num==3:
-                self.game.modes.add(self.raven_bar)
+                if self.secret_mode:
+                    self.game.modes.add(self.werewolf)
+                else:
+                    self.game.modes.add(self.raven_bar)
             elif self.current_mode_num==4:
                 self.game.modes.add(self.monkey_brains)
             elif self.current_mode_num==5:
@@ -435,11 +444,16 @@ class Mode_Select(game.Mode):
             
 
         def sw_leftEject_active_for_500ms(self,sw):
+            #check and enable secret flag if correct sequence
+            if self.game.switches.flipperLwR.is_active(0.5):
+                self.secret_mode = True
+            else:
+                self.secret_mode = False
+                
             if self.game.get_player_stats('hof_status')!='lit':
                 self.start_scene()
-                #return procgame.game.SwitchStop    
-           
-
+                 
+                #return procgame.game.SwitchStop   
 
 
 #        def sw_leftEject_active(self,sw):

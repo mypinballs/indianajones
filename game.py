@@ -4,6 +4,7 @@ import procgame
 import pinproc
 import string
 import time
+import datetime
 import locale
 import math
 import copy
@@ -22,6 +23,7 @@ from scoredisplay import *
 from player import *
 from idol import *
 from mini_playfield import *
+from moonlight import *
 from trough import *
 from effects import *
 from extra_ball import *
@@ -160,7 +162,7 @@ class Game(game.BasicGame):
 
                 #define system status var
                 self.system_status='power_up'
-                self.system_version='0.5.1'
+                self.system_version='0.5.2'
                 self.system_name='Indiana Jones 2'.upper()
 
                 #update audit data on boot up time
@@ -177,11 +179,16 @@ class Game(game.BasicGame):
 		self.log.info("Initial switch states:")
 		for sw in self.switches:
 			self.log.info("  %s:\t%s" % (sw.name, sw.state_str()))
-
+                
+                #balls per game setup
                 self.balls_per_game = self.user_settings['Machine (Standard)']['Balls Per Game']
+                
+                #moonlight setup
+                self.moonlight_minutes = self.user_settings['Gameplay (Feature)']['Moonlight Mins to Midnight']
+                self.moonlight_flag = False
+                
 		self.setup_ball_search()
                 self.score_display.set_left_players_justify(self.user_settings['Display']['Left side score justify'])
-
 
 		# Note - Game specific item:
 		# The last parameter should be the name of the game's ball save lamp
@@ -284,6 +291,9 @@ class Game(game.BasicGame):
 
                 #Maximum Players
                 self.max_players = 4;
+                
+                #setup paused flag
+                self.paused = False
 
                 #add basic modes
                 #------------------
@@ -291,8 +301,10 @@ class Game(game.BasicGame):
 		self.attract_mode = Attract(self)
                 #basic game control mode
 		self.base_game_mode = BaseGameMode(self)
+                #moonlight mode - special
+                self.moonlight = Moonlight(self,2)
                 #effects mode
-                self.effects = Effects(self)
+                self.effects = Effects(self,4)
                 #utility mode
                 self.utility = Utility(self)
                 #tilt mode
@@ -391,7 +403,7 @@ class Game(game.BasicGame):
 		pass
 
 
-        def start_game(self):
+        def start_game(self,force_moonlight=False):
 		super(Game, self).start_game()
 
                 #update game start audits
@@ -400,10 +412,39 @@ class Game(game.BasicGame):
                 if self.user_settings['Machine (Standard)']['Free Play'].startswith('N'):
                     credits =  audits.display(self,'general','creditsCounter')
                     audits.update_counter(self,'credits',credits-1)
+                    
+                #moonlight check - from Eric P of CCC fame
+                #-----------------------------------------
+                # Check the time
+                now = datetime.datetime.now()
+                self.log.info("Hour:%s Minutes:%s",now.hour,now.minute)
+                # subtract the window minutes from 60
+                window = 60 - self.moonlight_minutes
+                self.log.info("Moonlight window time:%s",window)
+                # check for moonlight - always works at straight up midnight
+                if now.hour == 0 and now.minute == 0:
+                    self.moonlight_flag = True
+                # If not exactly midnight - check to see if we're within the time window
+                elif now.hour == 23 and now.minute >= window:
+                    self.moonlight_flag = True
+                # if force was passed - start it no matter what
+                elif force_moonlight:
+                    self.moonlight_flag = True
+                else:
+                    self.moonlight_flag = False
+
+                self.log.info("Moonlight Flag:%s",self.moonlight_flag)
+                #-----------------------------------------
                 
 	def ball_starting(self):
 		super(Game, self).ball_starting()
-		self.modes.add(self.base_game_mode)
+		
+                #check for moonlight
+                if self.moonlight_flag and not self.get_player_stats('moonlight_status'):
+                    self.modes.add(self.moonlight)
+                #else add normal base mode
+                else:
+                    self.modes.add(self.base_game_mode)
 
 	def ball_ended(self):
 		self.modes.remove(self.base_game_mode)
@@ -459,9 +500,38 @@ class Game(game.BasicGame):
                                      stop_switches=self.ballsearch_stopSwitches, \
                                      special_handler_modes=special_handler_modes) #procgame.modes.BallSearch
 
-#       def enable_flippers(self, enable=True):
-#		super(Game, self).enable_flippers(enable)
-#		#self.flipper_workaround_mode.enable_flippers(enable)
+
+
+        def enable_flippers(self, enable):
+		
+		"""Enables or disables the flippers AND bumpers."""
+                #wpc flippers
+		for flipper in self.config['PRFlippers']:
+			self.logger.info("Programming flipper %s", flipper)
+			main_coil = self.coils[flipper+'Main']
+			hold_coil = self.coils[flipper+'Hold']
+			switch_num = self.switches[flipper].number
+
+			drivers = []
+			if enable:
+				drivers += [pinproc.driver_state_pulse(main_coil.state(), main_coil.default_pulse_time)]
+				drivers += [pinproc.driver_state_pulse(hold_coil.state(), 0)]
+			self.proc.switch_update_rule(switch_num, 'closed_nondebounced', {'notifyHost':False, 'reloadActive':False}, drivers, len(drivers) > 0)
+			
+			drivers = []
+			if enable:
+				drivers += [pinproc.driver_state_disable(main_coil.state())]
+				if not self.paused or flipper=='FlipperLwL':
+					drivers += [pinproc.driver_state_disable(hold_coil.state())]
+	
+			self.proc.switch_update_rule(switch_num, 'open_nondebounced', {'notifyHost':False, 'reloadActive':False}, drivers, len(drivers) > 0)
+
+			if not enable:
+				main_coil.disable()
+				hold_coil.disable()
+
+		#bumpers
+		self.enable_bumpers(enable)
 
         def drive_lamp(self, lamp_name, style='on'):
 		if style == 'slow':
@@ -515,13 +585,16 @@ def main():
         root_logger.addHandler(file_handler)
 
         #set invidivual log levels here
+        logging.getLogger('ij.idol').setLevel(logging.DEBUG)
+        logging.getLogger('ij.trough').setLevel(logging.DEBUG)
         logging.getLogger('ij.base').setLevel(logging.DEBUG)
         logging.getLogger('ij.poa').setLevel(logging.DEBUG)
         logging.getLogger('ij.mode_select').setLevel(logging.DEBUG)
+        logging.getLogger('ij.raven_bar').setLevel(logging.DEBUG)
         logging.getLogger('ij.match').setLevel(logging.DEBUG)
-        logging.getLogger('game.vdriver').setLevel(logging.INFO)
-        logging.getLogger('game.driver').setLevel(logging.INFO)
-        logging.getLogger('game.sound').setLevel(logging.DEBUG)
+        logging.getLogger('game.vdriver').setLevel(logging.ERROR)
+        logging.getLogger('game.driver').setLevel(logging.DEBUG)
+        logging.getLogger('game.sound').setLevel(logging.ERROR)
 
 
 	config = yaml.load(open(machine_config_path, 'r'))

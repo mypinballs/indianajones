@@ -348,5 +348,11 @@ class BaseGameMode(game.Mode):
                 self.game.sound.play("outlane_speech")
 
 
-
-
+        #pause game logic
+        def sw_buyInButton_active_for_250ms(self,sw): 
+             if self.game.ball>0: 
+                if self.game.switches.flipperLwR.is_active(0.5) and not self.game.paused:
+                    self.game.utility.pause_game(True)
+                elif self.game.paused:
+                    self.game.utility.pause_game(False)
+            

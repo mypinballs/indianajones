@@ -123,6 +123,6 @@ class Tilt(game.Mode):
 
 
 	def sw_slamTilt_active(self, sw):
-            self.slam_tilt()
-		
+            #self.slam_tilt()
+            pass #temp TODO: Remove this once random switch activation isseu resolved
 

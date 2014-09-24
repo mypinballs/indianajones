@@ -36,9 +36,12 @@ class Player(procgame.game.Player):
                 self.player_stats['multiball_mode_started'] = False
                 self.player_stats['path_mode_started'] = False
                 self.player_stats['lock_lit'] = False
+                self.player_stats['multiball_ready'] = False
                 self.player_stats['multiball_running'] = False
                 self.player_stats['multiball_started'] = False
                 self.player_stats['quick_multiball_running'] = False
+                self.player_stats['jackpots_collected'] = 0
+                self.player_stats['cheat_count'] = 0
                 self.player_stats['treasures_collected']=0
                 self.player_stats['balls_locked'] = 0
                 self.player_stats['pit_value'] = 0
@@ -59,4 +62,6 @@ class Player(procgame.game.Player):
                 self.player_stats['the_three_challenges_score']=0
                 self.player_stats['werewolf_score']=0
                 self.player_stats['choose_wisely_level']=1#int(self.game.user_settings['Gameplay (Feature)']['Choose Wisely Level Start'])
+                self.player_stats['moonlight_total']=0
+                self.player_stats['moonlight_status']=False
 		

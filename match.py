@@ -16,60 +16,6 @@ speech_path = game_path +"speech/"
 sound_path = game_path +"sound/"
 music_path = game_path +"music/"
 
-#mpc animation layer for sprites
-class SpriteLayer(dmd.AnimatedLayer):
-
-        dot_type=None
-
-        def __init__(self, opaque=False, hold=True, repeat=False, frame_time=6, frames=None, x=0,y=0,dot_type=None):
-		super(SpriteLayer, self).__init__(opaque,x,y,dot_type)
-                self.target_x = x
-                self.target_y = y
-                self.dot_type = dot_type
-                self.composite_op = "blacksrc"
-
-                self.hold = hold
-		self.repeat = repeat
-		if frames == None:
-			self.frames = list()
-		else:
-			self.frames = frames
-
-		self.frame_time = frame_time # Number of frames each frame should be displayed for before moving to the next.
-		self.frame_time_counter = self.frame_time
-
-		self.frame_listeners = []
-
-		self.reset()
-
-	def next_frame(self):
-
-		frame = super(SpriteLayer, self).next_frame()
-
-		if frame:
-			if self.dot_type == 1:
-				for x in range(128):
-					for y in range(32):
-						color = frame.get_dot(x,y)
-						if color == 5: # These are the same dots as in dot_type 2, so we remove them by letting blacksrc hide them. Possibly this could be an additional tint in other animations?
-							frame.set_dot(x,y,0) # Ideally this should be set to alpha 0%
-						elif color == 15:
-							# These are the highlights of the monkeys face, they should remain white
-							pass
-                                                elif color == 10:
-                                                        frame.set_dot(x,y,12)
-			elif self.dot_type == 2:
-				for x in range(128):
-					for y in range(32):
-						color = frame.get_dot(x,y)
-						if color == 5:
-							frame.set_dot(x,y,1) # Ideally this should be 0 at alpha 100% if we could use blendmode alpha. Now we use 1 to come as close to black as possible.
-						elif color == 15:
-							#These are the hightlights of the monkeys body, tone them down a little.
-							frame.set_dot(x,y,6)
-
-		return frame
-
 
 class Match(game.Mode):
 
@@ -98,7 +44,7 @@ class Match(game.Mode):
 
         def reset(self):
             self.value = 0
-            self.player_digits = [0,0,0,0]
+            self.player_digits = []
             self.play=False
 
 
@@ -137,46 +83,26 @@ class Match(game.Mode):
             box_frames = dmd.Animation().load("dmd/match_cart.dmd").frames
 
             #create man sprite
-            #remember - frames start at 0
-            even_frames = man_frames[0::2] # This layer gets hilight frames
-            odd_frames = man_frames[1::2] # This layer gets the low colour and mask frames
-
             #set the sprite posn
-            x = -52
+            x = -50
             y = 1
 
-            self.sprite_data1 = SpriteLayer(frames=even_frames, opaque=False, hold=False, repeat=True, x=x,y=y, dot_type=1)
-            self.sprite_data2 = SpriteLayer(frames=odd_frames, opaque=False, hold=False, repeat=True, x=x,y=y, dot_type=2)
-
-            self.sprite_data_layers = []
-            self.sprite_data_layers += [self.sprite_data2]
-            self.sprite_data_layers += [self.sprite_data1]
-
-            self.man_sprite_layer = dmd.layers.GroupedLayer(128,32, self.sprite_data_layers)
+            self.man_sprite_layer = dmd.AnimatedLayer(frames=man_frames,hold=False,repeat=True,frame_time=6)
+            self.man_sprite_layer.target_x=x
+            self.man_sprite_layer.target_y=y
             self.man_sprite_layer.composite_op ="blacksrc"
-
 
             self.log.debug("man sprite created")
 
             #create box sprite
-            #remember - frames start at 0
-            even_frames = box_frames[0::2] # This layer gets hilight frames
-            odd_frames = box_frames[1::2] # This layer gets the low colour and mask frames
-
             #set the sprite posn
             x = -25
             y = 3
-
-            self.sprite_data1 = SpriteLayer(frames=even_frames, opaque=False, hold=False, repeat=True, x=x,y=y, dot_type=1)
-            self.sprite_data2 = SpriteLayer(frames=odd_frames, opaque=False, hold=False, repeat=True, x=x,y=y, dot_type=2)
-
-            self.sprite_data_layers = []
-            self.sprite_data_layers += [self.sprite_data2]
-            self.sprite_data_layers += [self.sprite_data1]
-
-            self.box_sprite_layer = dmd.layers.GroupedLayer(128,32, self.sprite_data_layers)
-            self.box_sprite_layer.composite_op ="blacksrc"
             
+            self.box_sprite_layer = dmd.AnimatedLayer(frames=box_frames,hold=False,repeat=True,frame_time=6)
+            self.box_sprite_layer.target_x=x
+            self.box_sprite_layer.target_y=y       
+            self.box_sprite_layer.composite_op ="blacksrc"
 
             self.log.debug("box sprite created")
 
@@ -191,8 +117,8 @@ class Match(game.Mode):
 
 
         def move_sprite(self,layer1,layer2):
-            layer1.target_x +=8
-            layer2.target_x +=8
+            layer1.target_x +=4
+            layer2.target_x +=4
 
             self.cancel_delayed('move_sprite_forward')
             self.delay(name='move_sprite_forward',delay=0.2,handler=lambda:self.move_sprite(layer1,layer2))
@@ -218,7 +144,7 @@ class Match(game.Mode):
                 display = str(self.value)
 
             #set text
-            self.match_layer.set_text(display)
+            self.match_layer.set_text(display,color=dmd.PURPLE)
 
 
 
@@ -230,15 +156,16 @@ class Match(game.Mode):
             for i in range(len(self.game.players)):
                 score = self.game.players[i].score
                 digit = str(score)[-2:-1]
-                player_layers[i].set_text(str(score)[-2:])
+                player_layers[i].set_text(str(score)[-2:],color=dmd.YELLOW)
                 #set var for comparison
-                self.player_digits[i]=digit
+                self.player_digits.append(int(digit))
 
 
         def check(self):
             #self.credits = audits.display(self.game,'general','creditsCounter') for ewhen audit system is added to indy :)
 
             for i in range(len(self.player_digits)):
+                self.log.debug("%s:%s",self.player_digits[i],self.value)
                 if self.player_digits[i]==self.value:
                      #audits.update_counter(self.game,'credits',self.credits+1)
                      self.game.sound.play('success')

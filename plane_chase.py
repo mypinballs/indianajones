@@ -98,14 +98,17 @@ class Plane_Chase(game.Mode):
                     self.game.effects.drive_lamp('leftRampArrow','superfast')
 
                 #self.game.lampctrl.save_state('game')
-
+                
+                bgnd = dmd.Animation().load(game_path+"dmd/blank.dmd")
+                self.bgnd_layer = dmd.FrameLayer(frame=bgnd.frames[0])
+                
                 anim = dmd.Animation().load(game_path+"dmd/plane_chase.dmd")
-                self.animation_layer = dmd.AnimatedLayer(frames=anim.frames,hold=True,frame_time=6)
+                self.animation_layer = dmd.AnimatedLayer(frames=anim.frames,hold=False,frame_time=6)
                 #add the made text before the end of the animation
                 self.animation_layer.add_frame_listener(-3,self.ramp_made_text)
                 #queue the clean up at the animation end
                 self.animation_layer.add_frame_listener(-1,self.queue_clear)
-                self.layer = dmd.GroupedLayer(128, 32, [self.animation_layer,self.text_layer])
+                self.layer = dmd.GroupedLayer(128, 32, [self.bgnd_layer,self.animation_layer,self.text_layer])
                 
                 self.game.lampctrl.play_show('success', repeat=False,callback=self.game.update_lamps)#self.restore_lamps
                 self.game.score(self.ramp_made_score)

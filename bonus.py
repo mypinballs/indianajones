@@ -15,12 +15,12 @@ class Bonus(game.Mode):
 		super(Bonus, self).__init__(game, priority)
 
                 self.title_layer = dmd.TextLayer(128/2, 2, self.game.fonts['num_09Bx7'], "center")
-		self.value_layer = dmd.TextLayer(128/2, 17, self.game.fonts['num_14x10'], "center")
+		self.value_layer = dmd.TextLayer(128/2, 16, self.game.fonts['num_14x10'], "center")
 		self.bonus_layer = dmd.GroupedLayer(128, 32, [self.title_layer, self.value_layer])
                 #self.bonus_layer.transition = dmd.ExpandTransition(direction='vertical')
 
                 self.mode_bonus_bgnd = dmd.FrameLayer(opaque=True, frame=dmd.Animation().load(game_path+'dmd/scene_ended_bgnd.dmd').frames[0])
-                self.mode_bonus_layer = dmd.GroupedLayer(128, 32, [self.title_layer, self.value_layer,self.mode_bonus_bgnd])
+                self.mode_bonus_layer = dmd.GroupedLayer(128, 32, [self.mode_bonus_bgnd,self.title_layer,self.value_layer])
                 #self.mode_bonus_layer.transition = dmd.ExpandTransition(direction='vertical')
 
 		self.bonus_counter = 0
@@ -85,8 +85,8 @@ class Bonus(game.Mode):
             else:
                 x_display=''
 
-            self.title_layer.set_text('BONUS'+ x_display)
-            self.value_layer.set_text(locale.format("%d", self.total_base, True))
+            self.title_layer.set_text('BONUS'+ x_display,color=dmd.ORANGE)
+            self.value_layer.set_text(locale.format("%d", self.total_base, True),color=dmd.YELLOW)
             self.layer = self.bonus_layer
 
             self.delay(name='bonus_total', event_type=None, delay=self.delay_time, handler=self.modes)
@@ -105,8 +105,8 @@ class Bonus(game.Mode):
 
         def modes_display(self):
             if self.mode_counter<len(self.elements):
-                self.title_layer.set_text(self.elements[self.mode_counter])
-                self.value_layer.set_text(locale.format("%d", self.value[self.mode_counter], True))
+                self.title_layer.set_text(self.elements[self.mode_counter],color=dmd.BROWN)
+                self.value_layer.set_text(locale.format("%d", self.value[self.mode_counter], True),color=dmd.GREEN)
                 self.layer = self.mode_bonus_layer
                 self.game.sound.play('bonus_mode_completed'+str(self.mode_counter+1))
                 self.mode_total =self.mode_total+self.value[self.mode_counter]
@@ -124,8 +124,8 @@ class Bonus(game.Mode):
                 self.game.sound.fadeout_music()
                 self.game.sound.play('bonus_end')
                 total_bonus = (self.total_base * self.bonus_x)+self.mode_total
-                self.title_layer.set_text('TOTAL BONUS',seconds=self.delay_time)
-                self.value_layer.set_text(locale.format("%d", total_bonus, True),seconds=self.delay_time)
+                self.title_layer.set_text('TOTAL BONUS',seconds=self.delay_time,color=dmd.ORANGE)
+                self.value_layer.set_text(locale.format("%d", total_bonus, True),seconds=self.delay_time,color=dmd.YELLOW)
                 self.layer = self.bonus_layer
 
                 self.game.score(total_bonus)

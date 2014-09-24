@@ -17,10 +17,9 @@ music_path = game_path +"music/"
 
 #locale.setlocale(locale.LC_ALL, 'en_GB')
 class ModeScoreLayer(dmd.TextLayer):
-	def __init__(self, x, y, font,mode, opaque=False):
-		super(ModeScoreLayer, self).__init__(x, y, font,mode)
+	def __init__(self, x, y, font, mode, justify, opaque=False):
+		super(ModeScoreLayer, self).__init__(x, y, font, justify)
 		self.mode = mode
-                self.justify="center"
                 
 	def next_frame(self):
 		"""docstring for next_frame"""
@@ -61,7 +60,7 @@ class Well_Of_Souls(game.Mode):
             self.log.info("Well Of Souls Ball Save Time is: "+str(self.ball_save_time))
 
             #screen setup
-            self.score_layer = ModeScoreLayer(43, 2, self.game.fonts['num_09Bx7'], self)
+            self.score_layer = ModeScoreLayer(43, 2, self.game.fonts['num_09Bx7'], self,"center")
             self.bip_layer = BallsInPlayLayer(43, 12, self.game.fonts['07x5'], self)
             self.info_layer = dmd.TextLayer(128/2, 20, self.game.fonts['07x5'], "center", opaque=False)
             self.award_layer = dmd.TextLayer(128/2, 5, self.game.fonts['23x12'], "center", opaque=False)

@@ -17,7 +17,7 @@ music_path = game_path +"music/"
 #locale.setlocale(locale.LC_ALL, 'en_GB')
 class ModeScoreLayer(dmd.TextLayer):
 	def __init__(self, x, y, font,mode, justify="center", opaque=False):
-		super(ModeScoreLayer, self).__init__(x, y, font,mode)
+		super(ModeScoreLayer, self).__init__(x, y, font,justify)
 		self.mode = mode
                 
 	def next_frame(self):
@@ -72,7 +72,7 @@ class Steal_The_Stones(game.Mode):
             anim = dmd.Animation().load(game_path+self.scene_anim)
             self.scene_layer = dmd.AnimatedLayer(frames=anim.frames,hold=False,opaque=False,repeat=True,frame_time=2)
             info_layer_1 = dmd.TextLayer(128/2, 8, self.game.fonts['07x5'], "center", opaque=False)
-            info_layer_1.set_text("GET ALL LIT LANES",blink_frames=4)
+            info_layer_1.set_text("GET ALL LIT LANES",blink_frames=4, color=dmd.MAGENTA)
             self.layer = dmd.GroupedLayer(128, 32, [self.scene_layer,info_layer_1,self.timer_layer])
 
         def load_mp_instructions(self):
@@ -97,7 +97,7 @@ class Steal_The_Stones(game.Mode):
             #setup additonal layers
             self.timer_layer = dmd.TimerLayer(128, 25, self.game.fonts['07x5'],self.timer,"right")
             self.info_layer = dmd.TextLayer(80, 20, self.game.fonts['07x5'], "center", opaque=False)
-            self.info_layer.set_text("SHOOT RIGHT RAMP",blink_frames=4)
+            self.info_layer.set_text("SHOOT RIGHT RAMP",blink_frames=4, color=dmd.MAGENTA)
 
             #turn on coils and flashers
             self.game.coils.flasherPOA.schedule(0x30003000, cycle_seconds=0, now=True)
@@ -167,7 +167,7 @@ class Steal_The_Stones(game.Mode):
 
         def update_score(self):
             score = self.game.current_player().score
-            self.score_layer.set_text(locale.format("%d", score, True))
+            self.score_layer.set_text(locale.format("%d", score, True), color=dmd.YELLOW)
      
 
         def mode_progression(self):

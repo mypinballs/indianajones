@@ -33,17 +33,21 @@ PRSwitches:
     dropTargetLeft:
         number: SF5
         type: 'NC'
+        tags: moonlight
         label: 'Drop Target Left'
     dropTargetMiddle:
         number: SF6
         type: 'NC'
+        tags: moonlight
         label: 'Drop Target Middle'
     dropTargetRight:
         number: SF7
         type: 'NC'
+        tags: moonlight
         label: 'Drop Target Right'
     leftRampMade:
         number: SF8
+        tags: moonlight
         label: 'Left Ramp Made'
 
     #Dedicated Grounded Swtches
@@ -92,15 +96,18 @@ PRSwitches:
     leftOutlane:
         number: S15
         label: 'Left Outlane'
-        tags: early_save
+        tags: early_save,moonlight
     leftInlane:
         number: S16
+        tags: moonlight
         label: 'Left Inlane'
     rightInlane:
         number: S17
+        tags: moonlight
         label: 'Right Inlane'
     rightOutlaneTop:
         number: S18
+        tags: moonlight
         label: 'Right Outlane Top'
     slamTilt:
         number: S21
@@ -116,15 +123,19 @@ PRSwitches:
         label: 'Always Closed'
     indyI:
         number: S25
+        tags: moonlight
         label: 'Indy (I)'
     indyN:
         number: S26
+        tags: moonlight
         label: 'Indy (N)'
     indyD:
         number: S27
+        tags: moonlight
         label: 'Indy (D)'
     indyY:
         number: S28
+        tags: moonlight
         label: 'Indy (Y)'
     leftEject:
         number: S31
@@ -134,29 +145,36 @@ PRSwitches:
         label: 'Exit Idol'
     leftSlingshot:
         number: S33
+        tags: moonlight
         label: 'Left Slingshot'
     gunTrigger:
         number: S34
         label: 'Gun Trigger'
     leftJet:
         number: S35
+        tags: moonlight
         label: 'Left Jet'
     rightJet:
         number: S36
+        tags: moonlight
         label: 'Right Jet'
     bottomJet:
         number: S37
+        tags: moonlight
         label: 'Bottom Jet'
     centerStandup:
         number: S38
+        tags: moonlight
         label: 'Center Standup'
     leftRampEnter:
         number: S41
         type: 'NC'
+        tags: moonlight
         label: 'Left Ramp Enter'
     rightRampEnter:
         number: S42
         type: 'NC'
+        tags: moonlight
         label: 'Right Ramp Enter'
     topIdolEnter:
         number: S43
@@ -169,6 +187,7 @@ PRSwitches:
     centerEnter:
         number: S45
         type: 'NC'
+        tags: moonlight
         label: 'Center Enter'
     topPost:
         number: S46
@@ -179,24 +198,30 @@ PRSwitches:
         label: 'Subway Lockup'
     rightSlingshot:
         number: S48
+        tags: moonlight
         label: 'Right Slingshot'
     adventureU:
         number: S51
+        tags: moonlight
         label: 'Adventure (U)'
     adventureR:
         number: S52
+        tags: moonlight
         label: 'Adventure (R)'
     adventureE2:
         number: S53
+        tags: moonlight
         label: 'Adventure (E2)'
     leftLoopTop:
         number: S54
+        tags: moonlight
         label: 'Left Loop Top'
     leftLoopBottom:
         number: S55
         label: 'Left Loop Bottom'
     rightLoopTop:
         number: S56
+        tags: moonlight
         label: 'Right Loop Top'
     rightLoopBottom:
         number: S57
@@ -207,15 +232,19 @@ PRSwitches:
         tags: early_save
     adventureA:
         number: S61
+        tags: moonlight
         label: 'Adventure (A)'
     adventureD:
         number: S62
+        tags: moonlight
         label: 'Adventure (D)'
     adventureV:
         number: S63
+        tags: moonlight
         label: 'Adventure (V)'
     captiveBallBack:
         number: S64
+        tags: moonlight
         label: 'Captive Ball Back'
     miniTopLeft:
         number: S65
@@ -289,6 +318,7 @@ PRSwitches:
     troughTop:
         number: S87
         type: 'NC'
+        tags: trough_jam
         label: 'Trough Top (Eject)'
     shooterLane:
         number: S88
@@ -425,7 +455,7 @@ PRCoils:
         label: 'Flasher Left Ramp'
     subwayRelease:
         number: C28
-        pulseTime: 120
+        pulseTime: 150
         label: 'Subway Release'
     flasherLeftSide:
         number: C37

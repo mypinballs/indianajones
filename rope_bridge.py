@@ -18,7 +18,7 @@ music_path = game_path +"music/"
 #locale.setlocale(locale.LC_ALL, 'en_GB')
 class ModeScoreLayer(dmd.TextLayer):
 	def __init__(self, x, y, font,mode, justify="center", opaque=False):
-		super(ModeScoreLayer, self).__init__(x, y, font,mode)
+		super(ModeScoreLayer, self).__init__(x, y, font,justify)
 		self.mode = mode
                 
 	def next_frame(self):
@@ -28,6 +28,59 @@ class ModeScoreLayer(dmd.TextLayer):
 
 		return super(ModeScoreLayer, self).next_frame()
 
+#mpc animation layer for sprites
+class SpriteLayer(dmd.AnimatedLayer):
+
+        dot_type=None
+
+        def __init__(self, opaque=False, hold=True, repeat=False, frame_time=6, frames=None, x=0,y=0,dot_type=None):
+		super(SpriteLayer, self).__init__(opaque,x,y,dot_type)
+                self.target_x = x
+                self.target_y = y
+                self.dot_type = dot_type
+                self.composite_op = "blacksrc"
+
+                self.hold = hold
+		self.repeat = repeat
+		if frames == None:
+			self.frames = list()
+		else:
+			self.frames = frames
+
+		self.frame_time = frame_time # Number of frames each frame should be displayed for before moving to the next.
+		self.frame_time_counter = self.frame_time
+
+		self.frame_listeners = []
+
+		self.reset()
+
+	def next_frame(self):
+
+		frame = super(SpriteLayer, self).next_frame()
+
+		if frame:
+			if self.dot_type == 1:
+				for x in range(128):
+					for y in range(32):
+						color = frame.get_dot(x,y)
+						if color == 5: # These are the same dots as in dot_type 2, so we remove them by letting blacksrc hide them. Possibly this could be an additional tint in other animations?
+							frame.set_dot(x,y,0) # Ideally this should be set to alpha 0%
+						elif color == 15:
+							# These are the highlights of the sprite
+							pass
+                                                elif color == 10:
+                                                        frame.set_dot(x,y,12)
+			elif self.dot_type == 2:
+				for x in range(128):
+					for y in range(32):
+						color = frame.get_dot(x,y)
+						if color == 5:
+							frame.set_dot(x,y,1) # Ideally this should be 0 at alpha 100% if we could use blendmode alpha. Now we use 1 to come as close to black as possible.
+						elif color == 15:
+							#These are the midtones of the sprite
+							frame.set_dot(x,y,6)
+
+		return frame
 
 class Rope_Bridge(game.Mode):
 
@@ -43,14 +96,15 @@ class Rope_Bridge(game.Mode):
             self.timer = int(self.game.user_settings['Gameplay (Feature)']['Rope Bridge Timer'])
             self.log.info("Rope Bridge Timer is:"+str(self.timer))
 
-            self.score_layer = ModeScoreLayer(128/2, -1, self.game.fonts['07x5'], self)
-            self.award_layer = dmd.TextLayer(128/2, 5, self.game.fonts['23x12'], "center", opaque=False)
+            self.score_layer = ModeScoreLayer(128/2, 0, self.game.fonts['9x7_bold'], self)
+            self.award_layer = dmd.TextLayer(128/2, 0, self.game.fonts['23x12'], "center", opaque=False)
             
             #sound setup
             self.game.sound.register_music('background_play', music_path+"rope_bridge.aiff")
-            self.game.sound.register_sound('rb_shot_hit', sound_path+"run_breathing.aiff")
+            self.game.sound.register_sound('rb_shot_hit', sound_path+"out_of_breath.aiff")
             self.game.sound.register_sound('rb_s0', speech_path+"come_on_indy.aiff")
             self.game.sound.register_sound('rb_s1', sound_path+"sword_chop.aiff")
+            self.game.sound.register_sound('rb_s2', sound_path+"bridge_fall.aiff")
 
             #lamps setup
             self.lamps = ['leftRampArrow','rightRampArrow']
@@ -65,37 +119,192 @@ class Rope_Bridge(game.Mode):
             self.score_value_start = 10000000
             self.score_value_completed = self.score_value_start*2
             self.score_value_extra = 2000000
+            
+            self.bridge_x_posn = 0
+            self.indy_x_posn = 0
+            self.indy_y_posn = 0
 
         def load_scene_anim(self,count):
+            
+            max_count=5 # should be a setting
+            #range=120/max_count #20
 
-            if count<4:
-                self.scene_anim = "dmd/rope_bridge_scene_"+str(count)+".dmd"
-                anim = dmd.Animation().load(game_path+self.scene_anim)
-                self.scene_layer = dmd.AnimatedLayer(frames=anim.frames,hold=False,opaque=False,repeat=False,frame_time=2)
-                self.scene_layer.add_frame_listener(-1,self.award_score)
-                self.scene_layer.add_frame_listener(-1, self.load_bgnd_anim)
-                self.layer = self.scene_layer
+            if count<max_count:
+#                self.scene_anim = "dmd/rope_bridge_scene_"+str(count)+".dmd"
+#                anim = dmd.Animation().load(game_path+self.scene_anim)
+#                self.scene_layer = dmd.AnimatedLayer(frames=anim.frames,hold=False,opaque=False,repeat=False,frame_time=2)
+#                self.scene_layer.add_frame_listener(-1,self.award_score)
+#                self.scene_layer.add_frame_listener(-1, self.load_bgnd_anim)
+#                self.layer = self.scene_layer
+
+                self.move_sprite(layer=self.bridge_sprite_layer,amount=-3,range=30,x_store=self.bridge_x_posn)
+                self.load_indy(x_posn=self.indy_x_posn,y_posn=self.indy_y_posn,status='run')
+                self.move_indy(amount=2,range=22,callback=self.load_continue_anim)
+                self.award_score()
+                self.layer = dmd.GroupedLayer(128, 32, [self.bridge_sprite_layer,self.award_layer,self.indy_sprite_layer])
+                
             else:
                 self.completed()
 
         def completed(self):
             self.bgnd_anim = "dmd/rope_bridge_completed.dmd"
             anim = dmd.Animation().load(game_path+self.bgnd_anim)
-            self.scene_layer = dmd.AnimatedLayer(frames=anim.frames,hold=False,opaque=False,repeat=False,frame_time=2)
+            self.scene_layer = dmd.AnimatedLayer(frames=anim.frames,hold=False,opaque=False,repeat=False,frame_time=6)
+            self.scene_layer.add_frame_listener(-10,self.completed_sound1)
+            self.scene_layer.add_frame_listener(-6,self.completed_sound2)
             self.scene_layer.add_frame_listener(-1,self.award_completed_score)
             self.scene_layer.add_frame_listener(-1,self.end_scene_delay)
             self.layer = self.scene_layer
-
+            
+            
+        def completed_sound1(self):
+            self.game.sound.play('rb_s1')
+        
+        
+        def completed_sound2(self):
+            self.game.sound.play('rb_s2')
+            
+            
         def end_scene_delay(self):
             self.delay(name='end_scene_delay', event_type=None, delay=2, handler=self.mode_select.end_scene)
 
 
-        def load_bgnd_anim(self):
-            self.bgnd_anim = "dmd/rope_bridge_bgnd.dmd"
-            anim = dmd.Animation().load(game_path+self.bgnd_anim)
-            self.bgnd_layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False,repeat=True,frame_time=33)
-            self.layer = dmd.GroupedLayer(128, 32, [self.bgnd_layer,self.score_layer,self.timer_layer,self.info_layer,self.award_layer])
+        def load_start_anim(self):
+            self.log.info('Indy X Store posn:%s',self.indy_x_posn)
+            self.load_bridge_animation(x_posn=self.bridge_x_posn)
+            self.load_indy(x_posn=self.indy_x_posn,y_posn=self.indy_y_posn)
+            
+            self.layer = dmd.GroupedLayer(128, 32, [self.bridge_sprite_layer,self.score_layer,self.award_layer,self.indy_sprite_layer,self.timer_layer,self.info_layer])
+          
+          
+        def load_continue_anim(self):
+            self.log.info('Indy X Store posn:%s',self.indy_x_posn)
+            self.load_indy(x_posn=self.indy_x_posn,y_posn=self.indy_y_posn,status='stand')
+            self.layer = dmd.GroupedLayer(128, 32, [self.bridge_sprite_layer,self.score_layer,self.award_layer,self.indy_sprite_layer,self.timer_layer,self.info_layer])
+          
+          
+        def load_bridge_animation(self,x_posn=0,y_posn=0):
+            bridge_sprites = [dmd.Animation().load("dmd/rope_bridge_left_bgnd.dmd").frames,dmd.Animation().load("dmd/rope_bridge_middle_bgnd.dmd").frames,dmd.Animation().load("dmd/rope_bridge_right_bgnd.dmd").frames]
+            
+            #set posn of sprite
+            x=x_posn
+            y=y_posn
+            y+=6
+            
+            sprite_data_layers = []
+            
+            for i in range(len(bridge_sprites)):
+                #remember - frames start at 0
+                even_frames = bridge_sprites[i][0::2] # This layer gets hilight frames
+                odd_frames = bridge_sprites[i][1::2] # This layer gets the low colour and mask frames
+                
+                sprite_data1 = SpriteLayer(frames=even_frames, opaque=False, hold=True, repeat=False, x=x,y=y, dot_type=1)
+                sprite_data2 = SpriteLayer(frames=odd_frames, opaque=False, hold=True, repeat=False, x=x,y=y, dot_type=2)
+            
+                sprite_data_layers += [sprite_data2]
+                sprite_data_layers += [sprite_data1]
+                
+                x=+128
+                
+            self.bridge_sprite_layer = dmd.layers.GroupedLayer(384,32, sprite_data_layers)
+            #self.bridge_layer.composite_op ="blacksrc"
 
+            self.log.info("bridge created")
+            
+            
+        def load_indy(self, x_posn=0, y_posn=0, status='stand'):
+            indy_standing_body_sprite = dmd.Animation().load("dmd/rb_sprites_indy_standing_body.dmd").frames
+            indy_standing_head_sprite = dmd.Animation().load("dmd/rb_sprites_indy_standing_head.dmd").frames
+            indy_running_sprite = dmd.Animation().load("dmd/rb_sprites_indy_running.dmd").frames
+
+            #set posn of sprite
+            x=x_posn
+            y=y_posn
+            x-=26
+            y-=2
+            
+            sprite_data_layers = []
+            
+            if status=='stand':
+                #remember - frames start at 0
+                even_frames = indy_standing_body_sprite[0::2] # This layer gets hilight frames
+                odd_frames = indy_standing_body_sprite[1::2] # This layer gets the low colour and mask frames
+                
+                sprite_data1 = SpriteLayer(frames=even_frames, opaque=False, hold=True, repeat=False, x=x,y=y, dot_type=1)
+                sprite_data2 = SpriteLayer(frames=odd_frames, opaque=False, hold=True, repeat=False, x=x,y=y, dot_type=2)
+                
+                even_frames = indy_standing_head_sprite[0::2] # This layer gets hilight frames
+                odd_frames = indy_standing_head_sprite[1::2] # This layer gets the low colour and mask frames
+                
+                sprite_data3 = SpriteLayer(frames=even_frames, opaque=False, hold=False, repeat=True, x=x,y=y-9, dot_type=1)
+                sprite_data4 = SpriteLayer(frames=odd_frames, opaque=False, hold=False, repeat=True, x=x,y=y-9, dot_type=2)
+
+                sprite_data_layers += [sprite_data2]
+                sprite_data_layers += [sprite_data1]
+                sprite_data_layers += [sprite_data4]
+                sprite_data_layers += [sprite_data3]
+
+            elif status=='run':
+                even_frames = indy_running_sprite[0::2] # This layer gets hilight frames
+                odd_frames = indy_running_sprite[1::2] # This layer gets the low colour and mask frames
+                
+                sprite_data1 = SpriteLayer(frames=even_frames, opaque=False, hold=False, repeat=True, x=x,y=y, dot_type=1)
+                sprite_data2 = SpriteLayer(frames=odd_frames, opaque=False, hold=False, repeat=True, x=x,y=y, dot_type=2)
+                
+                
+                sprite_data_layers += [sprite_data2]
+                sprite_data_layers += [sprite_data1]
+            
+            self.indy_sprite_layer = dmd.layers.GroupedLayer(128,32, sprite_data_layers)
+            self.indy_sprite_layer.composite_op ="blacksrc"
+            self.log.info("indy sprite created")
+            
+            
+#        def move_bridge(self,range=20):
+#            x=range
+#            if x>0:
+#                self.bridge_sprite_layer.target_x -=2
+#                x-=2
+#                self.delay(name='move_bridge_loop',delay=0.2,handler=lambda:self.move_bridge())
+#            else:
+#                self.cancel_delayed('move_bridge_loop')
+
+                
+        def move_sprite(self,layer,amount,range,x_store,callback=None):
+            layer.target_x +=amount
+            x_store +=amount
+            
+            self.delay(name='move_sprite_forward',delay=0.2,handler=lambda:self.move_sprite(layer,amount,range,x_store,callback))
+
+            if layer.target_x%range==0:
+                self.cancel_delayed('move_sprite_forward')
+                
+                if callback:
+                    callback()
+        
+        
+        def move_indy(self,amount,range,callback=None):
+            self.indy_sprite_layer.target_x +=amount
+            self.indy_x_posn +=amount
+             
+            #loop
+            self.delay(name='move_indy_sprite',delay=0.2,handler=lambda:self.move_indy(amount,range,callback))
+            
+            #determine when to stop indy moving
+            if self.indy_sprite_layer.target_x%range==0:
+                self.cancel_delayed('move_indy_sprite')            
+                if callback:
+                    callback()
+                    
+            #work out when to shift indy in the y plane
+            self.log.info('indy x posn:%s',self.indy_x_posn)
+            if self.indy_x_posn<38 and self.indy_x_posn%10==0:
+                self.indy_sprite_layer.target_y+=1
+                self.indy_y_posn+=1
+            elif self.indy_x_posn>58 and self.indy_x_posn%10==0:
+                self.indy_sprite_layer.target_y-=1
+                self.indy_y_posn-=1    
+        
 
         def mode_started(self):
             #load player stats
@@ -107,7 +316,8 @@ class Rope_Bridge(game.Mode):
             #self.info_layer.set_text("SHOOT LIT SHOTS",blink_frames=1000)
 
             #load animation
-            self.load_bgnd_anim()
+            self.load_start_anim()
+            
             
             #start mode music & speech
             self.game.sound.play_music('background_play', loops=-1)
@@ -184,7 +394,7 @@ class Rope_Bridge(game.Mode):
 
         def update_score(self):
             score = self.game.current_player().score
-            self.score_layer.set_text(locale.format("%d", score, True))
+            self.score_layer.set_text(locale.format("%d", score, True), color=dmd.YELLOW)
      
 
         def mode_progression(self):
@@ -202,13 +412,13 @@ class Rope_Bridge(game.Mode):
         def award_score(self,score_value=0):
             score_value = self.score_value_start
 
-            self.award_layer.set_text(locale.format("%d",score_value,True),blink_frames=10,seconds=3)
+            self.award_layer.set_text(locale.format("%d",score_value,True),blink_frames=10,seconds=3, color=dmd.MAGENTA)
             self.game.score(score_value)
 
         def award_completed_score(self,score_value=0):
             score_value = self.score_value_completed
 
-            self.award_layer.set_text(locale.format("%d",score_value,True),blink_frames=10,seconds=3)
+            self.award_layer.set_text(locale.format("%d",score_value,True),blink_frames=10,seconds=3, color=dmd.PURPLE)
             self.game.score(score_value)
 
             

@@ -56,6 +56,10 @@ class Trough(procgame.game.Mode):
                 for switch in self.game.switches.items_tagged('trough_eject'):
                     self.eject_switchname = switch.name
                     self.log.info("Trough Eject Switch is:"+self.eject_switchname)
+                    
+                for switch in self.game.switches.items_tagged('trough_jam'):
+                    self.jam_switchname = switch.name
+                    self.log.info("Trough Jam Switch is:"+self.jam_switchname)
 
                 for switch in self.game.switches.items_tagged('shooter_lane'):
                     self.shooter_lane_switchname = switch.name
@@ -85,11 +89,16 @@ class Trough(procgame.game.Mode):
 				delay=None, handler=self.early_save_switch_handler)
 
 	
+                # Install trough eject check switch handler
+		self.add_switch_handler(name=self.jam_switchname, event_type='active', delay=None, handler=self.check_trough_eject)
+                                
+                                
 		# Reset variables
 		self.num_balls_in_play = 0
 		self.num_balls_locked = 0
 		self.num_balls_to_launch = 0
 		self.num_balls_to_stealth_launch = 0
+                self.eject_sw_count = 0
 		self.launch_in_progress = False
 
 		self.ball_save_active = False
@@ -135,7 +144,7 @@ class Trough(procgame.game.Mode):
 		self.delay(name='check_switches', event_type=None, delay=0.50, handler=self.check_switches)
 
 	def check_switches(self):
-		if self.num_balls_in_play > 0:
+		if self.num_balls_in_play > 0 and self.eject_sw_count==0:
 			# Base future calculations on how many balls the machine 
 			# thinks are currently installed.
        	         	num_current_machine_balls = self.game.num_balls_total
@@ -207,7 +216,32 @@ class Trough(procgame.game.Mode):
 						self.num_balls_in_play -= 1
 					if self.drain_callback:
 						self.drain_callback()
+                                                
+                        
+        def check_trough_eject(self,sw):
+            #cancel any queued reset of the tracking count
+            self.cancel_delayed('reset_eject_count_delay')
+            # tick up the count with each switch hit
+            self.eject_sw_count += 1
+            self.log.debug("Trough Eject switch count:%s",self.eject_sw_count)
+            # if we go to more than 1, the ball came back
+            if self.eject_sw_count > 1:
+                self.log.debug( "We're over on eject count - ball fell back in")
+                # retry the ball launch
+                self.delay("Retry",delay=1,handler=self.retry_launch)
+            else:
+                self.log.debug( "That's one")
 
+
+        def retry_launch(self):
+            self.reset_eject_count()
+            self.launch_balls(1)
+            
+            
+        def reset_eject_count(self):
+            self.eject_sw_count = 0
+             
+             
 	# Count the number of balls in the trough by counting active trough switches.
 	def num_balls(self):
 		"""Returns the number of balls in the trough."""
@@ -257,6 +291,7 @@ class Trough(procgame.game.Mode):
 			self.num_balls_to_launch -= 1
                         #pulse coil
 			self.game.coils[self.eject_coilname].pulse()
+                        self.delay(name='reset_eject_count_delay',delay=1,handler=self.reset_eject_count) #setup a time delay to reset the eject count
                         
 			# Only increment num_balls_in_play if there are no more 
 			# stealth launches to complete.
@@ -276,6 +311,14 @@ class Trough(procgame.game.Mode):
 		else:
 			self.delay(name='launch', event_type=None, delay=1.0, \
 				   handler=self.common_launch_code)
-
+                                   
+                                        
         def mode_stopped(self):
 		self.cancel_delayed('check_switches')
+                
+                
+        def sw_shooterLane_active_for_150ms(self,sw): 
+            #launch is good, reset tracking now and cancel the catch all as shootlane switch is working
+            self.cancel_delayed('reset_eject_count_delay')
+            self.reset_eject_count() 
+            

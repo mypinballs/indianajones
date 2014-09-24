@@ -75,3 +75,20 @@ class Utility(game.Mode):
                 self.delay(name='release_stuck_balls_loop', event_type=None, delay=5, handler=self.release_stuck_balls)
             else:
                 self.cancel_delayed('release_stuck_balls_loop')
+
+
+        def pause_game(self,active=True):
+            self.game.paused = active
+            self.game.enable_flippers(True) #update flipper rules
+            
+            if active:
+                self.game.sound.pause()
+                #self.game.coils.flipperLwRHold.enable()
+                #self.game.effects.drive_lamp('buyInButton','fast')
+                self.game.ball_search.disable()
+                
+            else:
+                self.game.sound.un_pause()
+                #self.game.coils.flipperLwRHold.disable()
+                #self.game.effects.drive_lamp('buyInButton','off')
+                self.game.ball_search.enable()

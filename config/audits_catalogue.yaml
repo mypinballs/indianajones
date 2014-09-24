@@ -133,8 +133,6 @@ featureAudits:
     label: 'Jackpot Lit'
   jackpotCollected:
     label: 'Jackpot Collected'
-
-
   moonlightMultiballStarted:
     label: 'Moonlight Multiball Started'
 #this section is for items that o a value against them i.e read and write not just read

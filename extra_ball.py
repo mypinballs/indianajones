@@ -19,15 +19,17 @@ class Extra_Ball(game.Mode):
 	def __init__(self, game):
             super(Extra_Ball, self).__init__(game, 90)
 
-            self.game.sound.register_sound('extra_ball_collected', sound_path+"extra_ball_lit_ff.aiff")
+            self.game.sound.register_sound('extra_ball_collected', sound_path+"extra_ball_collected_ff.aiff")
             self.game.sound.register_sound('extra_ball_lit', sound_path+"extra_ball_lit_ff.aiff")
             self.game.sound.register_sound('extra_ball_speech', speech_path+"extra_ball.aiff")
 
 
-        def collect(self):
+        def collect(self,play_anim=True):
             print("Extra Ball Collected")
-            anim = dmd.Animation().load(game_path+"dmd/extra_ball.dmd")
-            self.layer = dmd.AnimatedLayer(frames=anim.frames,hold=False)
+            if play_anim:
+                anim = dmd.Animation().load(game_path+"dmd/extra_ball.dmd")
+                self.layer = dmd.AnimatedLayer(frames=anim.frames,hold=False)
+                
             self.game.sound.play('extra_ball_collected')
             #self.game.sound.play_voice('extra_ball_speech')
             self.game.effects.drive_lamp('extraBall','off')
