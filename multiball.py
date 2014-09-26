@@ -91,7 +91,6 @@ class Multiball(game.Mode):
             self.cheat_value_start = 5000000
             self.cheat_value_boost = 1000000
             
-            
             self.reset()
 
 
@@ -237,7 +236,11 @@ class Multiball(game.Mode):
             #turn on ball save
             self.game.ball_save.start(num_balls_to_save=3,allow_multiple_saves=True,time=10)
             
-
+            #restart the totem mode if quick multiball is not running and stacking therefore isnt happening
+            if not self.game.get_player_stats('quick_multiball_running'):
+                self.game.base_game_mode.totem.restart()
+            
+            
         def multiball_tracking(self):
             #end check
             if self.balls_in_play==1:
@@ -262,6 +265,10 @@ class Multiball(game.Mode):
                     self.jackpot('cancelled')
                     #clear the display
                     self.clear()
+                
+                #restart the totem mode
+                self.game.base_game_mode.totem.restart()
+                    
             elif self.balls_in_play==0: #what to do if last 2 or more balls drain together
                 #end tracking
                 self.multiball_running=False
@@ -507,7 +514,7 @@ class Multiball(game.Mode):
             self.lock_enabled()
 
         def sw_centerEnter_active(self, sw):
-            if not self.multiball_running:# and not self.game.get_player_stats('mode_running'):
+            if not self.multiball_running and not self.game.get_player_stats('multiball_mode_started'):
                 if self.lock_lit:
                     self.lock_ball()
                 else:

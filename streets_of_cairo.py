@@ -96,8 +96,8 @@ class Streets_Of_Cairo(game.Mode):
             print("Monkey Brains Timer is:"+str(self.timer))
 
             self.score_layer = ModeScoreLayer(128/2, -1, self.game.fonts['07x5'], self)
-            self.award_layer = dmd.TextLayer(128/2, 7, self.game.fonts['num_09Bx7'], "center", opaque=False)
-
+            self.award_layer = dmd.TextLayer(128/2, 5, self.game.fonts['23x12'], "center", opaque=False)
+            self.award_layer.composite_op ="blacksrc"
 #            self.sprite_data_layers = []
 #            self.sprite_layer = dmd.layers.GroupedLayer(128,32, self.sprite_data_layers)
 #            self.sprite_layer.composite_op ="blacksrc"
@@ -166,8 +166,8 @@ class Streets_Of_Cairo(game.Mode):
             #load animation
             self.bgnd_anim = "dmd/streets_of_cairo_dual.dmd"
             anim = dmd.Animation().load(game_path+self.bgnd_anim)
-            self.bgnd_layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False,repeat=True,frame_time=3)
-            self.layer = dmd.GroupedLayer(128, 32, [self.bgnd_layer,self.score_layer,self.timer_layer,self.info_layer,self.award_layer])
+            self.bgnd_layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False,repeat=True,frame_time=6)
+            self.layer = dmd.GroupedLayer(128, 32, [self.bgnd_layer,self.timer_layer,self.info_layer,self.award_layer])
 
             #play speech & sounds
             self.delay(name='mode_speech_delay', event_type=None, delay=0.5, handler=self.voice_call, param=1)
@@ -180,12 +180,12 @@ class Streets_Of_Cairo(game.Mode):
             
             self.bgnd_anim = "dmd/streets_of_cairo_dual_completed.dmd"
             anim = dmd.Animation().load(game_path+self.bgnd_anim)
-            self.bgnd_layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False,repeat=False,frame_time=3)
+            self.bgnd_layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False,repeat=False,frame_time=6)
             self.bgnd_layer.add_frame_listener(-1,self.award_score)
             #call the mode select end scene sequence here
             self.bgnd_layer.add_frame_listener(-1, self.mode_select.end_scene)
             self.bgnd_layer.add_frame_listener(-1, self.eject_ball)
-            self.layer = dmd.GroupedLayer(128, 32, [self.bgnd_layer,self.score_layer,self.timer_layer,self.info_layer,self.award_layer])
+            self.layer = dmd.GroupedLayer(128, 32, [self.bgnd_layer,self.timer_layer,self.info_layer,self.award_layer])
 
             #play sounds
             self.game.sound.play('gun_shot')
@@ -413,7 +413,7 @@ class Streets_Of_Cairo(game.Mode):
 
         def update_score(self):
             score = self.game.current_player().score
-            self.score_layer.set_text(locale.format("%d", score, True))
+            self.score_layer.set_text(locale.format("%d", score, True),color=dmd.YELLOW)
      
 
         def mode_progression(self,num):
@@ -438,7 +438,7 @@ class Streets_Of_Cairo(game.Mode):
             else:
                 score_value = self.score_value_start
 
-            self.award_layer.set_text(locale.format("%d",score_value,True),blink_frames=10,seconds=3)
+            self.award_layer.set_text(locale.format("%d",score_value,True),blink_frames=10,seconds=3,color=dmd.MAGENTA)
             self.game.score(score_value)
 
         def mode_bonus(self):

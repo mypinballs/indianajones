@@ -77,10 +77,12 @@ class Idol(game.Mode):
                 self.callback1=callback1
                 self.callback2=callback2
                 if self.callback1:
+                    self.cancel_delayed('callback_delay1')
                     self.delay(name='callback_delay1', event_type=None, delay=delay1, handler=self.callback1)
                 else:
                     self.complete = True
                 if self.callback2:
+                    self.cancel_delayed('callback_delay2')
                     self.delay(name='callback_delay2', event_type=None, delay=delay2, handler=self.callback2)
 
                 #log posn
@@ -88,6 +90,7 @@ class Idol(game.Mode):
 
             elif self.position!=posn_num and self.idol_moving==False:
                 #self.game.coils.wheelMotor.enable()
+                self.cancel_delayed('motor_on_delay')
                 self.delay(name='motor_on_delay', event_type=None, delay=delay, handler=self.game.coils.wheelMotor.enable)
                 self.idol_moving=True
                 self.complete = False

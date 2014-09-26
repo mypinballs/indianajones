@@ -67,6 +67,9 @@ class Totem(game.Mode):
             self.multiball_started= False
             self.game.coils.totemDropUp.pulse()
             self.game.effects.drive_flasher('flasherTotem','off')
+            
+            self.cancel_delayed('timeout_delay') #clear delay in case reset called directly from other modes
+
 
         def mode_started(self):
             self.reset()
@@ -100,7 +103,7 @@ class Totem(game.Mode):
             self.bgnd_layer.add_frame_listener(-1, self.clear)
 
             #set text layers
-            self.text_layer.set_text(locale.format("%d",totem_value,True),blink_frames=4)
+            self.text_layer.set_text(locale.format("%d",totem_value,True),blink_frames=4, color=dmd.ORANGE)
             #set display layer
             self.layer = dmd.GroupedLayer(128, 32, [self.bgnd_layer,self.text_layer])
             
@@ -117,7 +120,7 @@ class Totem(game.Mode):
 
         def update_score(self):
             score = self.game.current_player().score
-            self.score_layer.set_text(locale.format("%d", score, True))
+            self.score_layer.set_text(locale.format("%d", score, True),color=dmd.YELLOW)
 
         def update_lamps(self):
             #print("Update Lamps")
@@ -125,6 +128,10 @@ class Totem(game.Mode):
 
         def clear(self):
             self.layer = None
+            
+        def restart(self):
+            self.clear()
+            self.reset()
 
         def setup_target(self):
             if self.count<self.hits_needed:
@@ -149,8 +156,8 @@ class Totem(game.Mode):
             info_layer1 = dmd.TextLayer(42, 11, self.game.fonts['8x6'], "center", opaque=False)
             info_layer2 = dmd.TextLayer(42, 19, self.game.fonts['07x5'], "center", opaque=False)
 
-            info_layer1.set_text("HIT BALL")
-            info_layer2.set_text("FOR MULTIBALL")
+            info_layer1.set_text("HIT BALL",color=dmd.CYAN)
+            info_layer2.set_text("FOR MULTIBALL",color=dmd.CYAN)
 
             timer_layer = dmd.TimerLayer(128, -1, self.game.fonts['07x5'],self.timer,"right")
 
@@ -170,7 +177,7 @@ class Totem(game.Mode):
 
             self.game.sound.stop_music()
             self.game.sound.play_music('general_play', loops=-1)
-
+            
 
         def multiball(self):
             #cancel timeout delay
@@ -233,7 +240,7 @@ class Totem(game.Mode):
             self.score_layer.justify='center'
 
             info_layer1 = dmd.TextLayer(64, 25, self.game.fonts['07x5'], "center", opaque=False)
-            info_layer1.set_text("HIT BALL")
+            info_layer1.set_text("HIT BALL",color=dmd.CYAN)
 
 
             #update display
@@ -248,9 +255,6 @@ class Totem(game.Mode):
 
                 #launch balls
                 self.launch_ball()
-                
-            #store the balls_in idol here for reference
-            self.balls_in_idol = self.game.idol.balls_in_idol
             
 
         def launch_ball(self):
@@ -268,12 +272,20 @@ class Totem(game.Mode):
             if self.balls_in_play==1 and self.multiball_running and not self.game.get_player_stats('lock_in_progress'):
                 #end tracking
                 self.multiball_running=False
-                self.game.set_player_stats('quick_multiball_running',self.multiball_running)
+                self.multiball_started = False
+                self.game.set_player_stats('quick_multiball_running',self.multiball_running) 
+                self.game.set_player_stats('quick_multiball_started',self.multiball_started) 
 
                 #self.game.sound.stop_music()
                 #self.game.sound.play_music('general_play', loops=-1)
 
                 self.timeout()
+            elif self.balls_in_play==0:
+                #end tracking
+                self.multiball_running=False
+                self.multiball_started = False
+                self.game.set_player_stats('quick_multiball_running',self.multiball_running) 
+                self.game.set_player_stats('quick_multiball_started',self.multiball_started)
 
         def jackpot_explode(self):
             anim = dmd.Animation().load(game_path+"dmd/exploding_wall.dmd")
@@ -304,13 +316,13 @@ class Totem(game.Mode):
             info_layer1 = dmd.TextLayer(43,0, self.game.fonts['8x6'], "center", opaque=False)
             info_layer2 = dmd.TextLayer(43,8, self.game.fonts['8x6'], "center", opaque=False)
 
-            info_layer1.set_text(info_line1[self.jackpot_count])
-            info_layer2.set_text(info_line2[self.jackpot_count])
+            info_layer1.set_text(info_line1[self.jackpot_count],color=dmd.PURPLE)
+            info_layer2.set_text(info_line2[self.jackpot_count],color=dmd.PURPLE)
 
             award_layer = dmd.TextLayer(43,16, self.game.fonts['num_14x10'], "center", opaque=False)
             #calc award
             award = self.jackpot_base_value+self.jackpot_boost_value*self.jackpot_count
-            award_layer.set_text(locale.format("%d",award,True),blink_frames=2)
+            award_layer.set_text(locale.format("%d",award,True),blink_frames=2,color=dmd.GREEN)
 
             #set display
             self.layer = dmd.GroupedLayer(128, 32, [bgnd_layer,treasure_layer,info_layer1,info_layer2,award_layer])
@@ -333,12 +345,12 @@ class Totem(game.Mode):
             self.bgnd_layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False)
 
             info_layer = dmd.TextLayer(64,5, self.game.fonts['8x6'], "center", opaque=False)
-            info_layer.set_text("TREASURE BONUS")
+            info_layer.set_text("TREASURE BONUS",color=dmd.PURPLE)
 
             award_layer = dmd.TextLayer(64,14, self.game.fonts['num_14x10'], "center", opaque=False)
             #calc award
             award = self.jackpot_base_value+self.jackpot_boost_value*self.jackpot_count+self.jackpot_boost_value
-            award_layer.set_text(locale.format("%d",award,True),blink_frames=2)
+            award_layer.set_text(locale.format("%d",award,True),blink_frames=2,color=dmd.GREEN)
 
             #set display layer
             self.layer = dmd.GroupedLayer(128, 32, [self.bgnd_layer,info_layer,award_layer])

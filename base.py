@@ -146,7 +146,6 @@ class BaseGameMode(game.Mode):
             self.indy_lanes = Indy_Lanes(self.game, 42, self.mode_select)
             self.loops = Loops(self.game, 43, self.indy_lanes)
 
-
             #start modes
             self.game.modes.add(self.pops)
             self.game.modes.add(self.narrow_escape)

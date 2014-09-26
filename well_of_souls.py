@@ -284,7 +284,7 @@ class Well_Of_Souls(game.Mode):
         def award_score(self,score_value=0):
             score_value = self.score_value_start * self.game.trough.num_balls_in_play
 
-            self.award_layer.set_text(locale.format("%d",score_value,True),blink_frames=10,seconds=3)
+            self.award_layer.set_text(locale.format("%d",score_value,True),blink_frames=10,seconds=3,color=dmd.GREEN)
             self.game.score(score_value)
             
             #update runing total - needed for this mode as can't be calculated at end
@@ -306,7 +306,7 @@ class Well_Of_Souls(game.Mode):
         def sw_centerEnter_active(self, sw):
             self.mode_progression()
 
-            return procgame.game.SwitchStop
+            #return procgame.game.SwitchStop
 
         def sw_shooterLane_active_for_500ms(self,sw):
             self.game.coils.ballLaunch.pulse(50)
