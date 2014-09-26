@@ -66,6 +66,7 @@ class Totem(game.Mode):
             self.jackpot_count = 0
             self.multiball_started= False
             self.game.coils.totemDropUp.pulse()
+            self.game.effects.drive_flasher('flasherTotem','off')
 
         def mode_started(self):
             self.reset()
@@ -128,7 +129,7 @@ class Totem(game.Mode):
         def setup_target(self):
             if self.count<self.hits_needed:
                 self.game.coils.totemDropUp.pulse()
-            else:
+            elif not self.game.get_player_stats('multiball_running'):
                 self.multiball_ready()
 
 
@@ -154,6 +155,8 @@ class Totem(game.Mode):
             timer_layer = dmd.TimerLayer(128, -1, self.game.fonts['07x5'],self.timer,"right")
 
             self.layer = dmd.GroupedLayer(128, 32, [bgnd_layer,info_layer1,info_layer2,ball_layer,self.score_layer,timer_layer])
+            
+            self.game.effects.drive_flasher('flasherTotem','fast',time=0)
 
             self.game.sound.stop_music()
             self.game.sound.play_music('qm_ready', loops=-1)
@@ -174,6 +177,7 @@ class Totem(game.Mode):
             self.cancel_delayed("timeout_delay")
             #update status & tracking vars
             self.multiball_started = True
+            self.game.set_player_stats('quick_multiball_started',self.multiball_started)
 
             #setup display
             bgnd = dmd.Animation().load(game_path+"dmd/qm_bgnd_running.dmd")
@@ -235,7 +239,6 @@ class Totem(game.Mode):
             #update display
             self.layer = dmd.GroupedLayer(128, 32, [bgnd_layer,item_layer1,item_layer2,item_layer3,item_layer4,item_layer5,info_layer1,self.score_layer])
 
-
         
             if self.multiball_running==False:
 
@@ -245,6 +248,9 @@ class Totem(game.Mode):
 
                 #launch balls
                 self.launch_ball()
+                
+            #store the balls_in idol here for reference
+            self.balls_in_idol = self.game.idol.balls_in_idol
             
 
         def launch_ball(self):
@@ -259,7 +265,7 @@ class Totem(game.Mode):
         def multiball_tracking(self):
 
             #end check
-            if self.balls_in_play==1 and self.multiball_running:
+            if self.balls_in_play==1 and self.multiball_running and not self.game.get_player_stats('lock_in_progress'):
                 #end tracking
                 self.multiball_running=False
                 self.game.set_player_stats('quick_multiball_running',self.multiball_running)
@@ -347,7 +353,7 @@ class Totem(game.Mode):
             self.delay(name='reset_display',delay=3,handler=self.multiball)
 
         def sw_leftEject_active(self, sw):
-            if self.multiball_running:
+            if self.multiball_running and not self.game.get_player_stats('multiball_running'): #only do this is the main multiball is not running also
                 self.game.screens.add_ball(2,self.add_ball_value)
                 self.launch_ball()
 
@@ -357,16 +363,16 @@ class Totem(game.Mode):
 
 
         def sw_captiveBallFront_active_for_200ms(self, sw):
-            if self.multiball_running==False:
+            if not self.multiball_running and not self.game.get_player_stats('multiball_running'): #only allow stacking of multiballs if this multiball is started first
                 self.multiball()
-            else:
+            elif self.multiball_running:
                 self.jackpot_explode()
 
             return procgame.game.SwitchStop
 
 
         def sw_shooterLane_active_for_500ms(self,sw):
-            if self.multiball_started:# and self.multiball_running==False:
-                self.game.coils.ballLaunch.pulse(50)
+            if self.multiball_started:
+                self.game.coils.ballLaunch.pulse()
 
             return procgame.game.SwitchStop

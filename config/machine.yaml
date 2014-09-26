@@ -376,6 +376,7 @@ PRCoils:
     ballLaunch:
         number: C02
         label: 'Ball Launch'
+        pulseTime: 50
     totemDropUp:
         number: C03
         label: 'Totem Drop Up'
@@ -455,7 +456,7 @@ PRCoils:
         label: 'Flasher Left Ramp'
     subwayRelease:
         number: C28
-        pulseTime: 150
+        pulseTime: 160
         label: 'Subway Release'
     flasherLeftSide:
         number: C37

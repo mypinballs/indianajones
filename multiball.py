@@ -114,8 +114,8 @@ class Multiball(game.Mode):
             self.multiball_running = self.game.get_player_stats('multiball_running')
             self.multiball_started = self.game.get_player_stats('multiball_started')
             
-            self.log.info('multiball started flag:%s',self.multiball_started)
-            self.log.info('multiball running flag:%s',self.multiball_running)
+            #self.log.info('multiball started flag:%s',self.multiball_started)
+            #self.log.info('multiball running flag:%s',self.multiball_running)
             self.log.info('balls locked:%s',self.balls_locked)
             self.log.info('lock lit:%s',self.lock_lit)
 
@@ -126,7 +126,7 @@ class Multiball(game.Mode):
 
         
         def mode_tick(self):
-            if self.multiball_started is True:
+            if self.multiball_started:
                 self.balls_in_play = self.game.trough.num_balls_in_play
 
                 #debug
@@ -140,7 +140,7 @@ class Multiball(game.Mode):
                     #start tracking
                     self.multiball_running = True;
                     self.game.set_player_stats('multiball_running',self.multiball_running)
-
+            
                 if self.multiball_running:
                     self.multiball_tracking()
 
@@ -153,6 +153,7 @@ class Multiball(game.Mode):
             #self.game.trough.num_balls_locked = self.balls_locked #update trough mode regarding locked balls
             #self.game.idol.balls_in_idol = self.balls_locked #update idol mode regarding locked balls
             self.game.set_player_stats('balls_locked',self.balls_locked)
+            self.game.set_player_stats('lock_in_progress',True)
 
             #debug
             #self.game.set_status("Lock "+str(self.balls_locked))
@@ -187,20 +188,23 @@ class Multiball(game.Mode):
             elif self.game.idol.balls_in_idol<3: #only launch new ball if idol is not full
                 self.animation_layer.add_frame_listener(-20,self.launch_next_ball)
 
+
         def launch_next_ball(self):
-                self.game.trough.launch_balls(1,callback=self.launch_callback,stealth=False) #stealth false, bip +1
-                self.next_ball_ready = True
-                self.game.ball_save.start(time=5)
+            self.game.trough.launch_balls(1,callback=self.launch_callback,stealth=False) #stealth false, bip +1
+            self.next_ball_ready = True
+            self.game.ball_save.start(time=5)
+                
                 
         def launch_callback(self):
-            pass
+            self.game.set_player_stats('lock_in_progress',False)
+
 
         def update_score(self):
             score = self.game.current_player().score
-            self.score_layer.set_text(locale.format("%d", score, True))
+            self.score_layer.set_text(locale.format("%d", score, True),color=dmd.YELLOW)
 
         def update_jackpot_worth(self):
-            self.jackpot_worth_layer.set_text(locale.format("%d", self.jackpot_value, True)+" X"+str(self.jackpot_x))
+            self.jackpot_worth_layer.set_text(locale.format("%d", self.jackpot_value, True)+" X"+str(self.jackpot_x),color=dmd.ORANGE)
 
         def multiball_start(self):
 
@@ -235,10 +239,8 @@ class Multiball(game.Mode):
             
 
         def multiball_tracking(self):
-            
-            
             #end check
-            if self.balls_in_play==1:# and self.game.idol.balls_in_idol==0:
+            if self.balls_in_play==1:
                 #end tracking
                 self.multiball_running=False
                 self.multiball_started = False
@@ -258,6 +260,21 @@ class Multiball(game.Mode):
                     self.delay(name='jackpot_timeout', event_type=None, delay=10, handler=self.jackpot, param='cancelled')
                 else:
                     self.jackpot('cancelled')
+                    #clear the display
+                    self.clear()
+            elif self.balls_in_play==0: #what to do if last 2 or more balls drain together
+                #end tracking
+                self.multiball_running=False
+                self.multiball_started = False
+                self.game.set_player_stats('multiball_running',self.multiball_running) 
+                self.game.set_player_stats('multiball_started',self.multiball_started) 
+                #update poa player stats
+                self.game.set_player_stats("poa_queued",False)
+                #cancel jackpot
+                self.jackpot('cancelled')
+                #clear the display
+                self.clear()
+                
 
         def multiball_display(self,num):
             
@@ -306,8 +323,8 @@ class Multiball(game.Mode):
             info_layer1 = dmd.TextLayer(128/2, 8, self.game.fonts['07x5'], "center", opaque=False)
             info_layer2 = dmd.TextLayer(128/2, 14, self.game.fonts['07x5'], "center", opaque=False)
 
-            info_layer1.set_text("SHOOT LEFT RAMP OR CENTER")
-            info_layer2.set_text("HOLE TO LIGHT JACKPOT")
+            info_layer1.set_text("SHOOT LEFT RAMP OR CENTER",color=dmd.CYAN)
+            info_layer2.set_text("HOLE TO LIGHT JACKPOT",color=dmd.CYAN)
 
             self.layer = dmd.GroupedLayer(128, 32, [info_layer1,info_layer2,animation_layer1,animation_layer2,animation_layer3,animation_layer4,self.score_layer])
 
@@ -316,16 +333,16 @@ class Multiball(game.Mode):
             title_layer = dmd.TextLayer(78, 1, self.game.fonts['num_09Bx7'], "center", opaque=False)
             if num==0:
                 file = "dmd/ark_jackpot_lit.dmd"
-                title_layer.set_text("rescue the ark".upper())
+                title_layer.set_text("rescue the ark".upper(),color=dmd.BROWN)
             elif num==1:
                 file = "dmd/sankara_jackpot_lit.dmd"
-                title_layer.set_text("return stones".upper())
+                title_layer.set_text("return stones".upper(),color=dmd.BROWN)
             elif num==2:
                 file = "dmd/grail_jackpot_lit.dmd"
-                title_layer.set_text("find the grail".upper())
+                title_layer.set_text("find the grail".upper(),color=dmd.BROWN)
             elif num==3:
                 file = "dmd/skull_jackpot_lit.dmd"
-                title_layer.set_text("awaken hive".upper())
+                title_layer.set_text("awaken hive".upper(),color=dmd.BROWN)
             anim = dmd.Animation().load(game_path+file)
             animation_layer = dmd.AnimatedLayer(frames=anim.frames,repeat=True,frame_time=6)
 
@@ -432,7 +449,7 @@ class Multiball(game.Mode):
             anim = dmd.Animation().load(game_path+"dmd/cheat_drjones.dmd")
             bgnd_layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False)
             text_layer = dmd.TextLayer(88, 21, self.game.fonts['num_09Bx7'], "center", opaque=False)
-            text_layer.set_text(locale.format("%d",cheat_value,True),blink_frames=10)
+            text_layer.set_text(locale.format("%d",cheat_value,True),blink_frames=10,color=dmd.GREEN)
 
             #set display layer
             self.layer = dmd.GroupedLayer(128, 32, [bgnd_layer,text_layer])
@@ -569,4 +586,4 @@ class Multiball(game.Mode):
         #check for shooter lane launches in multiball
         def sw_shooterLane_active_for_500ms(self,sw):
             if self.multiball_started:
-                self.game.coils.ballLaunch.pulse(50)
+                self.game.coils.ballLaunch.pulse()

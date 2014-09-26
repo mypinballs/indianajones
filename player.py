@@ -36,9 +36,12 @@ class Player(procgame.game.Player):
                 self.player_stats['multiball_mode_started'] = False
                 self.player_stats['path_mode_started'] = False
                 self.player_stats['lock_lit'] = False
+                self.player_stats['lock_in_progress'] = False
                 self.player_stats['multiball_ready'] = False
-                self.player_stats['multiball_running'] = False
                 self.player_stats['multiball_started'] = False
+                self.player_stats['multiball_running'] = False
+                self.player_stats['quick_multiball_ready'] = False
+                self.player_stats['quick_multiball_started'] = False
                 self.player_stats['quick_multiball_running'] = False
                 self.player_stats['jackpots_collected'] = 0
                 self.player_stats['cheat_count'] = 0

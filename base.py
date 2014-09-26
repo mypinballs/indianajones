@@ -282,7 +282,7 @@ class BaseGameMode(game.Mode):
 
         def sw_shooterLane_active_for_500ms(self,sw):
             if self.ball_saved:
-                self.game.coils.ballLaunch.pulse(50)
+                self.game.coils.ballLaunch.pulse()
                 self.ball_saved = False
 
 	# Note: Game specific item
@@ -290,7 +290,7 @@ class BaseGameMode(game.Mode):
 	# If manual plunger, remove the whole section.
 	def sw_gunTrigger_active(self, sw):
 		if self.game.switches.shooterLane.is_active():
-			self.game.coils.ballLaunch.pulse(50)
+			self.game.coils.ballLaunch.pulse()
                         self.game.coils.flasherRightSide.schedule(0x00003333, cycle_seconds=2, now=True)
                         self.game.sound.play("gun_shot")
                 if self.game.switches.flipperLwL.is_active() and self.ball_starting:
@@ -343,7 +343,7 @@ class BaseGameMode(game.Mode):
         def outlane(self):
             self.game.score(200000)
 
-            if not self.game.ball_save.is_active() or self.game.get_player_stats("multiball_started") or self.game.get_player_stats('multiball_mode_started'):
+            if not self.game.ball_save.is_active() and not self.game.get_player_stats("multiball_started") and not self.game.get_player_stats("quick_multiball_started") and not self.game.get_player_stats('multiball_mode_started'):
                 self.game.sound.play("outlane_sound")
                 self.game.sound.play("outlane_speech")
 

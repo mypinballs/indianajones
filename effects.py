@@ -95,7 +95,8 @@ class Effects(game.Mode):
 		self.game.coils[flasher_name].schedule(schedule=0x019930AB, cycle_seconds=cycle, now=True)
             elif style == 'fade':
 		self.game.coils[flasher_name].schedule(schedule=0xAAA99933, cycle_seconds=cycle, now=True)
-
+            elif style == 'off':
+                self.game.coils[flasher_name].disable()
             if time>0:
                 self.delay(name=flasher_name+'_off', event_type=None, delay=time, handler=self.game.coils[flasher_name].disable)
 
