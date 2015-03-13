@@ -292,6 +292,7 @@ class Attract(game.Mode):
 
 	# Enter service mode when the enter button is pushed.
 	def sw_enter_active(self, sw):
+                self.game.modes.remove(self.game.coin_door)
 		for lamp in self.game.lamps:
 			lamp.disable()
 		self.game.modes.add(self.game.service_mode)
@@ -299,6 +300,11 @@ class Attract(game.Mode):
 
 	def sw_exit_active(self, sw):
 		return True
+         
+        #coin door mode control
+        def sw_coinDoorClosed_inactive(self, sw):
+		self.game.modes.add(self.game.coin_door)
+		
 
 	# Outside of the service mode, up/down control audio volume.
 	def sw_down_active(self, sw):
@@ -310,6 +316,8 @@ class Attract(game.Mode):
 		volume = self.game.sound.volume_up()
 		self.game.set_status("Volume Up : " + str(volume))
 		return True
+            
+        
 
 	# Start button starts a game if the trough is full.  Otherwise it
 	# initiates a ball search.
@@ -321,7 +329,10 @@ class Attract(game.Mode):
 			# Remove attract mode from mode queue - Necessary?
 			self.game.modes.remove(self)
 			# Initialize game
-			self.game.start_game(force_moonlight=False)
+                        if self.game.switches.flipperLwR.is_active(0.5):
+                            self.game.start_game(force_moonlight=True)
+                        else:
+                            self.game.start_game(force_moonlight=False)
 			# Add the first player
 			self.game.add_player()
 			# Start the ball.  This includes ejecting a ball from the trough.

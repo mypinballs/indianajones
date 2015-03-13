@@ -19,6 +19,7 @@ class Plane_Chase(game.Mode):
 
             self.text_layer = dmd.TextLayer(128/2, 5, self.game.fonts['23x12'], "center", opaque=False)
             self.text_layer.composite_op ="blacksrc"
+            self.text_layer.tracking = -1
             #self.text_layer.transition = dmd.ExpandTransition(direction='vertical')
 
             self.game.sound.register_sound('stall', sound_path+"plane_stall.aiff")

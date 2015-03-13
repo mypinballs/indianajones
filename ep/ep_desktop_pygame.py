@@ -354,7 +354,7 @@ class EP_Desktop():
         print "Making window - " + str(self.pixel_size*128) + " by " + str(self.pixel_size*32) + " offsets " + str(self.xOffset) + "," + str(self.yOffset)
         self.screen = pygame.display.set_mode(((self.pixel_size*128),(self.pixel_size*32)),pygame.NOFRAME)
         pygame.mouse.set_visible(False)
-        pygame.display.set_caption('Cactus Canyon Continued')
+        pygame.display.set_caption('A myPinballs Custom Game')
 
     def draw(self, frame):
         """Draw the given :class:`~procgame.dmd.Frame` in the window."""

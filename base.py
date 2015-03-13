@@ -57,14 +57,12 @@ class BaseGameMode(game.Mode):
                 self.game.sound.register_sound('gun_shot', sound_path+"gun_shot_deep.aiff")
                 self.game.sound.register_sound('outlane_sound', sound_path+"outlane.aiff")
                 self.game.sound.register_sound('electricity', sound_path+"electricity.aiff")
-                self.game.sound.register_sound('extra_ball_collected', sound_path+"extra_ball_lit_ff.aiff")
-                self.game.sound.register_sound('extra_ball_lit', sound_path+"extra_ball_lit_ff.aiff")
+                self.game.sound.register_sound('shoot_again', sound_path+"shoot_again_ff.aiff")
 
                 self.game.sound.register_sound('outlane_speech', speech_path+"goodbye.aiff")
                 self.game.sound.register_sound('outlane_speech', speech_path+"argh.aiff")
                 self.game.sound.register_sound('outlane_speech', speech_path+"why_snakes.aiff")
                 self.game.sound.register_sound('outlane_speech', speech_path+"blank.aiff")
-                self.game.sound.register_sound('extra_ball_speech', speech_path+"extra_ball.aiff")
 
                 #setup flags
                 self.ball_starting = True
@@ -179,6 +177,16 @@ class BaseGameMode(game.Mode):
                 #start background music
                 #print("Debug - Starting General Play Music")
                 self.game.sound.play_music('general_play', loops=-1)
+        
+                
+        def shoot_again(self):
+            p = self.game.current_player()
+            
+            if p.extra_balls>0:
+                anim = dmd.Animation().load(game_path+"dmd/shoot_again.dmd")
+                self.layer = dmd.AnimatedLayer(frames=anim.frames,hold=False,frame_time=3)
+                self.game.sound.play('shoot_again')
+
 
         def mode_tick(self):
             if self.game.switches.startButton.is_active(1) and self.game.switches.flipperLwL.is_active(1) and self.game.switches.flipperLwR.is_active():
@@ -308,8 +316,13 @@ class BaseGameMode(game.Mode):
 
 	# Allow service mode to be entered during a game.
 	def sw_enter_active(self, sw):
+                self.game.modes.remove(self.game.coin_door)
 		self.game.modes.add(self.game.service_mode)
 		return True
+        
+        #coin door mode control
+        def sw_coinDoorClosed_inactive(self, sw):
+		self.game.modes.add(self.game.coin_door)
 
 
         def sw_leftSlingshot_active(self,sw):

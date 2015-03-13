@@ -64,7 +64,7 @@ class Well_Of_Souls(game.Mode):
             self.bip_layer = BallsInPlayLayer(43, 12, self.game.fonts['07x5'], self)
             self.info_layer = dmd.TextLayer(128/2, 20, self.game.fonts['07x5'], "center", opaque=False)
             self.award_layer = dmd.TextLayer(128/2, 5, self.game.fonts['23x12'], "center", opaque=False)
-            #self.award_layer.composite_op='blacksrc'
+            self.award_layer.composite_op='blacksrc'
             
             #sound setup
             self.game.sound.register_music('wos_background_play', music_path+"well_of_souls.aiff")

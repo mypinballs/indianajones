@@ -15,7 +15,7 @@ music_path = game_path +"music/"
 
 #locale.setlocale(locale.LC_ALL, 'en_GB')
 class ModeScoreLayer(dmd.TextLayer):
-	def __init__(self, x, y, font,mode, justify="center", opaque=False):
+	def __init__(self, x, y, font,mode, justify="left", opaque=False):
 		super(ModeScoreLayer, self).__init__(x, y, font,justify)
 		self.mode = mode
                 
@@ -28,58 +28,58 @@ class ModeScoreLayer(dmd.TextLayer):
 
 
 #mpc animation layer for sprites
-class SpriteLayer(dmd.AnimatedLayer):
-
-        dot_type=None
-
-        def __init__(self, opaque=False, hold=True, repeat=False, frame_time=6, frames=None, x=0,y=0,dot_type=None):
-		super(SpriteLayer, self).__init__(opaque,x,y,dot_type)
-                self.target_x = x
-                self.target_y = y
-                self.dot_type = dot_type
-                self.composite_op = "blacksrc"
-
-                self.hold = hold
-		self.repeat = repeat
-		if frames == None:
-			self.frames = list()
-		else:
-			self.frames = frames
-
-		self.frame_time = frame_time # Number of frames each frame should be displayed for before moving to the next.
-		self.frame_time_counter = self.frame_time
-
-		self.frame_listeners = []
-
-		self.reset()
-
-	def next_frame(self):
-
-		frame = super(SpriteLayer, self).next_frame()
-
-		if frame:
-			if self.dot_type == 1:
-				for x in range(128):
-					for y in range(32):
-						color = frame.get_dot(x,y)
-						if color == 5: # These are the same dots as in dot_type 2, so we remove them by letting blacksrc hide them. Possibly this could be an additional tint in other animations?
-							frame.set_dot(x,y,0) # Ideally this should be set to alpha 0%
-						elif color == 15:
-							# These are the highlights of the monkeys face, they should remain white
-							pass
-                                                elif color == 10:
-                                                        frame.set_dot(x,y,12)
-			elif self.dot_type == 2:
-				for x in range(128):
-					for y in range(32):
-						color = frame.get_dot(x,y)
-						if color == 5:
-							frame.set_dot(x,y,1) # Ideally this should be 0 at alpha 100% if we could use blendmode alpha. Now we use 1 to come as close to black as possible.
-						elif color == 15:
-							#These are the hightlights of the monkeys body, tone them down a little.
-							frame.set_dot(x,y,6)
-
-		return frame
+#class SpriteLayer(dmd.AnimatedLayer):
+#
+#        dot_type=None
+#
+#        def __init__(self, opaque=False, hold=True, repeat=False, frame_time=6, frames=None, x=0,y=0,dot_type=None):
+#		super(SpriteLayer, self).__init__(opaque,x,y,dot_type)
+#                self.target_x = x
+#                self.target_y = y
+#                self.dot_type = dot_type
+#                self.composite_op = "blacksrc"
+#
+#                self.hold = hold
+#		self.repeat = repeat
+#		if frames == None:
+#			self.frames = list()
+#		else:
+#			self.frames = frames
+#
+#		self.frame_time = frame_time # Number of frames each frame should be displayed for before moving to the next.
+#		self.frame_time_counter = self.frame_time
+#
+#		self.frame_listeners = []
+#
+#		self.reset()
+#
+#	def next_frame(self):
+#
+#		frame = super(SpriteLayer, self).next_frame()
+#
+#		if frame:
+#			if self.dot_type == 1:
+#				for x in range(128):
+#					for y in range(32):
+#						color = frame.get_dot(x,y)
+#						if color == 5: # These are the same dots as in dot_type 2, so we remove them by letting blacksrc hide them. Possibly this could be an additional tint in other animations?
+#							frame.set_dot(x,y,0) # Ideally this should be set to alpha 0%
+#						elif color == 15:
+#							# These are the highlights of the monkeys face, they should remain white
+#							pass
+#                                                elif color == 10:
+#                                                        frame.set_dot(x,y,12)
+#			elif self.dot_type == 2:
+#				for x in range(128):
+#					for y in range(32):
+#						color = frame.get_dot(x,y)
+#						if color == 5:
+#							frame.set_dot(x,y,1) # Ideally this should be 0 at alpha 100% if we could use blendmode alpha. Now we use 1 to come as close to black as possible.
+#						elif color == 15:
+#							#These are the hightlights of the monkeys body, tone them down a little.
+#							frame.set_dot(x,y,6)
+#
+#		return frame
 
 
 class Tank_Chase(game.Mode):
@@ -94,7 +94,8 @@ class Tank_Chase(game.Mode):
 
             #screen seetup
             self.score_layer = ModeScoreLayer(0, -1, self.game.fonts['07x5'], self)
-            self.award_layer = dmd.TextLayer(128/2, 5, self.game.fonts['23x12'], "center", opaque=False)
+            self.score_layer.composite_op ="blacksrc"
+            self.award_layer = dmd.TextLayer(128/2, 7, self.game.fonts['23x12'], "center", opaque=False)
             self.award_layer.composite_op ="blacksrc"
             self.sprite_layer = None
             #self.sprite_layer2 = dmd.AnimatedLayer(frames=None,hold=True,opaque=False,repeat=False)
@@ -160,21 +161,28 @@ class Tank_Chase(game.Mode):
             x = 24
             y = -10
 
-            #remember - frames start at 0
-            even_frames = escape_frames[0::2] # This layer gets hilight frames
-            odd_frames = escape_frames[1::2] # This layer gets the low colour and mask frames
+#            #remember - frames start at 0
+#            even_frames = escape_frames[0::2] # This layer gets hilight frames
+#            odd_frames = escape_frames[1::2] # This layer gets the low colour and mask frames
+#
+#            sprite_data1 = SpriteLayer(frames=even_frames, opaque=False, hold=False, repeat=False, x=x,y=y, dot_type=1)
+#            sprite_data2 = SpriteLayer(frames=odd_frames, opaque=False, hold=False, repeat=False, x=x,y=y, dot_type=2)
+#            #load next animation part at end of this part
+#            sprite_data1.add_frame_listener(-1,self.rescue_part2)
+#
+#            #join the data together using group layer
+#            sprite_data_layers = []
+#            sprite_data_layers += [sprite_data2]
+#            sprite_data_layers += [sprite_data1]
+#            
+#            self.sprite_layer2 = dmd.layers.GroupedLayer(128,32, sprite_data_layers)
+#            self.sprite_layer2.composite_op ="blacksrc"
 
-            sprite_data1 = SpriteLayer(frames=even_frames, opaque=False, hold=False, repeat=False, x=x,y=y, dot_type=1)
-            sprite_data2 = SpriteLayer(frames=odd_frames, opaque=False, hold=False, repeat=False, x=x,y=y, dot_type=2)
-            #load next animation part at end of this part
-            sprite_data1.add_frame_listener(-1,self.rescue_part2)
-
-            #join the data together using group layer
-            sprite_data_layers = []
-            sprite_data_layers += [sprite_data2]
-            sprite_data_layers += [sprite_data1]
-
-            self.sprite_layer2 = dmd.layers.GroupedLayer(128,32, sprite_data_layers)
+            #create the layer
+            self.sprite_layer2 = dmd.AnimatedLayer(frames=escape_frames,hold=False,repeat=False,frame_time=6)
+            self.sprite_layer2.target_x=x
+            self.sprite_layer2.target_y=y
+            self.sprite_layer2.add_frame_listener(-1,self.rescue_part2)
             self.sprite_layer2.composite_op ="blacksrc"
 
             self.log.info("jones snr escape sprite created")
@@ -204,7 +212,7 @@ class Tank_Chase(game.Mode):
             #create the completion animation
             self.bgnd_anim = "dmd/tank_chase_completed.dmd"
             anim = dmd.Animation().load(game_path+self.bgnd_anim)
-            frame_time = 6
+            frame_time = 3
             self.scene_layer = dmd.AnimatedLayer(frames=anim.frames,hold=True,opaque=False,repeat=False,frame_time=frame_time)
             self.scene_layer.add_frame_listener(-2*frame_time,self.award_completed_score)
             self.scene_layer.add_frame_listener(-2*frame_time,lambda:self.game.sound.play('tc_tank_fall'))
@@ -234,18 +242,24 @@ class Tank_Chase(game.Mode):
             else:
                 horse_frames = dmd.Animation().load("dmd/tank_chase_horse.dmd").frames
 
-                #remember - frames start at 0
-                even_frames = horse_frames[0::2] # This layer gets hilight frames
-                odd_frames = horse_frames[1::2] # This layer gets the low colour and mask frames
+#                #remember - frames start at 0
+#                even_frames = horse_frames[0::2] # This layer gets hilight frames
+#                odd_frames = horse_frames[1::2] # This layer gets the low colour and mask frames
+#                
+#                self.sprite_data1 = SpriteLayer(frames=even_frames, opaque=False, hold=False, repeat=True, x=x,y=y, dot_type=1)
+#                self.sprite_data2 = SpriteLayer(frames=odd_frames, opaque=False, hold=False, repeat=True, x=x,y=y, dot_type=2)
+#
+#                self.sprite_data_layers = []
+#                self.sprite_data_layers += [self.sprite_data2]
+#                self.sprite_data_layers += [self.sprite_data1]
+#
+#                self.sprite_layer = dmd.layers.GroupedLayer(128,32, self.sprite_data_layers)
+#                self.sprite_layer.composite_op ="blacksrc"
                 
-                self.sprite_data1 = SpriteLayer(frames=even_frames, opaque=False, hold=False, repeat=True, x=x,y=y, dot_type=1)
-                self.sprite_data2 = SpriteLayer(frames=odd_frames, opaque=False, hold=False, repeat=True, x=x,y=y, dot_type=2)
-
-                self.sprite_data_layers = []
-                self.sprite_data_layers += [self.sprite_data2]
-                self.sprite_data_layers += [self.sprite_data1]
-
-                self.sprite_layer = dmd.layers.GroupedLayer(128,32, self.sprite_data_layers)
+                #create the layer
+                self.sprite_layer = dmd.AnimatedLayer(frames=horse_frames,hold=False,repeat=True,frame_time=6)
+                self.sprite_layer.target_x=x
+                self.sprite_layer.target_y=y
                 self.sprite_layer.composite_op ="blacksrc"
 
                 self.log.info("sprite created")
@@ -283,6 +297,8 @@ class Tank_Chase(game.Mode):
             
             #setup additonal layers
             self.timer_layer = dmd.TimerLayer(128, -1, self.game.fonts['07x5'],self.timer,"right")
+            self.timer_layer.composite_op ="blacksrc"
+            self.timer_layer.tracking = -1
             self.info_layer = dmd.TextLayer(128/2, 20, self.game.fonts['07x5'], "center", opaque=False)
             #self.info_layer.set_text("SHOOT LIT SHOTS",blink_frames=1000)
 

@@ -68,12 +68,12 @@ font_tiny7 = dmd.Font(fonts_path+"04B-03-7px.dmd")
 font_jazz18 = dmd.Font(fonts_path+"Jazz18-18px.dmd")
 font_14x10 = dmd.Font(fonts_path+"Font14x10.dmd")
 font_18x12 = dmd.Font(fonts_path+"Font18x12.dmd")
-font_07x4 = dmd.Font(fonts_path+"Font07x4.dmd")
-font_07x5 = dmd.Font(fonts_path+"Font07x5.dmd")
-font_09Bx7 = dmd.Font(fonts_path+"Font09Bx7.dmd")
-font_6x6_bold = dmd.Font(fonts_path+"font_6x6_bold.dmd")
+#font_07x4 = dmd.font_named("font_7x4.dmd")
+font_07x5 = dmd.font_named("font_7x5.dmd")
+font_09Bx7 = dmd.Font(fonts_path+"font_10x7_bold.dmd")
+font_6x6_bold = dmd.Font(fonts_path+"font_8x7_bold.dmd")
 font_23x12 = dmd.font_named("font_23x12_bold.dmd")
-font_8x6_bold = dmd.font_named("font_8x6_bold.dmd")
+font_8x6_bold = dmd.font_named("font_9x6_bold.dmd")
 
 #lampshow_files = [game_path +"lamps/attract_show_test.lampshow"]
 lampshow_files = [game_path +"lamps/general/colours.lampshow", \
@@ -162,8 +162,65 @@ class Game(game.BasicGame):
 
                 #define system status var
                 self.system_status='power_up'
-                self.system_version='0.5.4'
+                self.system_version='0.5.7'
                 self.system_name='Indiana Jones 2'.upper()
+                
+                # Setup fonts
+		self.fonts = {}
+		#self.fonts['jazz18'] = font_jazz18
+        	self.fonts['18x12'] = font_18x12
+                self.fonts['num_14x10'] = font_14x10
+		self.fonts['num_07x4'] = dmd.font_named("font_7x4.dmd")
+
+                self.fonts['tiny7'] = font_tiny7
+                self.fonts['7x4'] = dmd.font_named("font_7x4.dmd")
+                self.fonts['7x4'].tracking = -1
+                self.fonts['7x4'].composite_op ="blacksrc"
+                
+                self.fonts['07x5'] = dmd.font_named("font_7x5.dmd")
+                self.fonts['07x5'].tracking = -1
+                self.fonts['07x5'].composite_op ="blacksrc"
+                
+                self.fonts['6x6_bold'] = dmd.font_named("font_8x7_bold.dmd")
+                self.fonts['6x6_bold'].tracking = -1
+                self.fonts['6x6_bold'].composite_op ="blacksrc"
+                
+                self.fonts['8x6'] = dmd.font_named("font_9x6_bold.dmd")
+                self.fonts['8x6'].tracking = -1
+                self.fonts['8x6'].composite_op ="blacksrc"
+                
+                self.fonts['num_09Bx7'] = dmd.font_named("font_10x7_bold.dmd")
+                self.fonts['num_09Bx7'].tracking = -1
+                self.fonts['num_09Bx7'].composite_op ="blacksrc"
+                
+                self.fonts['9x7_bold'] = dmd.font_named("font_10x7_bold.dmd")
+                self.fonts['9x7_bold'].tracking = -1
+                self.fonts['9x7_bold'].composite_op ="blacksrc"
+                
+                self.fonts['10x7_bold'] = dmd.font_named("font_12x8_bold.dmd")
+                self.fonts['10x7_bold'].tracking = -1
+                self.fonts['10x7_bold'].composite_op ="blacksrc"
+                
+                self.fonts['23x12'] = dmd.font_named("font_23x12_bold.dmd")
+                self.fonts['23x12'].tracking = -1
+                self.fonts['23x12'].composite_op ="blacksrc"
+                
+                self.fonts['4px_az'] = dmd.font_named("font_7x4.dmd")
+                self.fonts['5px_az'] = dmd.font_named("font_7x5.dmd")
+                self.fonts['5px_inv_az'] = dmd.font_named("font_7x5_inverted.dmd")
+                self.fonts['6px_az'] = dmd.font_named("Font_19_CactusCanyon.dmd")
+                self.fonts['7px_az'] = dmd.font_named("Font_2_CactusCanyon.dmd")
+                self.fonts['7px_bold_az'] = dmd.font_named("Font_14_CactusCanyon.dmd")
+                self.fonts['9px_az'] = dmd.font_named("Font_15_CactusCanyon.dmd")
+                self.fonts['10px_az'] = dmd.font_named("Font_Custom_10px_AZ.dmd")
+                
+                #setup paths
+                self.paths = {}
+                self.paths['game'] = game_path
+                self.paths['sound'] = sound_path
+                self.paths['speech'] = voice_path
+                self.paths['music'] = music_path
+                self.log.info(self.paths)
 
                 #update audit data on boot up time
                 audits.record_value(self,'bootUp')
@@ -215,52 +272,9 @@ class Game(game.BasicGame):
 		self.trough.num_balls_to_save = self.ball_save.get_num_balls_to_save
 		self.ball_save.trough_enable_ball_save = self.trough.enable_ball_save
 
-		# Setup and instantiate service mode
-		self.sound.register_sound('service_enter', sound_path+"menu_in.wav")
-		self.sound.register_sound('service_exit', sound_path+"menu_out.wav")
-		self.sound.register_sound('service_next', sound_path+"next_item.wav")
-		self.sound.register_sound('service_previous', sound_path+"previous_item.wav")
-		self.sound.register_sound('service_switch_edge', sound_path+"switch_edge.wav")
-		self.sound.register_sound('service_save', sound_path+"save.wav")
-		self.sound.register_sound('service_cancel', sound_path+"cancel.wav")
-
-                #change this to my own version
-                #self.service_mode = procgame.service.ServiceMode(self,100,font_tiny7,[])
+                #setup & init service modes
                 self.service_mode = ServiceMode(self,100,font_07x5,font_8x6_bold,[])
-
-		# Setup fonts
-		self.fonts = {}
-		#self.fonts['jazz18'] = font_jazz18
-        	self.fonts['18x12'] = font_18x12
-                self.fonts['num_14x10'] = font_14x10
-		self.fonts['num_07x4'] = font_07x4
-
-                self.fonts['tiny7'] = font_tiny7
-                self.fonts['6x6_bold'] = font_6x6_bold
-                self.fonts['07x5'] = font_07x5
-                self.fonts['7x4'] = dmd.font_named("Font07x4.dmd")
-                self.fonts['8x6'] = dmd.font_named("font_8x6_bold.dmd")
-                self.fonts['num_09Bx7'] = dmd.font_named("Font09Bx7.dmd")
-                self.fonts['9x7_bold'] = dmd.font_named("Font09Bx7.dmd")
-                self.fonts['10x7_bold'] = dmd.font_named("font_10x7_bold.dmd")
-                self.fonts['23x12'] = dmd.font_named("font_23x12_bold.dmd")
-                
-                self.fonts['5px_az'] = dmd.font_named("Font_3_CactusCanyon.dmd")
-                self.fonts['6px_az'] = dmd.font_named("Font_19_CactusCanyon.dmd")
-                self.fonts['7px_az'] = dmd.font_named("Font_2_CactusCanyon.dmd")
-                self.fonts['7px_bold_az'] = dmd.font_named("Font_14_CactusCanyon.dmd")
-                self.fonts['9px_az'] = dmd.font_named("Font_15_CactusCanyon.dmd")
-                self.fonts['10px_az'] = dmd.font_named("Font_Custom_10px_AZ.dmd")
-                
-            
-                #setup paths
-                self.paths = {}
-                self.paths['game'] = game_path
-                self.paths['sound'] = sound_path
-                self.paths['speech'] = voice_path
-                self.paths['music'] = music_path
-                self.log.info(self.paths)
-
+                self.coin_door = CoinDoor(self)
 
                 # Register lampshow files for attact
 		self.lampshow_keys = []
@@ -569,11 +583,11 @@ def main():
         root_logger = logging.getLogger()
 	root_logger.setLevel(logging.INFO)
 
-        #setup console logging
-        from colorlogging import ColorizingStreamHandler
-        handler = ColorizingStreamHandler()
-        handler.setLevel(logging.INFO)
-	handler.setFormatter(logging.Formatter(fmt="%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
+#        #setup console logging
+#        from colorlogging import ColorizingStreamHandler
+#        handler = ColorizingStreamHandler()
+#        handler.setLevel(logging.INFO)
+#	handler.setFormatter(logging.Formatter(fmt="%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
 
         #setup logging to file
         datetime = str(time.strftime("%Y-%m-%d %H-%M-%S"))
@@ -581,19 +595,19 @@ def main():
         file_handler.setLevel(logging.INFO)
         file_handler.setFormatter(logging.Formatter(fmt="%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
 
-        root_logger.addHandler(handler)
+ #       root_logger.addHandler(handler)
         root_logger.addHandler(file_handler)
 
         #set invidivual log levels here
-        logging.getLogger('ij.idol').setLevel(logging.DEBUG)
-        logging.getLogger('ij.trough').setLevel(logging.DEBUG)
-        logging.getLogger('ij.base').setLevel(logging.DEBUG)
-        logging.getLogger('ij.poa').setLevel(logging.DEBUG)
+#        logging.getLogger('ij.idol').setLevel(logging.DEBUG)
+#        logging.getLogger('ij.trough').setLevel(logging.DEBUG)
+#        logging.getLogger('ij.base').setLevel(logging.DEBUG)
+#        logging.getLogger('ij.poa').setLevel(logging.DEBUG)
         logging.getLogger('ij.mode_select').setLevel(logging.DEBUG)
-        logging.getLogger('ij.raven_bar').setLevel(logging.DEBUG)
-        logging.getLogger('ij.match').setLevel(logging.DEBUG)
+#        logging.getLogger('ij.raven_bar').setLevel(logging.DEBUG)
+#        logging.getLogger('ij.match').setLevel(logging.DEBUG)
         logging.getLogger('game.vdriver').setLevel(logging.ERROR)
-        logging.getLogger('game.driver').setLevel(logging.DEBUG)
+        logging.getLogger('game.driver').setLevel(logging.ERROR)
         logging.getLogger('game.sound').setLevel(logging.ERROR)
 
 

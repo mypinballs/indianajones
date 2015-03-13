@@ -65,6 +65,7 @@ class Totem(game.Mode):
             self.count = 0
             self.jackpot_count = 0
             self.multiball_started= False
+            self.multiball_ready_flag = False
             self.game.coils.totemDropUp.pulse()
             self.game.effects.drive_flasher('flasherTotem','off')
             
@@ -99,7 +100,7 @@ class Totem(game.Mode):
 
             #self.bgnd_layer = dmd.FrameLayer(opaque=False, frame=dmd.Animation().load(game_path+self.dmd_image).frames[0])
             anim = dmd.Animation().load(game_path+self.totem_ani)
-            self.bgnd_layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False)
+            self.bgnd_layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False,frame_time=3)
             self.bgnd_layer.add_frame_listener(-1, self.clear)
 
             #set text layers
@@ -155,6 +156,9 @@ class Totem(game.Mode):
             self.score_layer.justify='center'
             info_layer1 = dmd.TextLayer(42, 11, self.game.fonts['8x6'], "center", opaque=False)
             info_layer2 = dmd.TextLayer(42, 19, self.game.fonts['07x5'], "center", opaque=False)
+            
+            self.multiball_ready_flag = True
+            self.game.set_player_stats('quick_multiball_ready',self.multiball_ready_flag) 
 
             info_layer1.set_text("HIT BALL",color=dmd.CYAN)
             info_layer2.set_text("FOR MULTIBALL",color=dmd.CYAN)
@@ -273,8 +277,10 @@ class Totem(game.Mode):
                 #end tracking
                 self.multiball_running=False
                 self.multiball_started = False
+                self.multiball_ready_flag = False
                 self.game.set_player_stats('quick_multiball_running',self.multiball_running) 
                 self.game.set_player_stats('quick_multiball_started',self.multiball_started) 
+                self.game.set_player_stats('quick_multiball_ready',self.multiball_ready_flag) 
 
                 #self.game.sound.stop_music()
                 #self.game.sound.play_music('general_play', loops=-1)
@@ -284,8 +290,10 @@ class Totem(game.Mode):
                 #end tracking
                 self.multiball_running=False
                 self.multiball_started = False
+                self.multiball_ready_flag = False
                 self.game.set_player_stats('quick_multiball_running',self.multiball_running) 
                 self.game.set_player_stats('quick_multiball_started',self.multiball_started)
+                self.game.set_player_stats('quick_multiball_ready',self.multiball_ready_flag) 
 
         def jackpot_explode(self):
             anim = dmd.Animation().load(game_path+"dmd/exploding_wall.dmd")
@@ -375,7 +383,7 @@ class Totem(game.Mode):
 
 
         def sw_captiveBallFront_active_for_200ms(self, sw):
-            if not self.multiball_running and not self.game.get_player_stats('multiball_running'): #only allow stacking of multiballs if this multiball is started first
+            if self.multiball_ready_flag and not self.multiball_running and not self.game.get_player_stats('multiball_running'): #only allow stacking of multiballs if this multiball is started first
                 self.multiball()
             elif self.multiball_running:
                 self.jackpot_explode()

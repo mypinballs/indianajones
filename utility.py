@@ -84,11 +84,11 @@ class Utility(game.Mode):
             if active:
                 self.game.sound.pause()
                 #self.game.coils.flipperLwRHold.enable()
-                #self.game.effects.drive_lamp('buyInButton','fast')
+                self.game.effects.drive_flasher('flasherPlaneGuns','fast')
                 self.game.ball_search.disable()
                 
             else:
                 self.game.sound.un_pause()
                 #self.game.coils.flipperLwRHold.disable()
-                #self.game.effects.drive_lamp('buyInButton','off')
+                self.game.effects.drive_flasher('flasherPlaneGuns','off')
                 self.game.ball_search.enable()

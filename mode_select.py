@@ -16,6 +16,7 @@ from streets_of_cairo import *
 from well_of_souls import *
 from monkey_brains import *
 from steal_the_stones import *
+from minecart import *
 from rope_bridge import *
 from castle_grunwald import *
 from tank_chase import *
@@ -79,7 +80,7 @@ class Mode_Select(game.Mode):
             self.werewolf = Werewolf(self.game, 83,self)
             self.monkey_brains = Monkey_Brains(self.game, 84,self)
             self.steal_the_stones = Steal_The_Stones(self.game, 85,self)
-            self.mine_cart = Choose_Wisely(self.game, 86,self)
+            self.mine_cart = Minecart(self.game, 86,self)
             self.rope_bridge = Rope_Bridge(self.game, 87,self)
             self.castle_grunwald = Castle_Grunwald(self.game, 88,self)
             self.tank_chase = Tank_Chase(self.game, 89,self)
@@ -252,7 +253,7 @@ class Mode_Select(game.Mode):
                 elif self.current_mode_num==6:
                     #timer = self.game.user_settings['Gameplay (Feature)']['Mine Cart Timer']
                     self.name_text = 'MINE CART'
-                    self.info_text = 'XXX'
+                    self.info_text = 'VIDEO MODE'
 
                 elif self.current_mode_num==7:
                     self.timer = self.game.user_settings['Gameplay (Feature)']['Rope Bridge Timer']
@@ -299,6 +300,7 @@ class Mode_Select(game.Mode):
                 self.game.set_player_stats('mode_enabled',self.mode_enabled)
                 self.mode_running = True
                 self.game.set_player_stats('mode_running',self.mode_running)
+                self.game.set_player_stats('mode_running_id',self.current_mode_num)
 
                 #update lamp for mode start
                 self.mode_start_lamp(self.mode_enabled)
@@ -351,7 +353,10 @@ class Mode_Select(game.Mode):
             elif self.current_mode_num==2:
                 self.game.modes.remove(self.well_of_souls)
             elif self.current_mode_num==3:
-                self.game.modes.remove(self.raven_bar)
+                if self.secret_mode:
+                    self.game.modes.remove(self.werewolf)
+                else:
+                    self.game.modes.remove(self.raven_bar)
             elif self.current_mode_num==4:
                 self.game.modes.remove(self.monkey_brains)
             elif self.current_mode_num==5:
@@ -379,8 +384,8 @@ class Mode_Select(game.Mode):
             time = 2
 
             if self.ssd_count==0: #make sure the following delays only get called once
-                if self.current_mode_num !=2 and self.current_mode_num!=3 :#don't set timeout for these non time based modes
-                    self.delay(name='scene_timeout', event_type=None, delay=self.timer, handler=self.end_scene)
+                if self.current_mode_num !=2 and self.current_mode_num!=3 and self.current_mode_num!=6:#don't set timeout for these non time based modes
+                    self.delay(name='scene_timeout', event_type=None, delay=self.timer+time, handler=self.end_scene)
                 self.delay(name='scene_delay', event_type=None, delay=time, handler=self.add_selected_scene)
                 if self.current_mode_num!=3 and self.current_mode_num!=6 and self.current_mode_num!=11:#don't eject ball for video modes, scene will eject it itself at end
                     self.delay(name='eject_delay', event_type=None, delay=time, handler=self.eject_ball)
@@ -403,7 +408,7 @@ class Mode_Select(game.Mode):
             self.layer = dmd.GroupedLayer(128, 32, [bgnd_layer,self.name_layer,self.info_layer])
 
             #call the common end scene code
-            self.end_scene_common(2)
+            self.end_scene_common(3)
             
         def end_scene_common(self,timer):
             #update mode completed status tracking
@@ -425,6 +430,7 @@ class Mode_Select(game.Mode):
             #update mode running flag and player stats
             self.mode_running = False
             self.game.set_player_stats('mode_running',self.mode_running)
+            self.game.set_player_stats('mode_running_id',99)
             
         def mode_bonus(self):
             timer=2

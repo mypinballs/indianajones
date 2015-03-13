@@ -72,7 +72,7 @@ Machine (Standard):
   'Color Display Y Offset':
     options: [-2500,2500]
     increments: 1
-    default: -70
+    default: 195
 Sound:
   'Initial volume':
     options: [0.1,1.0]
@@ -175,6 +175,9 @@ Gameplay (Feature):
     options: [5,120]
     increments: 5
     default: 30
+  'Get The Idol Difficulty':
+    options: ['Easy','Medium','Hard']
+    default: 'Medium'
   'Streets Of Cairo Timer':
     options: [5,120]
     increments: 5
@@ -230,6 +233,14 @@ Gameplay (Feature):
   'Raven Bar Animate Scores For Hits':
     options: ['Yes','No']
     default: 'Yes'
+  'Mine Cart Tunnel Start':
+    options: [1,50]
+    increments: 1
+    default: 25
+  'Mine Cart Tunnel Inc.':
+    options: [1,20]
+    increments: 1
+    default: 10
   'Choose Wisely Level Start':
     options: [1,4]
     increments: 1

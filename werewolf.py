@@ -122,6 +122,7 @@ class Werewolf(game.Mode):
             self.score_value_start = 10000
             self.score_value_completed = self.score_value_start*2
             self.score_value_extra = 10000
+            self.score_total = 0
 
             self.wolf_bonus_value = 5000000
             self.bullet_bonus_value = 2000000
@@ -159,26 +160,29 @@ class Werewolf(game.Mode):
             wolf_frames = dmd.Animation().load("dmd/werewolf_sprites.dmd").frames
 
             #set the sprite posn
-            x = xposn
+            offset = 50
+            x = xposn - offset
             y = 0
 
             if layer==1:
-                self.sprite_layer1 = SpriteLayer(frames=wolf_frames, opaque=False, hold=False, repeat=False, x=x,y=y)
+                self.sprite_layer1 = SpriteLayer(frames=wolf_frames, opaque=False, hold=True, repeat=False, x=x,y=y)
                 #load next animation part at end of this part
                 self.sprite_layer1.add_frame_listener(-1,self.wolf_bite)
             elif layer==2:
-                self.sprite_layer2 = SpriteLayer(frames=wolf_frames, opaque=False, hold=False, repeat=False, x=x,y=y)
+                self.sprite_layer2 = SpriteLayer(frames=wolf_frames, opaque=False, hold=True, repeat=False, x=x,y=y)
                 #load next animation part at end of this part
                 self.sprite_layer2.add_frame_listener(-1,self.wolf_bite)
             elif layer==3:
-                self.sprite_layer3 = SpriteLayer(frames=wolf_frames, opaque=False, hold=False, repeat=False, x=x,y=y)
+                self.sprite_layer3 = SpriteLayer(frames=wolf_frames, opaque=False, hold=True, repeat=False, x=x,y=y)
                 #load next animation part at end of this part
                 self.sprite_layer3.add_frame_listener(-1,self.wolf_bite)
 
-            self.wolf_info_layer.set_text('Wolves '.upper()+str(self.wolves_remaining))
+            #decrement the wolf counter
+            self.wolves_remaining-=1
+            self.wolf_info_layer.set_text('Wolves '.upper()+str(self.wolves_remaining),color=dmd.BROWN)
 
             #update the display layer
-            self.layer = dmd.GroupedLayer(128, 32, [self.bgnd_layer,self.sprite_layer1,self.sprite_layer2,self.sprite_layer3,self.gun_layer,self.wolf_info_layer,self.bullet_info_layer,self.award_layer])
+            self.layer = dmd.GroupedLayer(128, 32, [self.bgnd_layer,self.score_border_layer,self.sprite_layer1,self.sprite_layer2,self.sprite_layer3,self.gun_layer,self.wolf_info_layer,self.bullet_info_layer,self.award_layer])
 
             #inc the wolf id and update the wolf data
             self.wolf_id+=1
@@ -186,35 +190,45 @@ class Werewolf(game.Mode):
             self.wolf_data.append(data)
             self.log.info('wolf data: %s',self.wolf_data)
 
-            #decrement the wolf counter
-            self.wolves_remaining-=1
+            #play sound
+            self.game.sound.play('wolf_move')
 
 
         def wolf_bite(self):
-            self.wolf_data.pop(0) # remove from list
+            self.cancel_delayed('wolf_repeat')
+            
+            bgnd_frame = dmd.Animation().load(game_path+"dmd/werewolf_bgnd_die.dmd")
+            self.bgnd_layer = dmd.FrameLayer(frame=bgnd_frame.frames[0])
+            self.bullet_info_layer.set_text(str(self.bullets_remaining)+' Bullets'.upper(),color=dmd.RED)
+            self.wolf_info_layer.set_text('Wolves '.upper()+str(self.wolves_remaining),color=dmd.RED)
+            
+            #update the display layer
+            self.layer = dmd.GroupedLayer(128, 32, [self.bgnd_layer,self.score_border_layer,self.sprite_layer1,self.sprite_layer2,self.sprite_layer3,self.gun_layer,self.wolf_info_layer,self.bullet_info_layer,self.award_layer])
+
+            self.game.sound.play('wolf_attack')
+            self.end_scene_delay()
 
         def start_wolf(self):
 
-            offset = 37
             x1 = random.randint(20,128/2)
             x2 = random.randint(128/2,108)
             x3 = random.randint(20,108)
             x4 = random.randint(20,108)
 
-            #position wolf left half of screen then right half of screen
-            if self.wolves_remaining%2==0:
-                self.create_werewolf(xposn=x1-offset,layer=1)
-            else:
-                self.create_werewolf(xposn=x2-offset,layer=1)
-
-            #extra wolfs
-            if self.wolves_remaining<13:
-                self.create_werewolf(xposn=x3-offset,layer=2)
-
-            if self.wolves_remaining<8:
-                self.create_werewolf(xposn=x4-offset,layer=3)
-
             if self.wolves_remaining>0:
+                #position wolf left half of screen then right half of screen
+                if self.wolves_remaining%2==0:
+                    self.create_werewolf(xposn=x1,layer=1)
+                else:
+                    self.create_werewolf(xposn=x2,layer=1)
+
+                #extra wolfs
+                if self.wolves_remaining<13:
+                    self.create_werewolf(xposn=x3,layer=2)
+
+                if self.wolves_remaining<8:
+                    self.create_werewolf(xposn=x4,layer=3)
+                
                 self.delay(name='wolf_repeat', delay=3, handler=self.start_wolf)
             else:
                 self.completed()
@@ -222,51 +236,84 @@ class Werewolf(game.Mode):
 
         def shoot_wolf(self,dirn):
 
-            text_offset = 27
-            wolf_sprite_offset = 37
+            text_offset = 15
+            #wolf_sprite_offset = 38
 
             self.game.sound.play('wolf_shot')
             self.bullets_remaining-=1
-            self.bullet_info_layer.set_text(str(self.bullets_remaining)+' Bullets'.upper())
+            self.bullet_info_layer.set_text(str(self.bullets_remaining)+' Bullets'.upper(),color=dmd.CYAN)
 
-            if len(self.wolf_data)>0: #if wolves on screen
-                xposn = wolf_sprite_offset+self.wolf_data[0]['xposn'] # get the first item in list
-                layer = self.wolf_data[0]['layer']
+            #self.log.debug("list size is:%s",len(self.wolf_data))
+            for i in range(len(self.wolf_data)): #if wolves on screen
+                xposn = self.wolf_data[i]['xposn'] # get the item in list
+                self.log.debug('wolf shot posn:%s, i:%s',xposn,i)
+                layer = self.wolf_data[i]['layer']
 
-                if (xposn>=44 and dirn==1) or (xposn<=84 and dirn==0): #work out if player shot in correct direction 20 pixels either side of center leeway
-
+                if (xposn>=60 and dirn==1) or (xposn<=68 and dirn==0): #work out if player shot in correct direction 20 pixels either side of center leeway
+                    self.log.debug('wolf being shot is at:%s',xposn)
+                    #update gun movement and shot
+                    gun_anim = dmd.Animation().load(game_path+"dmd/wolf_gun.dmd")
+                    gun_id=2
+                    if dirn==0:
+                        if xposn<32:
+                            gun_id=0
+                        elif xposn<64:
+                            gun_id=1
+                    elif dirn==1:
+                        if xposn<96:
+                            gun_id=3
+                        elif xposn<128:
+                            gun_id=4
+                
+                    self.gun_layer = dmd.FrameLayer(frame=gun_anim.frames[gun_id])
+                    self.gun_layer.composite_op = "blacksrc"
+                    self.delay(name='reset_gun',delay=0.5,handler=self.reset_gun_posn)
+                    
                     if layer==1:
+                        frame_no = self.sprite_layer1.frame_pointer
                         self.sprite_layer1 =dmd.AnimatedLayer(frames=None,hold=True,opaque=False,repeat=False)
                     elif layer==2:
+                        frame_no = self.sprite_layer2.frame_pointer
                         self.sprite_layer2 =dmd.AnimatedLayer(frames=None,hold=True,opaque=False,repeat=False)
                     elif layer==3:
+                        frame_no = self.sprite_layer3.frame_pointer
                         self.sprite_layer3 =dmd.AnimatedLayer(frames=None,hold=True,opaque=False,repeat=False)
 
 
-                    self.play_award_anim([xposn+text_offset,15])
+                    self.play_award_anim([xposn+text_offset,15,frame_no])
 
-                    self.wolf_data.pop(0) # remove the first item from list
-
-
+                    self.wolf_data.pop(i) # remove the item from list
+                    return
 
 
         def play_award_anim(self,posn_data):
+            frame_posn = posn_data[2]
+            #calc score
+            score_multiplier = (frame_posn/3)+1 #calc a multiplier for the score based on how far the animation was played
+            score = self.score_value_start*score_multiplier
+            self.score_total+=score
             
             self.award_layer.x=posn_data[0]
             self.award_layer.y=posn_data[1]
-            self.award_layer.set_text(locale.format("%d", self.score_value_start, True))
+            self.award_layer.set_text(locale.format("%d", score, True),color=dmd.RED)
 
             y_posn_moved = posn_data[1]-2
             
             if posn_data[1]>10:
-                self.delay(name='award_anim_repeat', delay=0.3, handler=self.play_award_anim,param=[posn_data[0],y_posn_moved])
+                self.delay(name='award_anim_repeat', delay=0.3, handler=self.play_award_anim,param=[posn_data[0],y_posn_moved,frame_posn])
             else:
                 self.award_layer.set_text('')
 
             #update the display layer
-            self.layer = dmd.GroupedLayer(128, 32, [self.bgnd_layer,self.sprite_layer1,self.sprite_layer2,self.sprite_layer3,self.gun_layer,self.wolf_info_layer,self.bullet_info_layer,self.award_layer])
+            self.layer = dmd.GroupedLayer(128, 32, [self.bgnd_layer,self.score_border_layer,self.sprite_layer1,self.sprite_layer2,self.sprite_layer3,self.gun_layer,self.wolf_info_layer,self.bullet_info_layer,self.award_layer])
 
 
+        def reset_gun_posn(self):
+            gun_anim = dmd.Animation().load(game_path+"dmd/wolf_gun.dmd")
+            self.gun_layer = dmd.FrameLayer(frame=gun_anim.frames[2])
+            self.gun_layer.composite_op = "blacksrc"
+            
+            
 #        def rescue_part1(self):
 #            escape_frames = dmd.Animation().load("dmd/tank_chase_jones_snr_escape.dmd").frames
 #
@@ -330,7 +377,7 @@ class Werewolf(game.Mode):
         def completed(self):
             self.game.sound.play('wolf_howl')
 
-            anim = dmd.Animation().load(game_path+"dmd/werewolf_splash_bgnd2.dmd")
+            anim = dmd.Animation().load(game_path+"dmd/werewolf_bgnd.dmd")
             bgnd_layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False)
 
             #set text layers
@@ -338,13 +385,13 @@ class Werewolf(game.Mode):
             award_layer = dmd.TextLayer(64, 12, self.game.fonts['num_09Bx7'], "center", opaque=False)
             info_layer = dmd.TextLayer(64, 24, self.game.fonts['7x4'], "center", opaque=False)
 
-            #title_layer.composite_op ="blacksrc"
-            #award_layer.composite_op ="blacksrc"
-            #info_layer.composite_op ="blacksrc"
+            title_layer.composite_op ="blacksrc"
+            award_layer.composite_op ="blacksrc"
+            info_layer.composite_op ="blacksrc"
 
-            title_layer.set_text("Werewolf Bonus "+str(self.level).upper())
-            award_layer.set_text(locale.format("%d", self.wolf_bonus_value, True))
-            info_layer.set_text(str(self.bullets_remaining)+" Bullets Left".upper()+"+"+locale.format("%d", self.bullet_bonus_value*self.bullets_remaining, True))
+            title_layer.set_text("Werewolf Bonus "+str(self.level).upper(),color=dmd.RED)
+            award_layer.set_text(locale.format("%d", self.wolf_bonus_value, True),color=dmd.YELLOW)
+            info_layer.set_text(str(self.bullets_remaining)+" Bullets Left".upper()+"+"+locale.format("%d", self.bullet_bonus_value*self.bullets_remaining, True),color=dmd.GREEN)
 
             #set display layer
             self.layer = dmd.GroupedLayer(128, 32, [bgnd_layer,title_layer,award_layer,info_layer])
@@ -356,11 +403,13 @@ class Werewolf(game.Mode):
         def end_scene_delay(self):
             self.delay(name='scene_cleanup', event_type=None, delay=2, handler=self.mode_select.end_scene)
 
+
 #        def load_bgnd_anim(self):
 #            self.bgnd_anim = "dmd/werewolf_bgnd.dmd"
 #            anim = dmd.Animation().load(game_path+self.bgnd_anim)
 #            self.bgnd_layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False,repeat=True,frame_time=6)
 #            self.layer = dmd.GroupedLayer(128, 32, [self.bgnd_layer,self.score_layer,self.timer_layer,self.info_layer,self.award_layer])
+
 
         def load_main_anim(self,x_posn=0,y_posn=0,delay=None):
 
@@ -368,19 +417,24 @@ class Werewolf(game.Mode):
 
             self.bgnd_anim = "dmd/werewolf_bgnd.dmd"
             anim = dmd.Animation().load(game_path+self.bgnd_anim)
+            self.bgnd_layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False,repeat=True,frame_time=6)
+            
+            #set all items to blank initially
+            score_border_frame = dmd.Animation().load(game_path+"dmd/werewolf_score_border.dmd")
+            self.score_border_layer = dmd.FrameLayer(frame=score_border_frame.frames[0])
+            self.score_border_layer.composite_op ="blacksrc"
 
             gun_anim = dmd.Animation().load(game_path+"dmd/wolf_gun.dmd")
             self.gun_layer = dmd.FrameLayer(frame=gun_anim.frames[2])
             self.gun_layer.composite_op ="blacksrc"
 
             self.bullet_info_layer = dmd.TextLayer(0, -1, self.game.fonts['7x4'], "left", opaque=False)
-            self.bullet_info_layer.set_text(str(self.bullets_remaining)+' Bullets'.upper())
+            self.bullet_info_layer.set_text(str(self.bullets_remaining)+' Bullets'.upper(),color=dmd.CYAN)
             
             self.wolf_info_layer = dmd.TextLayer(128, -1, self.game.fonts['7x4'], "right", opaque=False)
-            self.wolf_info_layer.set_text('Wolves '.upper()+str(self.wolves_remaining))
-
-            self.bgnd_layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False,repeat=True,frame_time=6)
-            self.layer = dmd.GroupedLayer(128, 32, [self.bgnd_layer,self.gun_layer,self.wolf_info_layer,self.bullet_info_layer,self.award_layer])
+            self.wolf_info_layer.set_text('Wolves '.upper()+str(self.wolves_remaining),color=dmd.BROWN)
+            
+            self.layer = dmd.GroupedLayer(128, 32, [self.bgnd_layer,self.score_border_layer,self.gun_layer,self.wolf_info_layer,self.bullet_info_layer,self.award_layer])
 
             #add the wolf sprites
             self.start_wolf()
@@ -405,7 +459,7 @@ class Werewolf(game.Mode):
                     #callback()
 
         def instructions(self):
-            anim = dmd.Animation().load(game_path+"dmd/werewolf_splash_bgnd2.dmd")
+            anim = dmd.Animation().load(game_path+"dmd/werewolf_splash_bgnd.dmd")
             bgnd_layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False)
 
             #set text layers
@@ -414,15 +468,15 @@ class Werewolf(game.Mode):
             text_layer2 = dmd.TextLayer(64, 17, self.game.fonts['7x4'], "center", opaque=False)
             text_layer3 = dmd.TextLayer(64, 26, self.game.fonts['7x4'], "center", opaque=False)
             
-            #title_layer.composite_op ="blacksrc"
-            #text_layer1.composite_op ="blacksrc"
-            #text_layer2.composite_op ="blacksrc"
-            #text_layer3.composite_op ="blacksrc"
+            title_layer.composite_op ="blacksrc"
+            text_layer1.composite_op ="blacksrc"
+            text_layer2.composite_op ="blacksrc"
+            text_layer3.composite_op ="blacksrc"
 
-            title_layer.set_text("Video Wave "+str(self.level).upper())
-            text_layer1.set_text("Left Flipper Shoots Left".upper())
-            text_layer2.set_text("Right Flipper Shoots Right".upper())
-            text_layer3.set_text("5 Extra Bullets".upper(),blink_frames=4)
+            title_layer.set_text("Video Wave "+str(self.level).upper(),color=dmd.RED)
+            text_layer1.set_text("Left Flipper Shoots Left".upper(),color=dmd.CYAN)
+            text_layer2.set_text("Right Flipper Shoots Right".upper(),color=dmd.CYAN)
+            text_layer3.set_text("5 Extra Bullets".upper(),blink_frames=4,color=dmd.GREEN)
             
 
             #set display layer
@@ -474,13 +528,13 @@ class Werewolf(game.Mode):
 #            self.game.set_player_stats('mode_status_tracking',updated_list)
 
 
-            score_value = (self.wolves_start-self.wolves_remaining)*self.score_value_start
+            #score_value = (self.wolves_start-self.wolves_remaining)*self.score_value_start
             if self.wolves_remaining==0:
-                score_value+=self.wolf_bonus_value
-                score_value+=self.bullet_bonus_value*self.bullets_remaining
+                self.score_total+=self.wolf_bonus_value
+                self.score_total+=self.bullet_bonus_value*self.bullets_remaining
                 
-            self.game.set_player_stats('werewolf_score',score_value)
-            self.game.set_player_stats('last_mode_score',score_value)
+            self.game.set_player_stats('werewolf_score',self.score_total)
+            self.game.set_player_stats('last_mode_score',self.score_total)
 
 
             #cancel speech calls
@@ -534,7 +588,7 @@ class Werewolf(game.Mode):
 
         def update_score(self):
             score = self.game.current_player().score
-            self.score_layer.set_text(locale.format("%d", score, True))
+            self.score_layer.set_text(locale.format("%d", score, True),color=dmd.YELLOW)
      
 
         def mode_progression(self):

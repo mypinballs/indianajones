@@ -66,8 +66,8 @@ class Game(game.BasicGame):
                 # Setup fonts
 		self.fonts = {}
 		self.fonts['tiny7'] = dmd.Font(fonts_path+"04B-03-7px.dmd")
- 		self.fonts['07x5'] = dmd.Font(fonts_path+"Font07x5.dmd")
-                self.fonts['6x6_bold'] = dmd.Font(fonts_path+"Font_6x6_bold.dmd")
+ 		self.fonts['07x5'] = dmd.Font(fonts_path+"font_7x5.dmd")
+                self.fonts['6x6_bold'] = dmd.Font(fonts_path+"font_8x7_bold.dmd")
 
 
 		

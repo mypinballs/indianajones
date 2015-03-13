@@ -12,11 +12,11 @@ class ServiceModeSkeleton(game.Mode):
 	"""Service Mode List base class."""
 	def __init__(self, game, priority, font):
 		super(ServiceModeSkeleton, self).__init__(game, priority)
-                self.log = logging.getLogger('testrig.service')
+                self.log = logging.getLogger('ij.service')
 		self.name = ""
                 self.bgnd_layer = dmd.FrameLayer(opaque=True, frame=dmd.Animation().load(game_path+'dmd/service_bgnd.dmd').frames[0])
 		self.title_layer = dmd.TextLayer(1, 0, font, "left")
-		self.item_layer = dmd.TextLayer(128/2, 11, font, "center")
+		self.item_layer = dmd.TextLayer(1, 11, self.game.fonts['8x6'], "left")
 		self.instruction_layer = dmd.TextLayer(1, 25, font, "left")
                 self.instruction_layer.composite_op = "blacksrc"
 		self.layer = dmd.GroupedLayer(128, 32, [self.bgnd_layer,self.title_layer, self.item_layer, self.instruction_layer])
@@ -100,6 +100,17 @@ class ServiceMode(ServiceModeList):
 	def __init__(self, game, priority, font,big_font, extra_tests=[]):
 		super(ServiceMode, self).__init__(game, priority,font)
 		#self.title_layer.set_text('Service Mode')
+                
+                #setup sounds
+                self.game.sound.register_sound('service_enter', sound_path+"menu_in.wav")
+		self.game.sound.register_sound('service_exit', sound_path+"menu_out.wav")
+		self.game.sound.register_sound('service_next', sound_path+"next_item.wav")
+		self.game.sound.register_sound('service_previous', sound_path+"previous_item.wav")
+		self.game.sound.register_sound('service_switch_edge', sound_path+"switch_edge.wav")
+		self.game.sound.register_sound('service_save', sound_path+"save.wav")
+		self.game.sound.register_sound('service_cancel', sound_path+"cancel.wav")
+                self.game.sound.register_sound('service_alert', sound_path+"service_alert.aiff")
+                
 		self.name = 'Service Mode'
 		self.tests = Tests(self.game, self.priority+1, font, big_font, extra_tests)
 		self.items = [self.tests]
@@ -111,6 +122,7 @@ class ServiceMode(ServiceModeList):
 		if len(self.game.game_data) > 0: 
 			self.statistics = Statistics(self.game, self.priority+1, font, big_font, 'Statistics', self.game.game_data)
 			self.items.append(self.statistics)
+
 
 class Tests(ServiceModeList):
 	"""Service Mode."""
@@ -569,7 +581,7 @@ class SettingsEditor(ServiceModeList):
 	"""Service Mode."""
 	def __init__(self, game, priority, font, big_font, name, itemlist):
 		super(SettingsEditor, self).__init__(game, priority, font)
-                self.bgnd_layer = dmd.FrameLayer(opaque=True, frame=dmd.Animation().load(game_path+'dmd/service_bgnd.dmd').frames[0])
+                self.bgnd_layer = dmd.FrameLayer(opaque=True, frame=dmd.Animation().load(game_path+'dmd/service_adjust_bgnd.dmd').frames[0])
 		self.title_layer = dmd.TextLayer(1, 0, font, "left")
 		self.item_layer = dmd.TextLayer(1, 11, font, "left")
 		self.instruction_layer = dmd.TextLayer(1, 25, font, "left")
@@ -726,3 +738,117 @@ class EditItem:
 
 	def disable(self):
 		pass
+
+#mode for coin door opening & showing game health
+class CoinDoor(game.Mode):
+
+	def __init__(self, game):
+		super(CoinDoor, self).__init__(game, priority=999)
+
+                self.log = logging.getLogger('ij.coindoor')
+	
+		self.name = "Coin Door"
+                self.bgnd_layer = dmd.FrameLayer(opaque=False, frame=dmd.Animation().load(game_path+'dmd/coindoor_bgnd.dmd').frames[0])
+                self.bgnd_layer.composite_op='blacksrc'
+                self.info_layer_top = dmd.TextLayer(64, -1, self.game.fonts['9px_az'], "center")
+                self.info_layer_bottom = dmd.TextLayer(64, 9, self.game.fonts['9px_az'], "center")
+		self.status_layer_top = dmd.TextLayer(64, 20, self.game.fonts['4px_az'] , "center")
+                self.status_layer_bottom = dmd.TextLayer(64, 26, self.game.fonts['4px_az'] , "center")
+                self.status_layer_top.composite_op='blacksrc'
+                self.status_layer_bottom.composite_op='blacksrc'
+		self.layer = dmd.GroupedLayer(128, 32, [self.info_layer_bottom,self.info_layer_top,self.status_layer_bottom,self.status_layer_top,self.bgnd_layer])
+
+                self.info_message=[]
+                self.status_messages =[]
+                self.status=''
+                self.status_message_posn=0
+                self.status_colour = dmd.WHITE
+                self.sound_repeats = 3
+               
+
+        def reset(self):
+                self.sound_counter = 0
+
+	def mode_started(self):
+		super(CoinDoor, self).mode_started()
+
+                #reset
+                self.reset()
+
+                #load messages for status label
+                self.load_messages()
+
+                #play sound
+                self.play_sound()
+
+                #start the update of the status info
+                self.update()
+
+        def mode_stopped(self):
+                super(CoinDoor, self).mode_stopped()
+
+                #cancel update loops
+                self.cancel_delayed('update_status')
+                self.cancel_delayed(self.sound_repeat_delay)
+
+        def play_sound(self):
+                #play sound
+                timer=0.5
+                self.game.sound.play('service_alert')
+                self.sound_counter+=1
+                self.sound_repeat_delay = self.delay(delay=timer,handler=self.play_sound)
+                if self.sound_repeats == self.sound_counter:
+                    self.cancel_delayed(self.sound_repeat_delay)
+
+
+        def load_messages(self):
+                self.info_layer_top.set_text('Coin Door Open'.upper(),color=dmd.YELLOW)
+                self.info_layer_bottom.set_text('High Voltage Disabled'.upper(),color=dmd.YELLOW)
+
+                self.status_layer_top.set_text(self.game.system_name+' '+self.game.system_version,color=dmd.ORANGE)
+                
+                self.status_messages =[]
+                self.status_messages.append('Orange Cloud Software Ltd 2015')
+                self.status_messages.append('info@orangecloud.co.uk')
+                self.status_messages.append('Press "ENTER" For Main Menu')
+
+                if self.game.health_status =='OK':
+                    self.status_messages.append('No Errors To Report')
+                    self.status_colour = dmd.GREEN
+                elif self.game.health_status =='ERRORS':
+                    self.status_colour = dmd.RED
+                    for error in sorted(self.game.switch_error_log):
+                        self.status_messages.append('Check Switch: '+error)#.switch_name
+
+
+        def update(self):
+
+                update_interval = 2
+
+                if self.status_message_posn==len(self.status_messages):
+                    self.status_message_posn=0
+
+                self.status = self.status_messages[self.status_message_posn]
+
+                #request update
+                self.status_layer_bottom.set_text(self.status_messages[self.status_message_posn].upper(),color=self.status_colour)
+                #inc message posn
+                self.status_message_posn+=1
+
+                #create loop with delay
+                self.delay(name='update_status', event_type=None, delay=update_interval, handler=self.update)
+
+
+	def layer_info(self):
+                self.log.info("updating game status messages")
+		params = {}
+		#params['messageTop'] = "COIN DOOR IS OPEN"
+                #params['messageMiddle']="COILS AND FLASHERS"
+                #params['messageBottom']="ARE DISABLED"
+		params['thestatus'] = self.status
+		return ('content-coin-door_r1', params)
+
+	def sw_coinDoorClosed_active(self, sw):
+		self.game.modes.remove(self)
+        
+       

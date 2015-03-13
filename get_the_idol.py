@@ -6,6 +6,7 @@ __date__ ="$Jan 18, 2011 1:36:37 PM$"
 
 import procgame
 import locale
+import logging
 from procgame import *
 
 base_path = config.value_for_key_path('base_path')
@@ -32,50 +33,121 @@ class Get_The_Idol(game.Mode):
 
 	def __init__(self, game, priority,mode_select):
             super(Get_The_Idol, self).__init__(game, priority)
-
+            self.log = logging.getLogger('ij.get_the_idol')
+            
             #setup link back to mode_select mode
             self.mode_select = mode_select
 
             #screen setup
-            timer = int(self.game.user_settings['Gameplay (Feature)']['Get The Idol Timer'])
+            self.timer = int(self.game.user_settings['Gameplay (Feature)']['Get The Idol Timer'])
 
             self.score_layer = ModeScoreLayer(0, -1, self.game.fonts['07x5'], self)
-            self.timer_layer = dmd.TimerLayer(128, -1, self.game.fonts['07x5'],timer)
-            #self.text_layer = dmd.TextLayer(128/2, 12, self.game.fonts['6x6_bold'], "center", opaque=False)
-            self.text_layer = dmd.TextLayer(128/2, 5, self.game.fonts['23x12'], "center", opaque=False)
-            self.text_layer.composite_op ="blacksrc"
-
+            #self.timer_layer = dmd.TimerLayer(128, -1, self.game.fonts['07x5'],self.timer)
+            #self.award_layer = dmd.TextLayer(128/2, 12, self.game.fonts['6x6_bold'], "center", opaque=False)
+            self.award_layer = dmd.TextLayer(128/2, 5, self.game.fonts['23x12'], "center", opaque=False)
+            self.award_layer.composite_op ="blacksrc"
 
             #sound setup
             self.game.sound.register_music('gti_play', music_path+"get_the_idol_2.aiff")
             self.game.sound.register_sound('target_hit', sound_path+"outlane.aiff")
             self.game.sound.register_sound('gti_speech0', speech_path+"nothing_to_fear_here.aiff")
             self.game.sound.register_sound('gti_speech11', speech_path+"thats_what_scares_me.aiff")
-
-
+            self.game.sound.register_sound('gti_speech1', speech_path+"throw_me_the_idol.aiff")
+            self.game.sound.register_sound('gti_speech12', speech_path+"no_time_to_argue.aiff")
+            self.game.sound.register_sound('gti_speech2', speech_path+"give_me_the_whip.aiff")
+            self.game.sound.register_sound('gti_speech3', speech_path+"adious_senoir.aiff")
 
             #var setup
             self.count = 0
-            self.hits = 3
+            
             self.score_value_boost = 5000000
             self.score_value_start = 5000000
-            self.load_anim(0)
+            #self.load_anim(0)
+            self.progression_anim_posn = 1
             
+            if self.game.user_settings['Gameplay (Feature)']['Get The Idol Difficulty']=='Easy':
+                self.hits = 2 #number of hits required to keep drops down
+                self.progression_amount = 5 #number of frames to move the animation forward per hit
+            elif self.game.user_settings['Gameplay (Feature)']['Get The Idol Difficulty']=='Medium':
+                self.hits = 3
+                self.progression_amount = 3
+            elif self.game.user_settings['Gameplay (Feature)']['Get The Idol Difficulty']=='Hard':
+                self.hits = 5
+                self.progression_amount = 2
+                
+                
             self.reset()
 
 
         def reset(self):
            pass
 
-        def load_anim(self,count):
-            self.bgnd_anim = "dmd/get_the_idol_bgnd_"+str(count)+".dmd"
-            anim = dmd.Animation().load(game_path+self.bgnd_anim)
-            self.bgnd_layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False,repeat=True,frame_time=6)
+#        def load_anim(self,count):
+#            self.bgnd_anim = "dmd/get_the_idol_bgnd_"+str(count)+".dmd"
+#            anim = dmd.Animation().load(game_path+self.bgnd_anim)
+#            self.bgnd_layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False,repeat=True,frame_time=6)
+        
+        def load_bgnd_anim(self):
+            large_spider_frames = dmd.Animation().load("dmd/gti_lge_spider_sprites.dmd").frames
+            sml_spider_frames = dmd.Animation().load("dmd/gti_sml_spider_sprites.dmd").frames
+            
+            self.large_spider_layer = dmd.AnimatedLayer(frames=large_spider_frames,hold=False,repeat=True,frame_time=6)
+            #self.large_spider_layer.target_x=50
+            self.large_spider_layer.target_y=10
+            self.large_spider_layer.composite_op ="blacksrc"
+            
+            self.sml_spider_layer1 = dmd.AnimatedLayer(frames=sml_spider_frames,hold=False,repeat=True,frame_time=6)
+            self.sml_spider_layer1.target_x=-50
+            #self.sml_spider_layer1.target_y=0
+            self.sml_spider_layer1.composite_op ="blacksrc"
+            
+            self.sml_spider_layer2 = dmd.AnimatedLayer(frames=sml_spider_frames,hold=False,repeat=True,frame_time=6)
+            self.sml_spider_layer2.target_x=50
+            #self.sml_spider_layer2.target_y=0
+            self.sml_spider_layer2.composite_op ="blacksrc"
 
+            self.reset_sprites()
+            
+            self.log.info("spider sprites created")
 
+            self.bgnd_anim = dmd.Animation().load(game_path+"dmd/get_the_idol_bgnd.dmd")
+            self.bgnd_layer = dmd.FrameLayer(frame=self.bgnd_anim.frames[0])
+            self.layer = dmd.GroupedLayer(128, 32, [self.bgnd_layer,self.sml_spider_layer1,self.sml_spider_layer2,self.large_spider_layer,self.score_layer,self.timer_layer,self.award_layer])
+
+        def load_progression_anim(self):
+            
+            
+            self.bgnd_anim = dmd.Animation().load(game_path+"dmd/get_the_idol_bgnd.dmd")
+            self.bgnd_layer = dmd.AnimatedLayer(frames=self.bgnd_anim.frames[self.progression_anim_posn:self.progression_anim_posn+self.progression_amount],hold=True,opaque=False,repeat=False,frame_time=6)
+            self.layer = dmd.GroupedLayer(128, 32, [self.bgnd_layer,self.sml_spider_layer1,self.sml_spider_layer2,self.large_spider_layer,self.score_layer,self.timer_layer,self.award_layer])
+
+            self.progression_anim_posn +=self.progression_amount
+            
+            
+        def reset_sprites(self):
+            self.large_spider_layer.target_x =64
+            self.sml_spider_layer1.target_y = 18
+            self.sml_spider_layer2.target_y = 28
+        
+        def move_sprites(self):
+            self.large_spider_layer.target_x -=6
+            self.sml_spider_layer1.target_y -=2
+            self.sml_spider_layer2.target_y -=3
+            
+            self.delay(name='move_sprites',delay=0.2,handler=self.move_sprites)
+
+            if self.large_spider_layer.target_x<-100:
+                #self.cancel_delayed('move_sprites')
+                self.reset_sprites()
+                
         def mode_started(self):
-            #set display layer
-            self.layer = dmd.GroupedLayer(128, 32, [self.bgnd_layer,self.score_layer,self.timer_layer,self.text_layer])
+            #setup additonal layers
+            self.timer_layer = dmd.TimerLayer(128, -1, self.game.fonts['07x5'],self.timer)
+            
+            #create animation
+            self.load_bgnd_anim()
+            self.move_sprites()
+            
             self.game.sound.play_music('gti_play', loops=-1)
 
             self.reset_drops()
@@ -86,14 +158,13 @@ class Get_The_Idol(game.Mode):
         def voice_call(self,count):
             self.game.sound.play_voice("gti_speech"+str(count))
 
-            if count==0:
-                self.delay(name='mode_speech_delay', event_type=None, delay=2, handler=self.voice_call, param=11)
+            self.delay(name='mode_speech_delay', event_type=None, delay=2, handler=self.voice_call, param=11+count)
 
 
 
         def update_score(self):
             score = self.game.current_player().score
-            self.score_layer.set_text(locale.format("%d", score, True))
+            self.score_layer.set_text(locale.format("%d", score, True),color=dmd.YELLOW)
 
 
         def mode_tick(self):
@@ -119,19 +190,19 @@ class Get_The_Idol(game.Mode):
             if self.count<self.hits:
                 self.count+=1
 
-                self.load_anim(self.count)
-                #self.voice_call("gti_speech"+str(self.count))
-
+                self.load_progression_anim()
+                
                 score_value = self.score_value_boost*self.count +self.score_value_start
                 self.game.set_player_stats('get_the_idol_score',score_value)
                 self.game.set_player_stats('last_mode_score',self.game.get_player_stats('get_the_idol_score' ))
                 #set text layers
-                self.text_layer.set_text(locale.format("%d",score_value,True),blink_frames=10,seconds=3, color=dmd.MAGENTA)
+                self.award_layer.set_text(locale.format("%d",score_value,True),blink_frames=10,seconds=3, color=dmd.MAGENTA)
 
-            
                 self.game.score(score_value)
+                
+                #play sounds/speech
                 self.game.sound.play('target_hit')
-            
+                self.delay(name='mode_speech_delay', event_type=None, delay=0.5, handler=self.voice_call, param=self.count)
            
                 self.reset_drops()
 

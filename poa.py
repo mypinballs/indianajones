@@ -183,7 +183,9 @@ class POA(game.Mode):
                     self.set3=True
 
                 adventure_layer = dmd.GroupedLayer(128, 32, [bgnd,A,D,V,E1,N,T,U,R,E2,completed])
-                self.layer = adventure_layer
+                
+                if self.game.get_player_stats('mode_running_id')!=0: #do not display adventure graphic if get the idol is running
+                    self.layer = adventure_layer
                 
 
                 if self.letters_spotted==9:

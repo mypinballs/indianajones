@@ -7,6 +7,8 @@ __date__ ="$Jan 18, 2011 1:36:37 PM$"
 import procgame
 import locale
 import random
+import logging
+import audits
 
 from procgame import *
 
@@ -31,62 +33,64 @@ class ModeScoreLayer(dmd.TextLayer):
 		return super(ModeScoreLayer, self).next_frame()
 
 #mpc animation layer for sprites
-class SpriteLayer(dmd.AnimatedLayer):
-
-        dot_type=None
-        
-        def __init__(self, opaque=False, hold=True, repeat=False, frame_time=1, frames=None, x=0,y=-4,dot_type=None):
-		super(SpriteLayer, self).__init__(opaque,x,y,dot_type)
-                self.target_x = x-44
-                self.target_y = y
-                self.dot_type = dot_type
-                self.composite_op = "blacksrc"
-
-                self.hold = hold
-		self.repeat = repeat
-		if frames == None:
-			self.frames = list()
-		else:
-			self.frames = frames
-
-		self.frame_time = frame_time # Number of frames each frame should be displayed for before moving to the next.
-		self.frame_time_counter = self.frame_time
-
-		self.frame_listeners = []
-
-		self.reset()
-
-	def next_frame(self):
-
-		frame = super(SpriteLayer, self).next_frame()
-                
-		if frame:
-			if self.dot_type == 1:
-				for x in range(128):
-					for y in range(32):
-						color = frame.get_dot(x,y)
-						if color == 5: # These are the same dots as in dot_type 2, so we remove them by letting blacksrc hide them. Possibly this could be an additional tint in other animations?
-							frame.set_dot(x,y,0) # Ideally this should be set to alpha 0%
-						elif color == 15:
-							# These are the highlights of the monkeys face, they should remain white
-							pass
-			elif self.dot_type == 2:
-				for x in range(128):
-					for y in range(32):
-						color = frame.get_dot(x,y)
-						if color == 5:
-							frame.set_dot(x,y,1) # Ideally this should be 0 at alpha 100% if we could use blendmode alpha. Now we use 1 to come as close to black as possible.
-						elif color == 15:
-							#These are the hightlights of the monkeys body, tone them down a little.
-							frame.set_dot(x,y,7)
-
-		return frame
+#class SpriteLayer(dmd.AnimatedLayer):
+#
+#        dot_type=None
+#        
+#        def __init__(self, opaque=False, hold=True, repeat=False, frame_time=1, frames=None, x=0,y=-4,dot_type=None):
+#		super(SpriteLayer, self).__init__(opaque,x,y,dot_type)
+#                self.target_x = x-44
+#                self.target_y = y
+#                self.dot_type = dot_type
+#                self.composite_op = "blacksrc"
+#
+#                self.hold = hold
+#		self.repeat = repeat
+#		if frames == None:
+#			self.frames = list()
+#		else:
+#			self.frames = frames
+#
+#		self.frame_time = frame_time # Number of frames each frame should be displayed for before moving to the next.
+#		self.frame_time_counter = self.frame_time
+#
+#		self.frame_listeners = []
+#
+#		self.reset()
+#
+#	def next_frame(self):
+#
+#		frame = super(SpriteLayer, self).next_frame()
+#                
+#		if frame:
+#			if self.dot_type == 1:
+#				for x in range(128):
+#					for y in range(32):
+#						color = frame.get_dot(x,y)
+#						if color == 5: # These are the same dots as in dot_type 2, so we remove them by letting blacksrc hide them. Possibly this could be an additional tint in other animations?
+#							frame.set_dot(x,y,0) # Ideally this should be set to alpha 0%
+#						elif color == 15:
+#							# These are the highlights of the monkeys face, they should remain white
+#							pass
+#			elif self.dot_type == 2:
+#				for x in range(128):
+#					for y in range(32):
+#						color = frame.get_dot(x,y)
+#						if color == 5:
+#							frame.set_dot(x,y,1) # Ideally this should be 0 at alpha 100% if we could use blendmode alpha. Now we use 1 to come as close to black as possible.
+#						elif color == 15:
+#							#These are the hightlights of the monkeys body, tone them down a little.
+#							frame.set_dot(x,y,7)
+#
+#		return frame
 
 
 class Streets_Of_Cairo(game.Mode):
 
 	def __init__(self, game, priority,mode_select):
             super(Streets_Of_Cairo, self).__init__(game, priority)
+            
+            self.log = logging.getLogger('ij.streets_of_cairo')
 
             #setup link back to mode_select mode
             self.mode_select = mode_select
@@ -96,6 +100,7 @@ class Streets_Of_Cairo(game.Mode):
             print("Monkey Brains Timer is:"+str(self.timer))
 
             self.score_layer = ModeScoreLayer(128/2, -1, self.game.fonts['07x5'], self)
+            self.score_layer.composite_op ="blacksrc"
             self.award_layer = dmd.TextLayer(128/2, 5, self.game.fonts['23x12'], "center", opaque=False)
             self.award_layer.composite_op ="blacksrc"
 #            self.sprite_data_layers = []
@@ -197,30 +202,38 @@ class Streets_Of_Cairo(game.Mode):
 
         def create_monkey_sprite(self,data=None,delay=None):
             
-            x=data[0]  #horizontal position of sprite
+            x=data[0]-45  #horizontal position of sprite
+            y=-4
             frame_num=data[1] #sprite frame to load
 
             if delay:
                 self.delay(name='create_sprite_layer', event_type=None, delay=delay, handler=self.create_monkey_sprite, param=data)
             else:
-                monkey_frames = dmd.Animation().load("dmd/soc_monkey_moves.dmd").frames
+                monkey_frames = dmd.Animation().load("dmd/soc_sprites_monkey_moves.dmd").frames
 
-                even_frames = monkey_frames[0::2] # This layer gets the even frames
-                odd_frames = monkey_frames[1::2] # This layer gets the uneven frames
-
-
-                self.sprite_data1 = SpriteLayer(frames=[even_frames[frame_num]], opaque=False, hold=False, repeat=True, x=x, dot_type=1)
-                self.sprite_data2 = SpriteLayer(frames=[odd_frames[frame_num]], opaque=False, hold=False, repeat=True, x=x, dot_type=2)
-                #self.sprite_data1 = dmd.AnimatedLayer(frames=[monkey1_frames], opaque=False, hold=False, repeat=True)
-                #self.sprite_data2 = dmd.AnimatedLayer(frames=[monkey2_frames], opaque=False, hold=False, repeat=True)
-
-                self.sprite_data_layers = []
-                self.sprite_data_layers += [self.sprite_data2]
-                self.sprite_data_layers += [self.sprite_data1]
-
-                self.sprite_layer = dmd.layers.GroupedLayer(128,32, self.sprite_data_layers)
+#                even_frames = monkey_frames[0::2] # This layer gets the even frames
+#                odd_frames = monkey_frames[1::2] # This layer gets the uneven frames
+#
+#
+#                self.sprite_data1 = SpriteLayer(frames=[even_frames[frame_num]], opaque=False, hold=False, repeat=True, x=x, dot_type=1)
+#                self.sprite_data2 = SpriteLayer(frames=[odd_frames[frame_num]], opaque=False, hold=False, repeat=True, x=x, dot_type=2)
+#                #self.sprite_data1 = dmd.AnimatedLayer(frames=[monkey1_frames], opaque=False, hold=False, repeat=True)
+#                #self.sprite_data2 = dmd.AnimatedLayer(frames=[monkey2_frames], opaque=False, hold=False, repeat=True)
+#
+#                self.sprite_data_layers = []
+#                self.sprite_data_layers += [self.sprite_data2]
+#                self.sprite_data_layers += [self.sprite_data1]
+#
+#                self.sprite_layer = dmd.layers.GroupedLayer(128,32, self.sprite_data_layers)
+#                self.sprite_layer.composite_op ="blacksrc"
+                
+                #create the layer
+                self.sprite_layer = dmd.FrameLayer(frame=monkey_frames[frame_num])
+                self.sprite_layer.target_x=x
+                self.sprite_layer.target_y=y
                 self.sprite_layer.composite_op ="blacksrc"
-                #print("sprite created")
+                
+                self.log.info("soc monkey sprite created")
 
                 self.bgnd_anim = "dmd/streets_of_cairo_bgnd.dmd"
                 anim = dmd.Animation().load(game_path+self.bgnd_anim)
@@ -318,6 +331,7 @@ class Streets_Of_Cairo(game.Mode):
             
             #setup additonal layers
             self.timer_layer = dmd.TimerLayer(0, -1, self.game.fonts['07x5'],self.timer,"left")
+            self.timer_layer.composite_op ="blacksrc"
             self.info_layer = dmd.TextLayer(128/2, 20, self.game.fonts['07x5'], "center", opaque=False)
             #self.info_layer.set_text("SHOOT LIT SHOTS TO FIND MARRION",blink_frames=1000)
 
@@ -438,7 +452,7 @@ class Streets_Of_Cairo(game.Mode):
             else:
                 score_value = self.score_value_start
 
-            self.award_layer.set_text(locale.format("%d",score_value,True),blink_frames=10,seconds=3,color=dmd.MAGENTA)
+            self.award_layer.set_text(locale.format("%d",score_value,True),blink_frames=10,seconds=3,color=dmd.CYAN)
             self.game.score(score_value)
 
         def mode_bonus(self):
@@ -494,5 +508,5 @@ class Streets_Of_Cairo(game.Mode):
                 self.score_value_dual =  self.score_value_dual/10
                 self.load_completed_anim()
 
-            return procgame.game.SwitchStop
+            #return procgame.game.SwitchStop
  

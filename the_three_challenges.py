@@ -64,7 +64,7 @@ class The_Three_Challenges(game.Mode):
             self.score_value_extra = 2000000
             self.poa_lanes_needed = 1
 
-        def load_scene_anim(self,count):
+        def load_scene_anim(self,count=0):
             scene_num=1
 
             bgnd_anim = dmd.Animation().load(game_path+"dmd/ttc_scene_"+str(scene_num)+".dmd")
@@ -85,8 +85,8 @@ class The_Three_Challenges(game.Mode):
             if self.count>=1:
                  item_layer1 =  dmd.FrameLayer(frame=item1.frames[0])
                  item_layer1.composite_op ="blacksrc"
-                 item_layer1.target_x=8
-                 item_layer1.target_y=18
+                 item_layer1.target_x=9
+                 item_layer1.target_y=19
             if self.count>=2:
                  item_layer2 =  dmd.FrameLayer(frame=item2.frames[0])
                  item_layer2.composite_op ="blacksrc"
@@ -95,8 +95,8 @@ class The_Three_Challenges(game.Mode):
             if self.count>=3:
                  item_layer3 =  dmd.FrameLayer(frame=item3.frames[0])
                  item_layer3.composite_op ="blacksrc"
-                 item_layer3.target_x=94
-                 item_layer3.target_y=16
+                 item_layer3.target_x=95
+                 item_layer3.target_y=17
 
             info_layer_1 = dmd.TextLayer(128/2, 8, self.game.fonts['07x5'], "center", opaque=False)
             info_layer_1.set_text("GET ALL LIT LANES",blink_frames=4, color=dmd.PURPLE)
@@ -231,6 +231,11 @@ class The_Three_Challenges(game.Mode):
         def clear(self):
             self.layer = None
 
+        def poa_exited(self):
+            self.count+=1
+            self.load_scene_anim()
+            self.cancel_delayed('load_bgnd_anim')
+            self.delay(name='load_bgnd_anim', event_type=None, delay=4, handler=self.load_bgnd_anim)
 
         def sw_topPost_active(self, sw):
 
@@ -238,21 +243,17 @@ class The_Three_Challenges(game.Mode):
             return procgame.game.SwitchStop
 
         def sw_miniBottomLeft_active(self, sw):
-            self.count+=1
-            self.delay(name='load_bgnd_anim', event_type=None, delay=2, handler=self.load_bgnd_anim)
+            self.poa_exited()
 
         def sw_miniBottomRight_active(self, sw):
-            self.count+=1
-            self.delay(name='load_bgnd_anim', event_type=None, delay=2, handler=self.load_bgnd_anim)
+            self.poa_exited()
 
         def sw_miniTopHole_active(self, sw):
-            self.count+=1
-            self.delay(name='load_bgnd_anim', event_type=None, delay=2, handler=self.load_bgnd_anim)
+            self.poa_exited()
             return procgame.game.SwitchStop
 
         def sw_miniBottomHole_active(self, sw):
-            self.count+=1
-            self.delay(name='load_bgnd_anim', event_type=None, delay=2, handler=self.load_bgnd_anim)
+            self.poa_exited()
             return procgame.game.SwitchStop
 
 

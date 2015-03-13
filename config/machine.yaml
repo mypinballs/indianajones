@@ -114,7 +114,7 @@ PRSwitches:
         label: 'Slam Tilt'
     coinDoorClosed:
         number: S22
-        label: 'Coin DOor Closed'
+        label: 'Coin Door Closed'
     ticketOpto:
         number: S23
         label: 'Ticket Opto'

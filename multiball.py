@@ -250,8 +250,8 @@ class Multiball(game.Mode):
                 self.game.set_player_stats('multiball_running',self.multiball_running) 
                 self.game.set_player_stats('multiball_started',self.multiball_started)
 
-                #update poa player stats
-                self.game.set_player_stats("poa_queued",False)
+                #update poa player stats - moved to jackpot cancelled
+                #self.game.set_player_stats("poa_queued",False)
                 
                 self.game.sound.stop_music()
                 self.game.sound.play_music('general_play', loops=-1)
@@ -276,7 +276,7 @@ class Multiball(game.Mode):
                 self.game.set_player_stats('multiball_running',self.multiball_running) 
                 self.game.set_player_stats('multiball_started',self.multiball_started) 
                 #update poa player stats
-                self.game.set_player_stats("poa_queued",False)
+                #self.game.set_player_stats("poa_queued",False)
                 #cancel jackpot
                 self.jackpot('cancelled')
                 #clear the display
@@ -436,6 +436,10 @@ class Multiball(game.Mode):
                     self.game.coils.flasherJackpot.disable()
                     self.game.coils.divertorHold.disable()
                     self.game.coils.topLockupHold.disable()
+                    
+                    #update poa player stats
+                    self.game.set_player_stats("poa_queued",False)
+                    
                     self.clear()
 
         def super_jackpot_display(self):
