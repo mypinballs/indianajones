@@ -42,6 +42,7 @@ class Mini_Playfield(game.Mode):
             self.adv_sequence_num = 0
             self.pit_value_active = False
             self.extra_ball_active = False
+            
 
             self.lane_lit_value = 5000000 
             self.lane_unlit_value = 100000
@@ -81,9 +82,14 @@ class Mini_Playfield(game.Mode):
             self.calibrate(6)
             #self.game.coils.miniMotorRight.pulse(self.centre_time)
             #self.game.coils.miniMotorLeft.pulse(self.centre_time)
+            
+            self.pit_active_level = int(self.game.user_settings['Gameplay (Feature)']['Path of Adventure Pit Lit Level'])
 
         def get_status(self):
             return self.game_status
+        
+        def get_level(self):
+            return self.level
         
         def path_sequence(self,level=None):
 
@@ -125,7 +131,7 @@ class Mini_Playfield(game.Mode):
                  self.lamp_flag[9]=True
                  self.extra_ball_active = True
 
-            if self.level>=3:
+            if self.level>=self.pit_active_level:
                  self.game.effects.drive_lamp(self.list[8],'medium')
                  self.lamp_flag[8]=True
                  self.pit_value_active = True
@@ -174,8 +180,8 @@ class Mini_Playfield(game.Mode):
             self.game.set_player_stats('pit_value',pit_value)
 
         def pit_collected(self):
-            self.text_layer1.set_text("PIT COLLECTED")
-            self.text_layer2.set_text(locale.format("%d",self.game.get_player_stats('pit_value'),True),blink_frames=20)
+            self.text_layer1.set_text("PIT COLLECTED",color=dmd.GREEN)
+            self.text_layer2.set_text(locale.format("%d",self.game.get_player_stats('pit_value'),True),color=dmd.GREEN,blink_frames=20)
 
 
 
@@ -201,7 +207,9 @@ class Mini_Playfield(game.Mode):
                     self.game.effects.drive_lamp(self.list[i],'medium')
 
         def clear(self):
-            self.layer = None
+            self.game_status = 'countdown'
+            self.layer = None   
+
 
         def set_posn(self,dirn):
             self.position=dirn;
@@ -303,6 +311,20 @@ class Mini_Playfield(game.Mode):
                 self.status='working'
 
 
+        def instructions(self):
+            anim = dmd.Animation().load(game_path+"dmd/poa_info_bgnd.dmd")
+            bgnd_layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False, frame_time=6)
+
+            #set text layers
+            text_layer1 = dmd.TextLayer(64, 18, self.game.fonts['tiny7'], "center", opaque=False)
+            text_layer2 = dmd.TextLayer(64, 24, self.game.fonts['tiny7'], "center", opaque=False)
+            text_layer1.set_text("GET LIT LANES", color=dmd.CYAN)
+            text_layer2.set_text("WATCH FOR EXTRA BALL",blink_frames=4, color=dmd.RED)
+
+            #set display layer
+            self.layer = dmd.GroupedLayer(128, 32, [bgnd_layer,text_layer1,text_layer2])
+            
+
         def sw_flipperLwL_active(self,sw):
             if self.game_status =='mode':
                 self.cancel_delayed('centre_timeout')
@@ -323,7 +345,6 @@ class Mini_Playfield(game.Mode):
         def sw_flipperLwR_inactive(self,sw):
             if self.game_status  =='mode' or self.game_status  =='countdown':
                 self.delay(name='centre_timeout', event_type=None, delay=5, handler=self.centre_playfield)
-            
 
 
         def sw_miniLeftLimit_active(self,sw):
@@ -331,12 +352,12 @@ class Mini_Playfield(game.Mode):
             self.set_posn('left')
             self.motor_off()
 
+
         def sw_miniRightLimit_active(self,sw):
             self.log.info("right limit")
             self.set_posn('right')
             self.motor_off()
 
-            
 
         def sw_miniTopHole_active(self, sw):
 
@@ -348,24 +369,24 @@ class Mini_Playfield(game.Mode):
                     anim = dmd.Animation().load(game_path+"dmd/pit_collected.dmd")
                     self.text_layer1 = dmd.TextLayer(128/2, 2, self.game.fonts['num_09Bx7'], "center", opaque=False)
                     self.text_layer2 = dmd.TextLayer(128/2, 15, self.game.fonts['18x12'], "center", opaque=False)
-                    self.animation_layer = dmd.AnimatedLayer(frames=anim.frames,hold=True,frame_time=2)
+                    self.animation_layer = dmd.AnimatedLayer(frames=anim.frames,hold=True,frame_time=6)
                     self.animation_layer.add_frame_listener(-1,self.pit_collected)
                     self.layer = dmd.GroupedLayer(128, 32, [self.animation_layer,self.text_layer1,self.text_layer2])
                     self.delay(name='clear', event_type=None, delay=5, handler=self.clear)
 
                     self.game.sound.play('pit_collected')
-
                     #self.game.poa.reset_pit_value()
                     
                 else:
                     #play fall anim
                     anim = dmd.Animation().load(game_path+"dmd/poa_fall.dmd")
-                    self.layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False,frame_time=2)
+                    self.layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False,frame_time=6)
                     self.layer.add_frame_listener(-1,self.clear)
                     self.game.sound.play('falling_scream')
-                 
+        
                 self.game.enable_flippers(enable=True)
-                self.game_status = 'countdown'
+                #self.game_status = 'countdown'
+
 
         def sw_miniBottomHole_active(self, sw):
 
@@ -375,12 +396,12 @@ class Mini_Playfield(game.Mode):
                 else:
                     #play fall anim
                     anim = dmd.Animation().load(game_path+"dmd/poa_fall.dmd")
-                    self.layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False,frame_time=2)
+                    self.layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False,frame_time=6)
                     self.layer.add_frame_listener(-1,self.clear)
                     self.game.sound.play('falling_scream')
 
                 self.game.enable_flippers(enable=True)
-                self.game_status = 'countdown'
+                #self.game_status = 'countdown'
 
 
         def lanes(self,id):
@@ -403,8 +424,8 @@ class Mini_Playfield(game.Mode):
                 
                     #play anim
                     anim = dmd.Animation().load(game_path+self.poa_lane_anim)
-                    self.layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False,repeat=True,frame_time=2)
-                    self.delay(name='clear', event_type=None, delay=1, handler=self.clear)
+                    self.layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False,repeat=True,frame_time=6)
+                    self.delay(name='instructions', event_type=None, delay=1, handler=self.instructions)
 
                     #play sounds
                     self.game.sound.play('poa_lane_lit')
@@ -436,16 +457,18 @@ class Mini_Playfield(game.Mode):
         def sw_miniBottomLeft_active(self, sw):
             self.lanes(6)
             self.game.enable_flippers(enable=True)
-            self.game_status = 'countdown'
+            #self.game_status = 'countdown'
+            self.clear()
 
         def sw_miniBottomRight_active(self, sw):
             self.lanes(7)
             self.game.enable_flippers(enable=True)
-            self.game_status = 'countdown'
+            #self.game_status = 'countdown'
+            self.clear()
 
 
         def sw_topPost_active(self,sw):
-            if self.game.get_player_stats('multiball_started')==False and self.game.get_player_stats('quick_multiball_running')==False:
+            if not self.game.get_player_stats('multiball_started') and not self.game.get_player_stats('quick_multiball_running'):
                 self.game.enable_flippers(enable=False)
                 #update game status
                 self.game_status = 'mode'

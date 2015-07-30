@@ -54,7 +54,16 @@ class POA(game.Mode):
                 self.game.sound.register_sound('poa_lit_jingle', sound_path+'poa_lit_jingle.aiff')
                 self.game.sound.register_sound('adventure_start', sound_path+'poa_start.aiff')
 
-              
+                #setup the switches which pause an active poa 
+                self.poa_pausing_switchnames = []
+                for switch in self.game.switches.items_tagged('poa_pause'):
+                    self.poa_pausing_switchnames.append(switch.name)
+                    self.log.info("POA Pausing Switch is:"+switch.name)
+                    
+                for switch in self.poa_pausing_switchnames:
+			self.add_switch_handler(name=switch, event_type='active', \
+				delay=None, handler=self.adventure_paused)  
+                                
                 #reset variables
                 self.reset()
 
@@ -82,10 +91,12 @@ class POA(game.Mode):
 
 	
 	def mode_started(self):
-                print("POA Mode Started")
+                self.log.info("POA Mode Started")
 
                 #setup mode general stuff
                 self.adventure_continue_timer = self.game.user_settings['Gameplay (Feature)']['Adventure Continue Timer']
+                self.pause_length = self.game.user_settings['Gameplay (Feature)']['Mode Timers Pause Length']
+                self.pit_active_level = int(self.game.user_settings['Gameplay (Feature)']['Path of Adventure Pit Lit Level'])
                 self.score_layer = ModeScoreLayer(48, 1, self.game.fonts['num_09Bx7'], self)
 
                 #load player specific data
@@ -119,7 +130,7 @@ class POA(game.Mode):
                 #end adventure
                 self.adventure_expired()
 
-
+        
         def load_aux_flags(self):
                 self.adventureA_lit = self.flag[0]
                 self.adventureD_lit = self.flag[1]
@@ -304,7 +315,7 @@ class POA(game.Mode):
             self.game.coils.flasherPOA.disable()
             self.adventure_started  = True
             anim = dmd.Animation().load(game_path+"dmd/poa_instructions.dmd")
-            self.layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False,repeat=True,frame_time=2)
+            self.layer = dmd.AnimatedLayer(frames=anim.frames,opaque=True,repeat=True,frame_time=6)
 
             self.game.sound.play_music('poa_play', loops=-1)
             self.cancel_delayed('adventure_timeout')
@@ -313,8 +324,14 @@ class POA(game.Mode):
 
 
         def adventure_start2(self,timer=0):
+            #cancel any queued unpausing now we are ready to contiune
+            self.cancel_delayed('adventure_unpause')
+            
             self.game.sound.play("adventure_start")
-            self.delay(name='instructions', event_type=None, delay=timer, handler=self.instructions)
+            
+            self.delay(name='instructions', event_type=None, delay=timer, handler=self.game.mini_playfield.instructions)
+            self.delay(name='instructions', event_type=None, delay=timer+2, handler=self.release_ball)
+            
             self.adventure_continue()
 
 
@@ -335,9 +352,9 @@ class POA(game.Mode):
                 info_layer1.set_text("Continue Path".upper(), color=dmd.PURPLE)
                 info_layer2.set_text("Of Adventure".upper(),  color=dmd.PURPLE)
 
-                timer_layer = dmd.TimerLayer(115, 4, self.game.fonts['23x12'],self.adventure_continue_timer,"right")
+                self.timer_layer = dmd.TimerLayer(115, 4, self.game.fonts['23x12'],self.adventure_continue_timer,"right")
 
-                self.adventure_continue_layer = dmd.GroupedLayer(128, 32, [bgnd_layer,info_layer1,info_layer2,self.score_layer,timer_layer])
+                self.adventure_continue_layer = dmd.GroupedLayer(128, 32, [bgnd_layer,info_layer1,info_layer2,self.score_layer,self.timer_layer])
                 self.adventure_continue_display()
                 #reset timer for each attempt
                 self.cancel_delayed('adventure_continue_timer')
@@ -346,8 +363,23 @@ class POA(game.Mode):
             else:
                 self.delay(name='poa_exited_check', event_type=None, delay=1, handler=self.adventure_continue)
 
+
         def adventure_continue_display(self):
             self.layer =  self.adventure_continue_layer
+            
+            
+        def adventure_paused(self,sw):
+            if self.adventure_continuing:
+                self.timer_layer.pause(True)
+                self.cancel_delayed('adventure_continue_timer')
+                self.cancel_delayed('adventure_unpause')
+                self.delay(name='adventure_unpause', delay=self.pause_length,handler=self.adventure_unpaused)
+            
+            
+        def adventure_unpaused(self):
+            self.timer_layer.pause(False) 
+            self.delay(name='adventure_continue_timer', event_type=None, delay=self.timer_layer.get_time_remaining(), handler=self.adventure_expired)
+        
 
         def adventure_expired(self):
             # Manually cancel the delay in case this function was called externally.
@@ -614,25 +646,25 @@ class POA(game.Mode):
                     self.adventure_start()
                 elif self.adventure_continuing:
                     self.adventure_start2()
+                    self.status_display()
 
-                
 
-
-        def instructions(self):
+        def status_display(self):
             anim = dmd.Animation().load(game_path+"dmd/poa_info_bgnd.dmd")
             bgnd_layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False, frame_time=6)
 
             #set text layers
             text_layer1 = dmd.TextLayer(64, 18, self.game.fonts['tiny7'], "center", opaque=False)
             text_layer2 = dmd.TextLayer(64, 24, self.game.fonts['tiny7'], "center", opaque=False)
-            text_layer1.set_text("GET LIT LANES", color=dmd.CYAN)
-            text_layer2.set_text("WATCH FOR EXTRA BALL",blink_frames=4, color=dmd.RED)
+            text_layer1.set_text(("Adventure "+str(self.game.mini_playfield.get_level())+". Pit lit at "+str(self.pit_active_level)).upper(), color=dmd.CYAN)
+            text_layer2.set_text(("Pit Value:"+locale.format("%d", self.game.get_player_stats('pit_value'), True)).upper(),blink_frames=4, color=dmd.PURPLE)
 
             #set display layer
             self.layer = dmd.GroupedLayer(128, 32, [bgnd_layer,text_layer1,text_layer2])
-            self.delay(name='release_ball', event_type=None, delay=2, handler=self.release_ball)
+
 
         def release_ball(self):
             self.game.coils.topLockupMain.pulse()
             self.game.coils.topLockupHold.pulse(200)
-            
+            self.clear()
+        

@@ -23,9 +23,13 @@ class Hand_Of_Fate(game.Mode):
             self.log = logging.getLogger('ij.HandOfFate')
             
             self.text_layer1 = dmd.TextLayer(128/2, 8, self.game.fonts['tiny7'], "center", opaque=False)
+            self.text_layer1.composite_op='blacksrc'
             self.text_layer2 = dmd.TextLayer(128/2, 14, self.game.fonts['tiny7'], "center", opaque=False)
+            self.text_layer2.composite_op='blacksrc'
             self.text_layer3 = dmd.TextLayer(128/2, 20, self.game.fonts['tiny7'], "center", opaque=False)
+            self.text_layer3.composite_op='blacksrc'
             self.text_layer4 = dmd.TextLayer(128/2, 26, self.game.fonts['tiny7'], "center", opaque=False)
+            self.text_layer4.composite_op='blacksrc'
 
             self.game.sound.register_sound('hof_lit', sound_path+"hand_of_fate_1.aiff")
             self.game.sound.register_sound('hof_selected', sound_path+"hand_of_fate_2.aiff")
@@ -35,6 +39,9 @@ class Hand_Of_Fate(game.Mode):
 
             self.mode_select = mode_select
             self.reset()
+            
+            #mode links
+            self.advance_bonusx = None
 
 
         def reset(self):
@@ -79,7 +86,8 @@ class Hand_Of_Fate(game.Mode):
 
         def feature(self):
             if self.status=='lit':
-                self.animation()
+                self.choices()
+                
 
             #mode select takes care of eject and other saucer functions
 
@@ -87,25 +95,19 @@ class Hand_Of_Fate(game.Mode):
              #   self.eject()
 
 
-        def animation(self):
-            #time = 2
-            anim = dmd.Animation().load(game_path+"dmd/hand_of_fate.dmd")
-            hof_animation_1 = dmd.AnimatedLayer(frames=anim.frames,hold=False)
-            hof_animation_1.add_frame_listener(-1, self.choices)
-            self.layer = hof_animation_1
-
-            self.game.sound.play('hof_lit')
+#        def animation(self):
+#            #time = 2
+#            anim = dmd.Animation().load(game_path+"dmd/hof_title_trans.dmd")
+#            hof_animation_1 = dmd.AnimatedLayer(frames=anim.frames,hold=False)
+#            hof_animation_1.add_frame_listener(-1, self.choices)
+#            self.layer = hof_animation_1
+#
+#            self.game.sound.play('hof_lit')
             #self.delay(name='callback', event_type=None, delay=time, handler=self.choices)
-
-#        def animation2(self):
-#            anim = dmd.Animation().load(game_path+"dmd/hand_of_fate.dmd")
-#            self.layer = dmd.AnimatedLayer(frames=anim.frames,hold=False)
 
 
         def choices(self):
-
-            #set time to show choices
-            time=3
+            
             #shuffle the possible selections
             shuffle(self.list)
 
@@ -114,94 +116,222 @@ class Hand_Of_Fate(game.Mode):
             self.log.info(self.list[0]+", "+self.list[1]+", "+self.list[2]+", "+self.list[3])
             
             #display the choice
-            bgnd_anim = dmd.Animation().load(game_path+"dmd/hof_choose.dmd")
-            bgnd_layer = dmd.FrameLayer(frame=bgnd_anim.frames[0])
+            choice_anim = dmd.Animation().load(game_path+"dmd/hof_choose.dmd" ) 
+            choice_bgnd_layer = dmd.FrameLayer(frame=choice_anim.frames[0])
+            
             
             self.text_layer1.set_text(self.list[0].upper())
             self.text_layer2.set_text(self.list[1].upper())
             self.text_layer3.set_text(self.list[2].upper())
             self.text_layer4.set_text(self.list[3].upper())
             
-            choices_layer = dmd.GroupedLayer(128, 32, [bgnd_layer,self.text_layer1,self.text_layer2,self.text_layer3,self.text_layer4])
+            self.choices_layer = dmd.GroupedLayer(128, 32, [choice_bgnd_layer,self.text_layer1,self.text_layer2,self.text_layer3,self.text_layer4])
             #choices_layer.transition = dmd.ExpandTransition(direction='vertical')
-            self.layer = choices_layer
+            
+            title_frame = dmd.Animation().load(game_path+"dmd/hof_banner.dmd")
+            title_layer = dmd.FrameLayer(frame=title_frame.frames[0])
+            title_layer.composite_op="invertedmask"
+            mask_anim = dmd.Animation().load(game_path+"dmd/hof_mask.dmd")
+            mask_layer = dmd.AnimatedLayer(frames=mask_anim.frames,hold=True,frame_time=4)
+            mask_layer.add_frame_listener(-2, self.queue_chosen)
+            
+            curtain_layer = dmd.GroupedLayer(128,32,[mask_layer,title_layer])
+            curtain_layer.composite_op = "blacksrc"
+            
+            hand_anim = dmd.Animation().load(game_path+"dmd/hof_hand.dmd")
+            hand_layer = dmd.AnimatedLayer(frames=hand_anim.frames,hold=True,frame_time=4)
+            hand_layer.composite_op = "blacksrc"
+            
+            display_layer = dmd.GroupedLayer(128,32,[self.choices_layer,curtain_layer,hand_layer])
+            #display_layer.composite_op = "blacksrc"
+            
+            self.layer = display_layer
+            
+            self.game.sound.play('hof_lit')
 
+
+#        def choices(self):
+#            #shuffle the possible selections
+#            shuffle(self.list)
+#
+#            #set the choice
+#            self.chosen_list = [self.list[0],self.list[1],self.list[2],self.list[3]]
+#            self.log.info(self.list[0]+", "+self.list[1]+", "+self.list[2]+", "+self.list[3])
+#            
+#            #main_anim
+#            anim = dmd.Animation().load(game_path+"dmd/hof_title_trans.dmd")
+#            hof_animation = dmd.AnimatedLayer(frames=anim.frames,hold=False, frame_time=4)
+#            hof_animation.composite_op ="blacksrc"
+#            hof_animation.add_frame_listener(-1, self.queue_chosen)
+#            
+#            #display the choice
+#            bgnd_anim = dmd.Animation().load(game_path+"dmd/hof_choose.dmd")
+#            bgnd_layer = dmd.FrameLayer(frame=bgnd_anim.frames[0])
+#            
+#            self.text_layer1.set_text(self.list[0].upper())
+#            self.text_layer2.set_text(self.list[1].upper())
+#            self.text_layer3.set_text(self.list[2].upper())
+#            self.text_layer4.set_text(self.list[3].upper())
+#            
+#            self.choices_layer = dmd.GroupedLayer(128, 32, [bgnd_layer,self.text_layer1,self.text_layer2,self.text_layer3,self.text_layer4,hof_animation])
+#            #choices_layer.transition = dmd.ExpandTransition(direction='vertical')
+#            self.layer = self.choices_layer
+#            
+#            #play sound
+#            self.game.sound.play('hof_lit')
+
+
+        def queue_chosen(self):
+            #set time to show choices
+            time=3
             #set the callback to next section
+            #self.delay(name='chosen_delay', event_type=None, delay=time, handler=self.chosen)
+            
             self.delay(name='chosen_delay', event_type=None, delay=time, handler=self.chosen)
 
 
         def chosen(self):
-
-            #time to show chosen award
-            time=3
             #shuffle possible choices
             shuffle(self.chosen_list)
+            
+            self.award(type='banner') #generate awards and the award layer with correct banners
+            
+            self.choices_layer.composite_op="invertedmask"
+            mask_anim = dmd.Animation().load(game_path+"dmd/hof_mask.dmd")
+            mask_layer = dmd.AnimatedLayer(frames=mask_anim.frames,hold=True,frame_time=4)
+            mask_layer.add_frame_listener(-2, self.queue_award)
+            
+            curtain_layer = dmd.GroupedLayer(128,32,[mask_layer,self.choices_layer])
+            curtain_layer.composite_op = "blacksrc"
+            
+            hand_anim = dmd.Animation().load(game_path+"dmd/hof_hand.dmd")
+            hand_layer = dmd.AnimatedLayer(frames=hand_anim.frames,hold=True,frame_time=4)
+            hand_layer.composite_op = "blacksrc"
+            
+            display_layer = dmd.GroupedLayer(128,32,[self.award_layer,curtain_layer,hand_layer])
+            #display_layer.composite_op = "blacksrc"
+            
+            self.layer = display_layer
+            
+             #play sound
+            self.game.sound.play('hof_selected') 
+            
+
+#        def chosen(self):
+#            #main_anim
+#            anim = dmd.Animation().load(game_path+"dmd/hof_second_trans.dmd")
+#            anim_layer = dmd.AnimatedLayer(frames=anim.frames,hold=False, frame_time=4)
+#            anim_layer.composite_op ="blacksrc"
+#            anim_layer.add_frame_listener(-1,self.award)
+#            
+#            self.layer = dmd.GroupedLayer(128, 32, [self.choices_layer,anim_layer])
+#
+#            #play sound
+#            self.game.sound.play('hof_selected') 
+           
+        def queue_award(self):
+            time=1
+            self.delay(name='award_delay', event_type=None, delay=time, handler=self.award)
 
             
-            #award logic
-            self.award(self.chosen_list[0])
-
-            #play sound
-            self.game.sound.play('hof_selected')
-
-
-            #set the cleanup timer
-            self.delay(name='end_delay', event_type=None, delay=time, handler=self.clear)
-
-        def award(self,option):
-            #this is where we will add the awards logic
+        def award(self,type='anim'):
+           
+            option = self.chosen_list[0]
+    
             #debug
-            #option=self.list[3]
+            #option=self.list[0]
+            clear_time=3
             
             if option==self.list[0]:
-                self.game.extra_ball.lit()
+                clear_time=1.5
+                self.extra_ball_lit(type)
+            elif option==self.list[1]:
+                self.dog_fight_award(type)
             elif option==self.list[2]:
-                self.eternal_life_award(15)
+                self.eternal_life_award(timer=15,type=type)
             elif option==self.list[3]:
-                self.bonusx_award()
+                clear_time=1.5
+                self.bonusx_award(type)
             elif option==self.list[4]: #10 mil
                 self.score_award(10000000)
             elif option==self.list[5]: #20 mil
                 self.score_award(20000000)
             else:
                 self.name_award()
-
-        def eternal_life_award(self,timer):
-            #display the animation
-            anim = dmd.Animation().load(game_path+"dmd/eternal_life.dmd")
-            self.layer = dmd.AnimatedLayer(frames=anim.frames,hold=False)
-            self.game.sound.play('electricity')
+                
+            if type=='anim':            
+                self.delay(name='end_delay', event_type=None, delay=clear_time, handler=self.clear)
             
-            #start the ball saver
-            self.game.ball_save.start(num_balls_to_save=1, time=timer, now=True, allow_multiple_saves=False)
+                
+            
+#        def end(self):
+#            #time to show chosen award
+#            time=3  
+#            #set the cleanup timer
+#            self.delay(name='end_delay', event_type=None, delay=time, handler=self.clear)
+            
 
-        def name_award(self):
+        def extra_ball_lit(self,type):
+            self.award_layer = self.game.extra_ball.lit(type)
+                
+        def dog_fight_award(self,type):
+            self.name_award(type)
+            
+        def eternal_life_award(self,timer,type):
+            anim = dmd.Animation().load(game_path+"dmd/eternal_life.dmd")
+            #display the animation
+            if type=='banner':
+                self.award_layer = dmd.FrameLayer(frame=anim.frames[0])
+            elif type=='anim':
+                self.layer = dmd.AnimatedLayer(frames=anim.frames,hold=False,frame_time=3)
+                self.game.sound.play('electricity')
+                #start the ball saver
+                self.game.ball_save.start(num_balls_to_save=1, time=timer, now=True, allow_multiple_saves=False)
+
+
+        def name_award(self,type):
+            chosen_layer = dmd.TextLayer(128/2, 7, self.game.fonts['9x7_bold'], "center", opaque=True)
+            if type=='banner':
+                chosen_layer.set_text(self.chosen_list[0].upper(),color=dmd.CYAN)
+                self.award_layer=chosen_layer
+            elif type=='anim':    
+                #display the award chosen
+                chosen_layer.set_text(self.chosen_list[0].upper(),blink_frames=2,color=dmd.CYAN)
+                #chosen_layer.transition = dmd.ExpandTransition(direction='vertical')
+                self.layer = chosen_layer
+                self.game.score(2000000)
+
+
+        def bonusx_award(self,type):
+            if type=='banner':
+                chosen_layer = dmd.TextLayer(128/2, 7, self.game.fonts['9x7_bold'], "center", opaque=True)
+                chosen_layer.set_text('Advance Bonus X'.upper(),color=dmd.PURPLE)
+                #chosen_layer.transition = dmd.ExpandTransition(direction='vertical')
+                self.award_layer=chosen_layer
+            elif type=='anim':
+                self.advance_bonusx()
+            
+            #bonusx = self.game.get_player_stats('bonus_x')+1
             #display the award chosen
-            chosen_layer = dmd.TextLayer(128/2, 7, self.game.fonts['8x6'], "center", opaque=True)
-            chosen_layer.set_text(self.chosen_list[0].upper(),blink_frames=2)
+            #chosen_layer = dmd.TextLayer(128/2, 7, self.game.fonts['9x7_bold'], "center", opaque=True)
+            #chosen_layer.set_text('BONUS X'+str(bonusx),blink_frames=2,color=dmd.PURPLE)
             #chosen_layer.transition = dmd.ExpandTransition(direction='vertical')
-            self.layer = chosen_layer
+            #self.layer = chosen_layer
 
-            self.game.score(2000000)
+            #self.game.score(2000000)
+            #self.game.set_player_stats('bonus_x',bonusx)
 
-        def bonusx_award(self):
-            bonusx = self.game.get_player_stats('bonus_x')+1
-            #display the award chosen
-            chosen_layer = dmd.TextLayer(128/2, 7, self.game.fonts['8x6'], "center", opaque=True)
-            chosen_layer.set_text('BONUS X'+str(bonusx),blink_frames=2)
-            #chosen_layer.transition = dmd.ExpandTransition(direction='vertical')
-            self.layer = chosen_layer
-
-            self.game.score(2000000)
-            self.game.set_player_stats('bonus_x',bonusx)
 
         def score_award(self,score):
             time=3
             value_layer = dmd.TextLayer(128/2, 4, self.game.fonts['23x12'], "center", opaque=True)
-            value_layer.set_text(locale.format("%d",score,True),blink_frames=2)
-            self.layer = value_layer
-
-            self.game.score(score)
+            if type=='banner':
+                value_layer.set_text(locale.format("%d",score,True),color=dmd.GREEN)
+                self.award_layer=chosen_layer
+            elif type=='anim':   
+                value_layer.set_text(locale.format("%d",score,True),blink_frames=2,color=dmd.GREEN)
+                self.layer = value_layer
+                self.game.score(score)
 
 
         def clear(self):
@@ -223,7 +353,8 @@ class Hand_Of_Fate(game.Mode):
             
         def sw_leftEject_active_for_500ms(self,sw):
             if self.status=='lit':
-                self.animation()
+                #self.animation()
+                self.choices()
                 #return procgame.game.SwitchStop
 
         def sw_leftInlane_active(self,sw):

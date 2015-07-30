@@ -84,6 +84,7 @@ class Minecart(game.Mode):
             self.award_layer = dmd.TextLayer(0, 0, self.game.fonts['7x4'], "center", opaque=False)
             self.award_layer.composite_op ="blacksrc"
             self.tunnel_info_layer = dmd.TextLayer(128, -1, self.game.fonts['7x4'], "right", opaque=False)
+            self.tunnel_info_layer.composite_op ="blacksrc"
             self.sprite_layer1 = dmd.AnimatedLayer(frames=None,hold=True,opaque=False,repeat=False)
             self.sprite_layer2 = dmd.AnimatedLayer(frames=None,hold=True,opaque=False,repeat=False)
             self.sprite_layer3 = dmd.AnimatedLayer(frames=None,hold=True,opaque=False,repeat=False)
@@ -92,7 +93,12 @@ class Minecart(game.Mode):
             self.game.sound.register_music('minecart_mode_music', music_path+"mine_cart.aiff")
             self.game.sound.register_sound('minecart_jingle', sound_path+"mine_cart_jingle.aiff")
             self.game.sound.register_sound('minecart_roll', sound_path+"mine_cart_roll.aiff")
-            self.game.sound.register_sound('minecart_crash', sound_path+"mine_cart_crash.aiff")
+            self.game.sound.register_sound('minecart_turn', sound_path+"mine_cart_turn.aiff")
+            self.game.sound.register_sound('minecart_barrier_break', sound_path+"mine_cart_barrier_break.aiff")
+            self.game.sound.register_sound('minecart_fall', sound_path+"mine_cart_fall.aiff")
+            self.game.sound.register_sound('minecart_fall_speech', sound_path+"falling_scream_shorter.aiff")
+            self.game.sound.register_sound('minecart_explosion', sound_path+"mine_cart_explosion.aiff")
+            self.game.sound.register_sound('minecart_completed', sound_path+"mine_cart_jingle_completed.aiff")
             
             #lamps setup
             self.lamps = []
@@ -150,7 +156,7 @@ class Minecart(game.Mode):
         def create_barrier_turn(self,layer=0,barrier_posn=0,current_posn=0):
             if barrier_posn==0:
                 dmd_path = ["","dmd/mine_cart-left_barrier_straight_on.dmd","dmd/mine_cart-left_barrier_right_turn.dmd"]
-                x_offset = [0,-16,-34]
+                x_offset = [0,-40,-34]
                 y_offset = [0,6,0]
             elif barrier_posn==1:
                 dmd_path = ["dmd/mine_cart-mid_barrier_left_turn.dmd","","dmd/mine_cart-mid_barrier_right_turn.dmd"]
@@ -158,7 +164,7 @@ class Minecart(game.Mode):
                 y_offset = [-2,0,-2]
             elif barrier_posn==2:
                 dmd_path = ["dmd/mine_cart-right_barrier_left_turn.dmd","dmd/mine_cart-right_barrier_straight_on.dmd",""]
-                x_offset = [34,36,0]
+                x_offset = [34,49,0]
                 y_offset = [0,6,0]
             
             barrier_frames = dmd.Animation().load(dmd_path[current_posn]).frames
@@ -200,6 +206,9 @@ class Minecart(game.Mode):
             self.scene_layer.add_frame_listener(-1,self.load_main_anim)
             self.layer = self.scene_layer
             
+            if self.frame_time>2: #increase anim speed if not at max
+                self.frame_time-=1
+            
             self.game.sound.play_voice('minecart_roll')
             
             
@@ -210,18 +219,22 @@ class Minecart(game.Mode):
             self.scene_layer.add_frame_listener(-1,self.scene_totals)
             self.layer = self.scene_layer
             
-            self.game.sound.play_voice('minecart_roll')
+            self.game.sound.play('minecart_completed')
             
             
         def crash(self):
             #create the crash animation
-            self.bgnd_anim = "dmd/mine_cart_crash.dmd"
+            self.bgnd_anim = "dmd/mine_cart_crash_lava.dmd"
             anim = dmd.Animation().load(game_path+self.bgnd_anim)
             self.scene_layer = dmd.AnimatedLayer(frames=anim.frames,hold=False,opaque=False,repeat=False,frame_time=self.frame_time)
             self.scene_layer.add_frame_listener(-1,self.explosion)
             self.layer = self.scene_layer #dmd.GroupedLayer(128, 32, [self.scene_layer,self.award_layer])
             
-            self.game.sound.play('minecart_crash')
+            #sound_length = self.game.sound.play('minecart_barrier_break')
+            #self.delay(name='play_fall_delay',delay=sound_length,handler=lambda:self.game.sound.play('minecart_fall'))
+            self.game.sound.play('minecart_barrier_break')
+            self.game.sound.play('minecart_fall')
+            self.game.sound.play_voice('minecart_fall_speech')
             
             
         def explosion(self):
@@ -233,6 +246,8 @@ class Minecart(game.Mode):
 
             self.layer = dmd.GroupedLayer(128, 32, [self.scene_layer])
         
+            self.game.sound.play('minecart_explosion')
+            
             
         def scene_totals(self):
             title_layer = dmd.TextLayer(64, 2, self.game.fonts['8x6'], "center", opaque=False)
@@ -284,7 +299,8 @@ class Minecart(game.Mode):
             self.instructions_completed = True
 
             #create bgnd
-            self.bgnd_anim = "dmd/mine_cart_main.dmd"
+            num = random.randint(1,2)
+            self.bgnd_anim = "dmd/mine_cart_main_lanterns"+str(num)+".dmd"
             anim = dmd.Animation().load(game_path+self.bgnd_anim)
             self.bgnd_layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False,repeat=False,frame_time=self.frame_time)
             self.bgnd_layer.add_frame_listener(-1,self.choose_route)
@@ -357,7 +373,10 @@ class Minecart(game.Mode):
                 self.score_total+=self.tunnel_value_start
                 
                 #play sound
-                self.game.sound.play("minecart_roll")
+                if dirn!=0:
+                    self.game.sound.play("minecart_turn")
+                else:
+                    self.game.sound.play("minecart_roll")
                 
                 #update layer
                 self.layer = dmd.GroupedLayer(128, 32, [self.bgnd_layer,self.cart_layer,self.sprite_layer1,self.sprite_layer2,self.tunnel_info_layer,self.award_layer])
@@ -367,7 +386,7 @@ class Minecart(game.Mode):
             
 
         def instructions(self):
-            anim = dmd.Animation().load(game_path+"dmd/mine_cart_main.dmd")
+            anim = dmd.Animation().load(game_path+"dmd/mine_cart_main_lanterns.dmd")
             bgnd_layer = dmd.AnimatedLayer(frames=anim.frames,opaque=False,frame_time=self.frame_time)
 
             #set text layers
@@ -384,7 +403,7 @@ class Minecart(game.Mode):
             text_layer4.composite_op ="blacksrc"
 
 
-            title_layer.set_text("Avoid     Barriers",color=dmd.CYAN)
+            title_layer.set_text("  Avoid       Barriers",color=dmd.CYAN)
             text_layer1.set_text("Hold".upper(),color=dmd.GREEN)
             text_layer2.set_text("Hold".upper(),color=dmd.GREEN)
             text_layer3.set_text("Left".upper(),color=dmd.GREEN)
@@ -406,13 +425,18 @@ class Minecart(game.Mode):
 
         def extra_instructions(self):
 
-            info_layer = dmd.TextLayer(128/2, 7, self.game.fonts['8x6'], "center", opaque=False)
-            info_layer.composite_op ="blacksrc"
-            info_layer.set_text("Clear ".upper()+str(self.tunnels_remaining)+" To Escape".upper(),color=dmd.GREEN,seconds=1)
+            info_layer1 = dmd.TextLayer(128/2, 2, self.game.fonts['8x6'], "center", opaque=False)
+            info_layer1.composite_op ="blacksrc"
+            info_layer1.set_text("Pass ".upper()+str(self.tunnels_remaining)+" Tunnels".upper(),color=dmd.GREEN,seconds=1)
+            
+            info_layer2 = dmd.TextLayer(128/2, 11, self.game.fonts['8x6'], "center", opaque=False)
+            info_layer2.composite_op ="blacksrc"
+            info_layer2.set_text("To Escape".upper(),color=dmd.GREEN,seconds=1)
+            
             bgnd_frame = dmd.Animation().load(game_path+"dmd/mine_cart_main.dmd")
             bgnd_layer= dmd.FrameLayer(frame=bgnd_frame.frames[0])
             
-            self.layer = dmd.GroupedLayer(128, 32, [bgnd_layer,info_layer])
+            self.layer = dmd.GroupedLayer(128, 32, [bgnd_layer,info_layer1,info_layer2])
             self.delay(name='load_main_scene',delay=2,handler=self.load_main_anim)
             
 

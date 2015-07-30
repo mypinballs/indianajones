@@ -56,22 +56,25 @@ class Mode_Select(game.Mode):
             self.choice_id =0
 
             #default mode bonus value
-            self.mode_bonus_value = 2000000
+            self.mode_bonus_value = int(self.game.user_settings['Gameplay (Feature)']['Mode Bonus Value (Mil)'])*1000000 #2000000
+            
 
             #default timer value
             self.timer=30
-
+            self.pause_length = self.game.user_settings['Gameplay (Feature)']['Mode Timers Pause Length']
+            
+            self.timer_layer = None
+            
             #setup mode enabled flag from game settings
             if self.game.user_settings['Gameplay (Feature)']['Mode Start Lit']!='Off':
                 self.mode_enabled = True
             else:
                 self.mode_enabled = False
-
             self.game.set_player_stats('mode_enabled',self.mode_enabled)
 
             #setup mode running flag
             self.mode_running = False
-
+            
             #setup game modes
             self.get_the_idol = Get_The_Idol(self.game, 80,self)
             self.streets_of_cairo = Streets_Of_Cairo(self.game, 81,self)
@@ -86,6 +89,12 @@ class Mode_Select(game.Mode):
             self.tank_chase = Tank_Chase(self.game, 89,self)
             self.the_three_challenges = The_Three_Challenges(self.game, 90,self)
             self.choose_wisely = Choose_Wisely(self.game, 91,self)
+            
+             #setup the switches which pause an active mode
+            self.mode_pausing_switchnames = []
+            for switch in self.game.switches.items_tagged('mode_pause'):
+                    self.mode_pausing_switchnames.append(switch.name)
+                    self.log.info("Mode Pausing Switch is:"+switch.name)
 
             self.reset()
 
@@ -110,13 +119,18 @@ class Mode_Select(game.Mode):
 
         def mode_started(self):
             self.log.info("Main Mode Select Started")
+            
+            #setup pause switch handlers
+            for switch in self.mode_pausing_switchnames:
+		self.add_switch_handler(name=switch, event_type='active', delay=None, handler=self.mode_paused)  
+                                
             #load player stats
             self.current_mode_num = self.game.get_player_stats('current_mode_num')
             self.select_list = self.game.get_player_stats('mode_status_tracking')
 
             #reset bonus mode tracking at ball start - no carry over
             self.game.set_player_stats('bonus_mode_tracking',[])
-
+            
             #setup scene list
             self.unplayed_scenes()
 
@@ -136,6 +150,23 @@ class Mode_Select(game.Mode):
                 self.end_scene_common(0.1)
 
 
+        def mode_paused(self,sw):
+            if self.mode_running:
+                if self.current_mode_num==0:
+                    self.timer_layer = self.get_the_idol.timer_layer
+                
+                if self.timer_layer:
+                    self.timer_layer.pause(True)
+                    self.cancel_delayed('scene_timeout')
+                    self.cancel_delayed('scene_unpause')
+                    self.delay(name='scene_unpause', delay=self.pause_length,handler=self.mode_unpaused)
+            
+            
+        def mode_unpaused(self):
+            self.timer_layer.pause(False) 
+            self.delay(name='scene_timeout', event_type=None, delay=self.timer_layer.get_time_remaining(), handler=self.end_scene)
+        
+        
         def update_lamps(self):
             self.log.debug("Updating Mode Lamps")
 
@@ -432,12 +463,14 @@ class Mode_Select(game.Mode):
             self.game.set_player_stats('mode_running',self.mode_running)
             self.game.set_player_stats('mode_running_id',99)
             
+            
         def mode_bonus(self):
             timer=2
             self.game.screens.mode_bonus(timer,self.mode_bonus_value)
             self.delay(name='eject_delay', event_type=None, delay=timer, handler=self.eject_ball)
 
             audits.record_value(self,'modeBonus')
+
 
         def pre_clear(self):
             self.name_layer.set_text("")

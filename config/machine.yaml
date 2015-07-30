@@ -123,22 +123,23 @@ PRSwitches:
         label: 'Always Closed'
     indyI:
         number: S25
-        tags: moonlight
+        tags: moonlight,poa_pause,mode_pause
         label: 'Indy (I)'
     indyN:
         number: S26
-        tags: moonlight
+        tags: moonlight,poa_pause,mode_pause
         label: 'Indy (N)'
     indyD:
         number: S27
-        tags: moonlight
+        tags: moonlight,poa_pause,mode_pause
         label: 'Indy (D)'
     indyY:
         number: S28
-        tags: moonlight
+        tags: moonlight,poa_pause,mode_pause
         label: 'Indy (Y)'
     leftEject:
         number: S31
+        tags: poa_pause,mode_pause
         label: 'Left Eject'
     exitIdol:
         number: S32
@@ -152,15 +153,15 @@ PRSwitches:
         label: 'Gun Trigger'
     leftJet:
         number: S35
-        tags: moonlight
+        tags: moonlight,poa_pause,mode_pause
         label: 'Left Jet'
     rightJet:
         number: S36
-        tags: moonlight
+        tags: moonlight,poa_pause,mode_pause
         label: 'Right Jet'
     bottomJet:
         number: S37
-        tags: moonlight
+        tags: moonlight,poa_pause,mode_pause
         label: 'Bottom Jet'
     centerStandup:
         number: S38
@@ -174,27 +175,31 @@ PRSwitches:
     rightRampEnter:
         number: S42
         type: 'NC'
-        tags: moonlight
+        tags: poa_pause,moonlight
         label: 'Right Ramp Enter'
     topIdolEnter:
         number: S43
         type: 'NC'
+        tags: poa_pause,mode_pause
         label: 'Top Idol Enter'
     rightPopper:
         number: S44
         type: 'NC'
+        tags: poa_pause,mode_pause
         label: 'Right Popper'
     centerEnter:
         number: S45
         type: 'NC'
-        tags: moonlight
+        tags: moonlight,poa_pause,mode_pause
         label: 'Center Enter'
     topPost:
         number: S46
+        tags: poa_pause
         label: 'Top Post'
     subwayLockup:
         number: S47
         type: 'NC'
+        tags: poa_pause,mode_pause
         label: 'Subway Lockup'
     rightSlingshot:
         number: S48
@@ -214,17 +219,19 @@ PRSwitches:
         label: 'Adventure (E2)'
     leftLoopTop:
         number: S54
-        tags: moonlight
+        tags: moonlight,poa_pause,mode_pause
         label: 'Left Loop Top'
     leftLoopBottom:
         number: S55
+        tags: poa_pause,mode_pause
         label: 'Left Loop Bottom'
     rightLoopTop:
         number: S56
-        tags: moonlight
+        tags: moonlight,poa_pause
         label: 'Right Loop Top'
     rightLoopBottom:
         number: S57
+        tags: poa_pause,mode_pause
         label: 'Right Loop Bottom'
     rightOutlaneBottom:
         number: S58
@@ -323,7 +330,7 @@ PRSwitches:
     shooterLane:
         number: S88
         label: 'Shooter Lane'
-        tags: shooter_lane
+        tags: shooter_lane,poa_pause,mode_pause
     wheelPosition1:
         number: S91
         type: 'NC'

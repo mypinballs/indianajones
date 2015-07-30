@@ -25,6 +25,7 @@ class Plane_Chase(game.Mode):
             self.game.sound.register_sound('stall', sound_path+"plane_stall.aiff")
             self.game.sound.register_sound('flight', sound_path+"plane_1.aiff")
             self.game.sound.register_sound('flight', sound_path+"plane_2.aiff")
+            self.game.sound.register_sound('plane_crash', sound_path+"plane_crash.aiff")
 
 
 
@@ -52,6 +53,7 @@ class Plane_Chase(game.Mode):
         def reset(self):
             #self.reset_lamps()
             self.game.coils.flasherDogFight.disable()
+            self.dog_fight_running = False
 
             self.left_ramp_enabled = True
             #self.game.effects.drive_lamp('leftRampArrow','superfast')
@@ -117,7 +119,7 @@ class Plane_Chase(game.Mode):
             else:
                 self.dog_fight()
                 self.game.coils.flasherDogFight.schedule(schedule=0x30003000 , cycle_seconds=0, now=True)
-                self.delay(name='expired', event_type=None, delay=self.game.user_settings['Gameplay (Feature)']['Dog Fight Timer'], handler=self.reset)
+                self.delay(name='dog_fight_expired', event_type=None, delay=self.game.user_settings['Gameplay (Feature)']['Dog Fight Timer'], handler=self.reset)
 
         def ramp_made_text(self):
             self.text_layer.set_text(locale.format("%d",self.ramp_made_score,True),blink_frames=4, color=dmd.CYAN)
@@ -126,12 +128,42 @@ class Plane_Chase(game.Mode):
         #    self.game.lampctrl.restore_state('game')
 
         def dog_fight(self):
-            self.text_layer.set_text(str(self.dog_fight_value))
+            self.dog_fight_running = True
+            
+            bgnd = dmd.Animation().load(game_path+"dmd/blank.dmd") #possibly change the bgnd here
+            self.bgnd_layer = dmd.FrameLayer(frame=bgnd.frames[0])
+                
+            self.text_layer.y = 3
+            self.text_layer.set_text(locale.format("%d",self.dog_fight_value,True), color=dmd.PURPLE)
 
             if self.dog_fight_value>self.dog_fight_min_value:
-                self.dog_fight_value -=15275
+                self.dog_fight_value -=152750
+                
+            self.layer = dmd.GroupedLayer(128, 32, [self.bgnd_layer,self.text_layer])
 
-            self.delay(name='update_time', event_type=None, delay=0.5, handler=self.dog_fight)
+            self.delay(name='update_time', event_type=None, delay=0.1, handler=self.dog_fight)
+            
+        def dog_fight_award(self):
+            #cancel timers
+            self.cancel_delayed('update_time')
+            self.cancel_delayed('dog_fight_expired')
+            self.game.coils.flasherDogFight.disable()
+            
+            #play animation
+            anim = dmd.Animation().load(game_path+"dmd/dog_fight.dmd")
+            self.animation_layer = dmd.AnimatedLayer(frames=anim.frames,hold=False,frame_time=6)
+            self.animation_layer.add_frame_listener(-1,self.dog_fight_final_score)
+            self.layer = self.animation_layer
+            
+            #play sound
+            self.game.sound.play('plane_crash')
+            
+        
+        def dog_fight_final_score(self):
+             self.text_layer.set_text(locale.format("%d",self.dog_fight_value,True),blink_frames=2,seconds=1.5,color=dmd.GREEN)
+             self.game.score(self.dog_fight_value)
+             self.queue_clear()
+             self.reset()
 
         def mode_started(self):
             self.reset()
@@ -178,3 +210,8 @@ class Plane_Chase(game.Mode):
                 self.game.score(self.ramp_made_score/2)
 
             self.game.set_player_stats('ramps_made',self.ramps_made)
+            
+            
+        def sw_centerEnter_active(self, sw):
+            if self.dog_fight_running:
+                self.dog_fight_award()

@@ -258,7 +258,7 @@ class Well_Of_Souls(game.Mode):
 
         def update_bip(self):
             balls_in_play = self.game.trough.num_balls_in_play
-            self.bip_layer.set_text(locale.format("%d", balls_in_play)+" BALLS IN PLAY", True, color=dmd.MAGENTA)
+            self.bip_layer.set_text(str(balls_in_play)+" BALLS IN PLAY", color=dmd.MAGENTA)
 
      
 

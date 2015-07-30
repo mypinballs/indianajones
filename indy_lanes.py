@@ -28,10 +28,11 @@ class Indy_Lanes(game.Mode):
             self.log = logging.getLogger('ij.indy_lanes')
 
             self.mode_select = mode_select
-            self.hof = Hand_Of_Fate(self.game,95,mode_select)#priority+1
+            self.hof = Hand_Of_Fate(self.game,priority-1,mode_select)#95 priority+1
            
 
-            self.bonus_layer = dmd.TextLayer(90, 0, self.game.fonts['num_09Bx7'], "center", opaque=False)
+            self.bonus_layer = dmd.TextLayer(90, -1, self.game.fonts['num_09Bx7'], "center", opaque=False)
+            self.bonus_layer.composite_op="blacksrc"
             self.loop_layer = dmd.TextLayer(90, 24, self.game.fonts['6x6_bold'], "center", opaque=False)
 
             self.game.sound.register_sound('lane_unlit', sound_path+"top_lane_unlit.aiff")
@@ -211,12 +212,21 @@ class Indy_Lanes(game.Mode):
                 #self.hof.ready()
                 if self.game.get_player_stats('hof_status') =='off':
                     self.game.modes.add(self.hof)
+                    #setup mode link
+                    self.hof.advance_bonusx = self.advance_bonusx
 
                 #flash all lamps when completed then reset after delay  
                 self.completed()
                 self.delay(name='reset_lanes', event_type=None, delay=1.5, handler=self.reset)
 
 
+        def advance_bonusx(self):
+            self.letters_spotted =4;
+            for i in range(self.letters_spotted):
+                self.lane_flag[i]=True;
+            self.spell_indy()
+            
+            
         def extra_ball_lit(self):
             self.game.extra_ball.lit()
 

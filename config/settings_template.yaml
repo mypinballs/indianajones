@@ -171,6 +171,18 @@ Gameplay (Feature):
   'Mode Start Lit':
     options: ['Always','Ball Start','Off']
     default: 'Ball Start'
+  'Mode Timers Pause Length':
+    options: [1,4]
+    increments: 0.5
+    default: 2 
+  'Mode Bonus Value (Mil)':
+    options: [1,5]
+    increments: 0.5
+    default: 2 
+  'Mode Start Value (Mil)':
+    options: [1,5]
+    increments: 0.5
+    default: 3 
   'Get The Idol Timer':
     options: [5,120]
     increments: 5
@@ -264,6 +276,10 @@ Gameplay (Feature):
   'Path of Adventure Extra Ball/Pit Lit Difficulty':
     options: ['Easy','Hard']
     default: 'Easy'
+  'Path of Adventure Pit Lit Level':
+    options: [2,6]
+    increments: 1
+    default: 3 
   'Lower Playfield Extra Ball Lit Hold':
     options: ['On','Off']
     default: 'On'

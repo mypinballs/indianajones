@@ -27,7 +27,8 @@ class Loops(game.Mode):
             #setup mode links
             self.indy_lanes = mode1
 
-            self.text_layer = dmd.TextLayer(128/2, 1, self.game.fonts['18x12'], "center", opaque=False)
+            self.text_layer = dmd.TextLayer(128/2, 1, self.game.fonts['23x12'], "center", opaque=False)
+            self.text_layer.composite_op ="blacksrc"
             #self.text_layer.transition = dmd.ExpandTransition(direction='vertical')
 
             self.game.sound.register_sound('unlit', sound_path+"loop_unlit.aiff")
@@ -128,7 +129,7 @@ class Loops(game.Mode):
         def score_display(self):
             #calc score
             score = (self.loop_value)*self.loop_multiplier
-            self.text_layer.set_text(locale.format("%d",score,True),blink_frames=20)
+            self.text_layer.set_text(locale.format("%d",score,True),color=dmd.GREEN,blink_frames=20)
 
             self.game.score(score)
 

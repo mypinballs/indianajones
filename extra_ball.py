@@ -38,9 +38,15 @@ class Extra_Ball(game.Mode):
             self.game.extra_ball_count()
 
 
-        def lit(self):
+        def lit(self,type='anim'):
+            text = "EXTRA BALL LIT"
             text_layer = dmd.TextLayer(128/2, 7, self.game.fonts['num_09Bx7'], "center", opaque=False)
-            text_layer.set_text("EXTRA BALL LIT",1.5,5)#on for 1.5 seconds 5 blinks
-            self.layer = text_layer
-            self.game.sound.play('extra_ball_lit')
-            self.game.effects.drive_lamp('extraBall','smarton')
+            
+            if type=='banner':
+                text_layer.set_text(text,color=dmd.ORANGE)
+                return text_layer
+            elif type=='anim':
+                text_layer.set_text(text,seconds=1.5,blink_frames=2,color=dmd.RED)
+                self.layer = text_layer
+                self.game.sound.play('extra_ball_lit')
+                self.game.effects.drive_lamp('extraBall','smarton')

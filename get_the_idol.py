@@ -42,8 +42,6 @@ class Get_The_Idol(game.Mode):
             self.timer = int(self.game.user_settings['Gameplay (Feature)']['Get The Idol Timer'])
 
             self.score_layer = ModeScoreLayer(0, -1, self.game.fonts['07x5'], self)
-            #self.timer_layer = dmd.TimerLayer(128, -1, self.game.fonts['07x5'],self.timer)
-            #self.award_layer = dmd.TextLayer(128/2, 12, self.game.fonts['6x6_bold'], "center", opaque=False)
             self.award_layer = dmd.TextLayer(128/2, 5, self.game.fonts['23x12'], "center", opaque=False)
             self.award_layer.composite_op ="blacksrc"
 
@@ -61,7 +59,7 @@ class Get_The_Idol(game.Mode):
             self.count = 0
             
             self.score_value_boost = 5000000
-            self.score_value_start = 5000000
+            self.score_value_start = int(self.game.user_settings['Gameplay (Feature)']['Mode Start Value (Mil)'])*1000000#5000000
             #self.load_anim(0)
             self.progression_anim_posn = 1
             
@@ -74,8 +72,8 @@ class Get_The_Idol(game.Mode):
             elif self.game.user_settings['Gameplay (Feature)']['Get The Idol Difficulty']=='Hard':
                 self.hits = 5
                 self.progression_amount = 2
-                
-                
+
+                 
             self.reset()
 
 
@@ -140,10 +138,11 @@ class Get_The_Idol(game.Mode):
                 #self.cancel_delayed('move_sprites')
                 self.reset_sprites()
                 
-        def mode_started(self):
+        def mode_started(self):  
             #setup additonal layers
             self.timer_layer = dmd.TimerLayer(128, -1, self.game.fonts['07x5'],self.timer)
-            
+            self.timer_layer.composite_op ="blacksrc"
+
             #create animation
             self.load_bgnd_anim()
             self.move_sprites()
@@ -154,21 +153,10 @@ class Get_The_Idol(game.Mode):
 
             self.delay(name='mode_speech_delay', event_type=None, delay=2, handler=self.voice_call, param=self.count)
 
-
-        def voice_call(self,count):
-            self.game.sound.play_voice("gti_speech"+str(count))
-
-            self.delay(name='mode_speech_delay', event_type=None, delay=2, handler=self.voice_call, param=11+count)
-
-
-
-        def update_score(self):
-            score = self.game.current_player().score
-            self.score_layer.set_text(locale.format("%d", score, True),color=dmd.YELLOW)
-
-
+        
         def mode_tick(self):
             pass
+
 
         def mode_stopped(self):
             #update mode select list - get the idol is mode 0 in list
@@ -185,6 +173,7 @@ class Get_The_Idol(game.Mode):
             #clear display
             self.clear()
 
+
         def mode_progression(self,type):
 
             if self.count<self.hits:
@@ -192,7 +181,7 @@ class Get_The_Idol(game.Mode):
 
                 self.load_progression_anim()
                 
-                score_value = self.score_value_boost*self.count +self.score_value_start
+                score_value = (self.score_value_boost*self.count) +self.score_value_start
                 self.game.set_player_stats('get_the_idol_score',score_value)
                 self.game.set_player_stats('last_mode_score',self.game.get_player_stats('get_the_idol_score' ))
                 #set text layers
@@ -210,6 +199,18 @@ class Get_The_Idol(game.Mode):
             elif self.count==self.hits and type==1:
                 self.completed()
 
+
+        def voice_call(self,count):
+            self.game.sound.play_voice("gti_speech"+str(count))
+
+            self.delay(name='mode_speech_delay', event_type=None, delay=2, handler=self.voice_call, param=11+count)
+
+
+        def update_score(self):
+            score = self.game.current_player().score
+            self.score_layer.set_text(locale.format("%d", score, True),color=dmd.YELLOW)
+
+
         def completed(self):
             self.bgnd_anim = "dmd/get_the_idol_completed.dmd"
             anim = dmd.Animation().load(game_path+self.bgnd_anim)
@@ -220,19 +221,18 @@ class Get_The_Idol(game.Mode):
             #self.delay(name='end_delay', event_type=None, delay=1, handler=self.mode_select.end_scene)
 
             
-
-
         def update_lamps(self):
             print("Update Lamps")
 
+
         def clear(self):
             self.layer = None
+
 
         def reset_drops(self):
             self.game.coils.centerDropBank.pulse(100)
 
 
-        
         def sw_dropTargetLeft_active(self, sw):
             self.mode_progression(0)
 

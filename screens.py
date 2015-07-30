@@ -28,8 +28,8 @@ class Screens(game.Mode):
             name_layer = dmd.TextLayer(128/2, 7, self.game.fonts['8x6'], "center")
             info_layer = dmd.TextLayer(128/2, 15, self.game.fonts['num_09Bx7'], "center")
 
-            name_layer.set_text('Mode Bonus'.upper())
-            info_layer.set_text(locale.format("%d",value,True))
+            name_layer.set_text('Mode Bonus'.upper(),color=dmd.BROWN)
+            info_layer.set_text(locale.format("%d",value,True),color=dmd.GREEN)
 
             #play sound
             self.game.sound.play('collect')
@@ -49,8 +49,8 @@ class Screens(game.Mode):
             name_layer = dmd.TextLayer(128/2, 7, self.game.fonts['8x6'], "center")
             info_layer = dmd.TextLayer(128/2, 15, self.game.fonts['num_09Bx7'], "center")
 
-            name_layer.set_text('Add To Jackpot'.upper())
-            info_layer.set_text(locale.format("%d",value,True),blink_frames=2)
+            name_layer.set_text('Add To Jackpot'.upper(),color=dmd.BROWN)
+            info_layer.set_text(locale.format("%d",value,True),color=dmd.GREEN,blink_frames=2)
 
             #play sound
             self.game.sound.play('collect')
@@ -65,7 +65,7 @@ class Screens(game.Mode):
             bgnd_layer = dmd.FrameLayer(opaque=False, frame=dmd.Animation().load(game_path+"dmd/mode_bonus_bgnd.dmd").frames[0])
             name_layer = dmd.TextLayer(128/2, 12, self.game.fonts['8x6'], "center")
 
-            name_layer.set_text('Ball Added!'.upper(),blink_frames=2)
+            name_layer.set_text('Ball Added!'.upper(),color=dmd.RED,blink_frames=2)
 
             #play sound
             self.game.sound.play('collect')
